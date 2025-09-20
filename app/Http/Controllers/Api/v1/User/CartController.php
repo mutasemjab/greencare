@@ -25,9 +25,6 @@ class CartController extends Controller
         $cart = Cart::with([
             'product', 
             'product.images', 
-            'variation', 
-            'variation.color', 
-            'variation.size'
         ])->where('user_id',  $user->id)
           ->where('status', 1)
           ->get();
@@ -45,18 +42,6 @@ class CartController extends Controller
                     'name_ar' => $item->product->name_ar,
                     'images' => $item->product->images,
                 ],
-                'variation' => $item->variation ? [
-                    'id' => $item->variation->id,
-                    'price_adjustment' => $item->variation->price_adjustment,
-                    'color' => [
-                        'id' => $item->variation->color->id,
-                        'name' => $item->variation->color->name,
-                    ],
-                    'size' => [
-                        'id' => $item->variation->size->id,
-                        'name' => $item->variation->size->name,
-                    ]
-                ] : null,
                 'created_at' => $item->created_at->toISOString(),
             ];
         }
@@ -68,7 +53,6 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'variation_id' => 'nullable|exists:variations,id',
             'quantity' => 'required|integer',
         ]);
 
@@ -82,25 +66,13 @@ class CartController extends Controller
         $variation = null;
         $price = $product->price_after_discount ?? $product->price;
 
-        if ($request->variation_id) {
-            $variation = Variation::where('id', $request->variation_id)
-                                 ->where('product_id', $request->product_id)
-                                 ->where('status', 1)
-                                 ->first();
-
-            if (!$variation) {
-                return $this->error_response('Invalid variation for this product', []);
-            }
-
-            $price += $variation->price_adjustment;
-        }
+        
 
         $userId =  $user->id;
 
         // Check if the same product with same variation already exists in cart
         $cart = Cart::where('user_id', $userId)
                     ->where('product_id', $request->product_id)
-                    ->where('variation_id', $request->variation_id)
                     ->where('status', 1)
                     ->first();
 
@@ -115,7 +87,6 @@ class CartController extends Controller
             // Create new cart item
             $cart = Cart::create([
                 'product_id' => $product->id,
-                'variation_id' => $request->variation_id,
                 'user_id' => $userId,
                 'quantity' => $request->quantity,
                 'price' => $price,

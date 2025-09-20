@@ -141,6 +141,44 @@
                         </li>
                     </ul>
                 </li>
+                
+                <li
+                    class="nav-item {{ request()->is('types*')  || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-tags"></i>
+                        <p>
+                            {{ __('messages.Doctor_Management') }}
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                      
+                        
+                        <li class="nav-item">
+                            <a href="{{ route('types.index') }}"
+                                class="nav-link {{ request()->routeIs('types.*') ? 'active' : '' }}">
+                                <i class="fas fa-list nav-icon"></i>
+                                <p>{{ __('messages.types') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('provider-categories.index') }}"
+                                class="nav-link {{ request()->routeIs('provider-categories.*') ? 'active' : '' }}">
+                                <i class="fas fa-folder nav-icon"></i>
+                                <p>{{ __('messages.provider-categories') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('providers.index') }}"
+                                class="nav-link {{ request()->routeIs('providers.*') ? 'active' : '' }}">
+                                <i class="fas fa-box nav-icon"></i>
+                                <p>{{ __('messages.providers') }}</p>
+                            </a>
+                        </li>
+                        
+                       
+                    </ul>
+                </li>
 
                 @canany(['order-table', 'order-add', 'order-edit', 'order-delete'])
                                 <li class="nav-item">

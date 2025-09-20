@@ -12,14 +12,18 @@ use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\FamilyController;
 use App\Http\Controllers\Admin\MedicationController;
+use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\NurseController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProviderCategoryController;
+use App\Http\Controllers\Admin\ProviderController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportTemplateController;
 use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\TypeController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -117,6 +121,18 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::delete('/products/images/{imageId}', [ProductController::class, 'deleteImage'])->name('products.deleteImage');
 
         Route::get('/usedCoupons', [CouponController::class, 'displayCouponUsed'])->name('usedCoupons.index');
+
+          // Types Routes
+        Route::resource('types', TypeController::class);
+        
+        // Provider Categories Routes
+        Route::resource('provider-categories', ProviderCategoryController::class);
+        
+        // Providers Routes
+        Route::resource('providers', ProviderController::class);
+        
+        
+        Route::resource('news', NewsController::class);
 
         // ajax
         Route::get('/patients/search', [UserController::class, 'searchPatients'])->name('api.patients.search');

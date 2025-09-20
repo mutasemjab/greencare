@@ -41,7 +41,10 @@ Route::group(['prefix' => 'v1/user'], function () {
     // Auth Route
     Route::group(['middleware' => ['auth:user-api']], function () {
 
-        Route::get('/home', HomeController::class);
+
+
+        Route::get('/home', [HomeController::class, 'index']);
+        Route::get('/news/{id}', [HomeController::class, 'newsDetails']);
 
 
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
@@ -88,6 +91,24 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         Route::get('/coupons', [CouponController::class, 'index']);
         Route::post('/coupons/validate', [CouponController::class, 'validateCoupon']);
+
+
+         // Types API Routes
+        Route::prefix('types')->group(function () {
+            Route::get('/', [TypeController::class, 'index']); // GET /api/v1/types
+        });
+
+        // Provider Categories API Routes
+        Route::prefix('provider-categories')->group(function () {
+            Route::get('/type/{typeId}', [ProviderCategoryController::class, 'getByType']); // GET /api/v1/provider-categories/type/{typeId}
+        });
+
+        // Providers API Routes
+        Route::prefix('providers')->group(function () {
+            Route::get('/search', [ProviderController::class, 'search']); // GET /api/v1/providers/search?search=term
+            Route::get('/{id}', [ProviderController::class, 'show']); // GET /api/v1/providers/{id}
+            Route::get('/category/{categoryId}', [ProviderController::class, 'getByCategory']); // GET /api/v1/providers/category/{categoryId}
+        });
         
     });
 });
