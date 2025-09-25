@@ -80,6 +80,47 @@
                             </div>
                         </div>
 
+                        <!-- Add these fields after the created_for field in your form -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="report_type">{{ __('messages.report_type') }} <span class="text-danger">*</span></label>
+                                <select name="report_type" 
+                                        id="report_type" 
+                                        class="form-control @error('report_type') is-invalid @enderror" 
+                                        onchange="handleReportTypeChange(this)"
+                                        required>
+                                    <option value="">{{ __('messages.select_report_type') }}</option>
+                                    <option value="initial_setup" {{ old('report_type') == 'initial_setup' ? 'selected' : '' }}>{{ __('messages.initial_setup') }}</option>
+                                    <option value="recurring" {{ old('report_type') == 'recurring' ? 'selected' : '' }}>{{ __('messages.recurring') }}</option>
+                                </select>
+                                @error('report_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Frequency field - only shown when report_type is 'recurring' -->
+                        <div class="col-md-6" id="frequency-container" style="display: none;">
+                            <div class="form-group">
+                                <label for="frequency">{{ __('messages.frequency') }} <span class="text-danger">*</span></label>
+                                <select name="frequency" 
+                                        id="frequency" 
+                                        class="form-control @error('frequency') is-invalid @enderror">
+                                    <option value="">{{ __('messages.select_frequency') }}</option>
+                                    <option value="daily" {{ old('frequency') == 'daily' ? 'selected' : '' }}>{{ __('messages.daily') }}</option>
+                                    <option value="weekly" {{ old('frequency') == 'weekly' ? 'selected' : '' }}>{{ __('messages.weekly') }}</option>
+                                    <option value="monthly" {{ old('frequency') == 'monthly' ? 'selected' : '' }}>{{ __('messages.monthly') }}</option>
+                                </select>
+                                @error('frequency')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> {{ __('messages.frequency_help') }}
+                                </small>
+                            </div>
+                        </div>
+
+
                         <hr>
 
                         <!-- Sections Container -->
@@ -472,6 +513,54 @@ function reindexOptions(optionsList) {
         });
     });
 }
+</script>
+
+
+<script>
+// Add this to your existing JavaScript section
+function handleReportTypeChange(select) {
+    const frequencyContainer = document.getElementById('frequency-container');
+    const frequencySelect = document.getElementById('frequency');
+    
+    if (select.value === 'recurring') {
+        frequencyContainer.style.display = 'block';
+        frequencySelect.setAttribute('required', 'required');
+        
+        // Auto-select frequency based on created_for
+        const createdFor = document.getElementById('created_for').value;
+        if (createdFor === 'nurse') {
+            frequencySelect.value = 'daily';
+        } else if (createdFor === 'doctor') {
+            frequencySelect.value = 'monthly';
+        }
+    } else {
+        frequencyContainer.style.display = 'none';
+        frequencySelect.removeAttribute('required');
+        frequencySelect.value = '';
+    }
+}
+
+// Auto-suggest frequency when created_for changes
+document.getElementById('created_for').addEventListener('change', function() {
+    const reportType = document.getElementById('report_type').value;
+    const frequencySelect = document.getElementById('frequency');
+    
+    if (reportType === 'recurring') {
+        if (this.value === 'nurse') {
+            frequencySelect.value = 'daily';
+        } else if (this.value === 'doctor') {
+            frequencySelect.value = 'monthly';
+        }
+    }
+});
+
+// Check on page load if report_type is already selected (for old input)
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('report_type');
+    if (reportTypeSelect.value) {
+        handleReportTypeChange(reportTypeSelect);
+    }
+});
 </script>
 @endpush
 

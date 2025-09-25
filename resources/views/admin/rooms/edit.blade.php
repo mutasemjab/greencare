@@ -72,15 +72,6 @@
                             </div>
                         @endif
 
-                        @if(session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        @endif
-
                         <!-- Room Basic Information -->
                         <div class="row">
                             <div class="col-md-8">
@@ -123,6 +114,20 @@
                                               rows="3" 
                                               placeholder="{{ __('messages.enter_room_description') }}">{{ old('description', $room->description) }}</textarea>
                                     @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                  
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="discount">{{ __('messages.room_discount') }}</label>
+                                    <input type="number" name="discount" 
+                                              class="form-control @error('discount') is-invalid @enderror" 
+                                              placeholder="{{ __('messages.enter_room_discount') }}" value="{{ old('discount', $room->discount) }}">
+                                    @error('discount')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

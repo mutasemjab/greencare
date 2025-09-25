@@ -102,6 +102,8 @@ class ReportTemplateController extends Controller
             'title_en' => 'required|string|max:255',
             'title_ar' => 'required|string|max:255',
             'created_for' => 'required|in:doctor,nurse',
+            'report_type' => 'required|in:initial_setup,recurring',
+            'frequency' => 'required_if:report_type,recurring|nullable|in:daily,weekly,monthly',
             'sections' => 'required|array|min:1',
             'sections.*.title_en' => 'required|string|max:255',
             'sections.*.title_ar' => 'required|string|max:255',
@@ -123,14 +125,16 @@ class ReportTemplateController extends Controller
 
         DB::beginTransaction();
         try {
-            // Create template
+            // Create template with new fields
             $template = ReportTemplate::create([
                 'title_en' => $request->title_en,
                 'title_ar' => $request->title_ar,
                 'created_for' => $request->created_for,
+                'report_type' => $request->report_type,
+                'frequency' => $request->report_type === 'recurring' ? $request->frequency : 'one_time',
             ]);
 
-            // Create sections and fields
+            // Rest of your existing code remains the same...
             foreach ($request->sections as $sectionIndex => $sectionData) {
                 $section = ReportSection::create([
                     'report_template_id' => $template->id,
@@ -148,7 +152,6 @@ class ReportTemplateController extends Controller
                         'required' => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
                     ]);
 
-                    // Create options if field type needs them
                     if (isset($fieldData['options']) && is_array($fieldData['options'])) {
                         foreach ($fieldData['options'] as $optionData) {
                             ReportFieldOption::create([
@@ -200,6 +203,8 @@ class ReportTemplateController extends Controller
             'title_en' => 'required|string|max:255',
             'title_ar' => 'required|string|max:255',
             'created_for' => 'required|in:doctor,nurse',
+            'report_type' => 'required|in:initial_setup,recurring',
+            'frequency' => 'required_if:report_type,recurring|nullable|in:daily,weekly,monthly',
             'sections' => 'required|array|min:1',
             'sections.*.title_en' => 'required|string|max:255',
             'sections.*.title_ar' => 'required|string|max:255',
@@ -226,6 +231,8 @@ class ReportTemplateController extends Controller
                 'title_en' => $request->title_en,
                 'title_ar' => $request->title_ar,
                 'created_for' => $request->created_for,
+                'report_type' => $request->report_type,
+                'frequency' => $request->report_type === 'recurring' ? $request->frequency : 'one_time',
             ]);
 
             // Delete existing sections (cascade will handle fields and options)

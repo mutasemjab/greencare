@@ -109,6 +109,31 @@ Route::group(['prefix' => 'v1/user'], function () {
             Route::get('/{id}', [ProviderController::class, 'show']); // GET /api/v1/providers/{id}
             Route::get('/category/{categoryId}', [ProviderController::class, 'getByCategory']); // GET /api/v1/providers/category/{categoryId}
         });
+
+
+
+        // api for rooms
+         Route::post('rooms', [RoomReportController::class, 'createRoom']);
+    
+        // Get initial templates (separate function after room creation)
+        Route::get('rooms/{room_id}/initial-templates', [RoomReportController::class, 'getInitialTemplates']);
+        
+        // Submit initial report
+        Route::post('reports/initial', [RoomReportController::class, 'submitInitialReport']);
+        
+        // Get available templates and pending reports for recurring reports
+        Route::get('rooms/{room_id}/templates', [RoomReportController::class, 'getAvailableTemplates']);
+        
+        // Submit recurring reports
+        Route::post('reports/recurring', [RoomReportController::class, 'submitRecurringReport']);
+        
+        // Get reports history
+        Route::get('rooms/{room_id}/reports', [RoomReportController::class, 'getRoomReports']);
+        Route::get('reports/{report}', [RoomReportController::class, 'getReport']);
+        
+        // Get room medications
+        Route::get('rooms/{room_id}/medications', [RoomReportController::class, 'getRoomMedications']);
+    
         
     });
 });

@@ -73,6 +73,7 @@ class RoomController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'discount' => 'required',
             'family_id' => 'nullable|exists:families,id',
             'patients' => 'required|array|min:1',
             'patients.*' => 'exists:users,id',
@@ -104,6 +105,7 @@ class RoomController extends Controller
             $room = Room::create([
                 'title' => $request->title,
                 'description' => $request->description,
+                'discount' => $request->discount,
                 'family_id' => $request->family_id,
             ]);
 
@@ -222,6 +224,7 @@ class RoomController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'discount' => 'nullable',
             'family_id' => 'nullable|exists:families,id',
             'patients' => 'required|array|min:1',
             'patients.*' => 'exists:users,id',
@@ -245,6 +248,7 @@ class RoomController extends Controller
             $room->update([
                 'title' => $request->title,
                 'description' => $request->description,
+                'discount' => $request->discount,
                 'family_id' => $request->family_id,
             ]);
 

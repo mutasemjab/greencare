@@ -151,6 +151,20 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="discount">{{ __('messages.room_discount') }}</label>
+                                    <input type="number" name="discount" 
+                                              class="form-control @error('discount') is-invalid @enderror" 
+                                              placeholder="{{ __('messages.enter_room_discount') }}" value="{{ old('discount') }}">
+                                    @error('discount')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <hr>
 
                         <!-- Room Members -->

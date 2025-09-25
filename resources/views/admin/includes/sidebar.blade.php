@@ -90,12 +90,7 @@
 
 
 
-                <li class="nav-item">
-                    <a href="{{ route('pages.index') }}" class="nav-link">
-                        <i class="fas fa-bullhorn nav-icon"></i>
-                        <p> {{ __('messages.pages_management') }} </p>
-                    </a>
-                </li>
+             
 
                    <!-- Catalog Management (NEW SECTION) -->
                 <li
@@ -147,7 +142,7 @@
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
-                            {{ __('messages.Doctor_Management') }}
+                            {{ __('messages.Provider Management') }}
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
@@ -189,6 +184,21 @@
                                     </a>
                                 </li>
                  @endcanany
+
+                    <li class="nav-item">
+                    <a href="{{ route('pages.index') }}" class="nav-link">
+                        <i class="fas fa-bullhorn nav-icon"></i>
+                        <p> {{ __('messages.pages_management') }} </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('news.index') }}" class="nav-link">
+                        <i class="fas fa-bullhorn nav-icon"></i>
+                        <p> {{ __('messages.news') }} </p>
+                    </a>
+                </li>
+                
                 {{-- System Configuration --}}
 
                 <li class="nav-item">

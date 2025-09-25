@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('title_en'); // e.g. "Initial Diagnosis", "Follow-up Report"
             $table->string('title_ar'); // e.g. "Initial Diagnosis", "Follow-up Report"
             $table->enum('created_for', ['doctor', 'nurse']); // who uses this template
+            $table->enum('frequency', ['one_time', 'daily', 'weekly', 'monthly']);
+            $table->enum('report_type', ['initial_setup', 'recurring']);
             $table->timestamps();
         });
     }
