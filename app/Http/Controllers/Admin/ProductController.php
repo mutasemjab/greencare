@@ -45,6 +45,7 @@ class ProductController extends Controller
             'description_ar' => 'required|string',
             'price' => 'required|numeric|min:0',
             'tax' => 'numeric|min:0|max:100',
+            'is_featured' => 'required',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'category_id' => 'nullable|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
@@ -57,7 +58,7 @@ class ProductController extends Controller
 
             $data = $request->only([
                 'name_en', 'name_ar', 'description_en', 'description_ar', 
-                'price', 'tax', 'discount_percentage', 'category_id', 
+                'price', 'tax','is_featured', 'discount_percentage', 'category_id', 
                  'brand_id',
             ]);
 
@@ -119,6 +120,7 @@ class ProductController extends Controller
             'description_ar' => 'required|string',
             'price' => 'required|numeric|min:0',
             'tax' => 'numeric|min:0|max:100',
+            'is_featured' => 'required',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'category_id' => 'nullable|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
@@ -131,7 +133,7 @@ class ProductController extends Controller
 
             $data = $request->only([
                 'name_en', 'name_ar', 'description_en', 'description_ar', 
-                'price', 'tax', 'discount_percentage', 'category_id', 
+                'price', 'tax', 'is_featured','discount_percentage', 'category_id', 
                'brand_id', 
             ]);
 

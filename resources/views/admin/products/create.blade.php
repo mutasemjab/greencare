@@ -81,6 +81,25 @@
                                         </div>
 
                                         <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <label for="gender" class="form-label">{{ __('messages.is_featured') }} <span class="text-danger">*</span></label>
+                                                    <select name="is_featured" 
+                                                            id="is_featured" 
+                                                            class="form-control @error('is_featured') is-invalid @enderror" 
+                                                            required>
+                                                        <option value="">{{ __('messages.select_is_featured') }}</option>
+                                                        <option value="1" {{ old('is_featured') == '1' ? 'selected' : '' }}>{{ __('messages.yes') }}</option>
+                                                        <option value="2" {{ old('is_featured') == '2' ? 'selected' : '' }}>{{ __('messages.no') }}</option>
+                                                    </select>
+                                                    @error('is_featured')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">{{ __('messages.Price') }} <span class="text-danger">*</span></label>
