@@ -73,7 +73,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         // Doctor management routes
         Route::resource('doctors', DoctorController::class);
         Route::post('doctors/{doctor}/toggle-status', [DoctorController::class, 'toggleStatus'])->name('doctors.toggle-status');
-        Route::get('api/doctors', [DoctorController::class, 'getDoctors'])->name('api.doctors');
 
         // Nurse management routes
         Route::resource('nurses', NurseController::class);
@@ -92,7 +91,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         Route::resource('report-templates', ReportTemplateController::class);
         Route::post('report-templates/{reportTemplate}/duplicate', [ReportTemplateController::class, 'duplicate'])->name('report-templates.duplicate');
-        Route::get('api/report-templates', [ReportTemplateController::class, 'getTemplates'])->name('api.report-templates');
 
         Route::resource('rooms', RoomController::class);
         Route::post('rooms/{room}/add-user', [RoomController::class, 'addUser'])->name('rooms.add-user');
@@ -136,10 +134,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         // ajax
         Route::get('/patients/search', [UserController::class, 'searchPatients'])->name('api.patients.search');
-        Route::get('/nurses/search', [UserController::class, 'searchNurses'])->name('api.nurses');
-        Route::get('/doctors/search', [UserController::class, 'searchDoctors'])->name('api.doctors');
+        Route::get('/nurse/search', [UserController::class, 'searchNurses'])->name('api.nurses.search');
+        Route::get('/doctor/search', [UserController::class, 'searchDoctors'])->name('api.doctors.search');
         Route::get('/families/search', [UserController::class, 'searchFamilies'])->name('api.families.search');
-        Route::get('/report-templates/search', [ReportTemplateController::class, 'searchTemplates'])->name('api.report-templates.search');
+        Route::get('/reportTemplates/search', [ReportTemplateController::class, 'searchTemplates'])->name('api.report-templates.search');
     });
 });
 

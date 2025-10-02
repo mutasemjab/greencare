@@ -184,7 +184,7 @@ class UserController extends Controller
                 'phone' => $patient->phone,
                 'email' => $patient->email,
                 'gender_text' => $patient->gender_text,
-                'photo_url' => $patient->photo ? asset('storage/' . $patient->photo) : null,
+                'photo_url' => $patient->photo ? asset('assets/admin/uploads/' . $patient->photo) : null,
                 'user_type_text' => $patient->user_type_text,
                 'active_status_text' => $patient->active_status_text,
             ];

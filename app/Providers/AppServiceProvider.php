@@ -3,27 +3,27 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
+use App\Services\FirestoreRoomService;
+use Kreait\Firebase\Factory;
+use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
-        //
+        $this->app->singleton(FirestoreRoomService::class, function ($app) {
+            return new FirestoreRoomService();
+        });
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        Paginator::USeBootstrap();
+        //
     }
 }

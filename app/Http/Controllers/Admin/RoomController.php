@@ -12,18 +12,23 @@ use App\Models\Medication;
 use App\Models\User;
 use App\Models\ReportTemplate;
 use App\Models\Report;
+use App\Services\FirestoreRoomService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class RoomController extends Controller
 {
-    public function __construct()
+     protected $firestoreService;
+
+    public function __construct(FirestoreRoomService $firestoreService)
     {
         $this->middleware('permission:room-table', ['only' => ['index', 'show']]);
         $this->middleware('permission:room-add', ['only' => ['create', 'store']]);
         $this->middleware('permission:room-edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:room-delete', ['only' => ['destroy']]);
+
+         $this->firestoreService = $firestoreService;
     }
 
     /**
@@ -65,6 +70,7 @@ class RoomController extends Controller
         return view('admin.rooms.create', compact('families'));
     }
 
+   
     /**
      * Store a newly created room
      */
@@ -100,7 +106,7 @@ class RoomController extends Controller
         }
 
         DB::beginTransaction();
-        try {
+       // try {
             // Create room
             $room = Room::create([
                 'title' => $request->title,
@@ -139,8 +145,6 @@ class RoomController extends Controller
                     ]);
                 }
             }
-            
-           
 
             // Create reports from selected templates
             if ($request->has('report_templates')) {
@@ -165,22 +169,24 @@ class RoomController extends Controller
                             'dosage' => $medicationData['dosage'] ?? null,
                             'quantity' => $medicationData['quantity'] ?? null,
                             'notes' => $medicationData['notes'] ?? null,
-                            'active' => true, // Default to active
                         ]);
                     }
                 }
             }
 
+            // Sync to Firestore for chat functionality
+            $this->firestoreService->syncRoom($room);
+
             DB::commit();
             return redirect()->route('rooms.index')
                 ->with('success', __('messages.room_created_successfully'));
 
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()
-                ->with('error', __('messages.error_creating_room'))
-                ->withInput();
-        }
+        // } catch (\Exception $e) {
+        //     DB::rollback();
+        //     return redirect()->back()
+        //         ->with('error', __('messages.error_creating_room'))
+        //         ->withInput();
+        // }
     }
 
     /**
@@ -297,6 +303,9 @@ class RoomController extends Controller
                 }
             }
 
+            // Sync updated room to Firestore
+            $this->firestoreService->syncRoom($room);
+
             DB::commit();
             return redirect()->route('rooms.index')
                 ->with('success', __('messages.room_updated_successfully'));
@@ -315,7 +324,12 @@ class RoomController extends Controller
     public function destroy(Room $room)
     {
         try {
+            // Delete from Firestore first
+            $this->firestoreService->deleteRoom($room->id);
+            
+            // Then delete from database
             $room->delete();
+            
             return redirect()->route('rooms.index')
                 ->with('success', __('messages.room_deleted_successfully'));
         } catch (\Exception $e) {
@@ -355,6 +369,9 @@ class RoomController extends Controller
                 'role' => $request->role
             ]);
 
+            // Sync to Firestore
+            $this->firestoreService->addUserToRoom($room);
+
             return redirect()->back()
                 ->with('success', __('messages.user_added_to_room_successfully'));
         } catch (\Exception $e) {
@@ -381,6 +398,9 @@ class RoomController extends Controller
                 ->where('user_id', $request->user_id)
                 ->delete();
 
+            // Sync to Firestore
+            $this->firestoreService->removeUserFromRoom($room);
+
             return redirect()->back()
                 ->with('success', __('messages.user_removed_from_room_successfully'));
         } catch (\Exception $e) {
@@ -388,6 +408,7 @@ class RoomController extends Controller
                 ->with('error', __('messages.error_removing_user_from_room'));
         }
     }
+
 
     /**
      * Get rooms for AJAX calls

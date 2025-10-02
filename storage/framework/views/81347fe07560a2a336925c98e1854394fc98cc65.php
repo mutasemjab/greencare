@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('css')
+<?php $__env->startSection('css'); ?>
 <style>
 .select2-container {
     z-index: 9999 !important;
@@ -74,62 +72,78 @@
     position: relative;
 }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">{{ __('messages.create_room') }}</h3>
+                    <h3 class="card-title"><?php echo e(__('messages.create_room')); ?></h3>
                     <div class="card-tools">
-                        <a href="{{ route('rooms.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
+                        <a href="<?php echo e(route('rooms.index')); ?>" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> <?php echo e(__('messages.back')); ?>
+
                         </a>
                     </div>
                 </div>
 
-                <form action="{{ route('rooms.store') }}" method="POST">
-                    @csrf
+                <form action="<?php echo e(route('rooms.store')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="card-body">
-                        @if($errors->any())
+                        <?php if($errors->any()): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
+                                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <li><?php echo e($error); ?></li>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </ul>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
                         <!-- Room Basic Information -->
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="form-group">
-                                    <label for="title">{{ __('messages.room_title') }} <span class="text-danger">*</span></label>
+                                    <label for="title"><?php echo e(__('messages.room_title')); ?> <span class="text-danger">*</span></label>
                                     <input type="text" 
                                            name="title" 
                                            id="title" 
-                                           class="form-control @error('title') is-invalid @enderror" 
-                                           value="{{ old('title') }}" 
-                                           placeholder="{{ __('messages.enter_room_title') }}" 
+                                           class="form-control <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           value="<?php echo e(old('title')); ?>" 
+                                           placeholder="<?php echo e(__('messages.enter_room_title')); ?>" 
                                            required>
-                                    @error('title')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="family_id">{{ __('messages.family') }}</label>
+                                    <label for="family_id"><?php echo e(__('messages.family')); ?></label>
                                     <select name="family_id" id="family_id" class="form-control">
-                                        <option value="">{{ __('messages.select_family') }}</option>
-                                        @foreach($families as $family)
-                                            <option value="{{ $family->id }}" {{ old('family_id') == $family->id ? 'selected' : '' }}>
-                                                {{ $family->name }}
+                                        <option value=""><?php echo e(__('messages.select_family')); ?></option>
+                                        <?php $__currentLoopData = $families; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $family): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($family->id); ?>" <?php echo e(old('family_id') == $family->id ? 'selected' : ''); ?>>
+                                                <?php echo e($family->name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </select>
                                 </div>
                             </div>
@@ -138,15 +152,29 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description">{{ __('messages.room_description') }}</label>
+                                    <label for="description"><?php echo e(__('messages.room_description')); ?></label>
                                     <textarea name="description" 
                                               id="description" 
-                                              class="form-control @error('description') is-invalid @enderror" 
+                                              class="form-control <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                               rows="3" 
-                                              placeholder="{{ __('messages.enter_room_description') }}">{{ old('description') }}</textarea>
-                                    @error('description')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                              placeholder="<?php echo e(__('messages.enter_room_description')); ?>"><?php echo e(old('description')); ?></textarea>
+                                    <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                         </div>
@@ -154,13 +182,27 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="discount">{{ __('messages.room_discount') }}</label>
+                                    <label for="discount"><?php echo e(__('messages.room_discount')); ?></label>
                                     <input type="number" name="discount" 
-                                              class="form-control @error('discount') is-invalid @enderror" 
-                                              placeholder="{{ __('messages.enter_room_discount') }}" value="{{ old('discount') }}">
-                                    @error('discount')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                              class="form-control <?php $__errorArgs = ['discount'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                              placeholder="<?php echo e(__('messages.enter_room_discount')); ?>" value="<?php echo e(old('discount')); ?>">
+                                    <?php $__errorArgs = ['discount'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                         </div>
@@ -170,7 +212,7 @@
                         <!-- Room Members -->
                         <div class="row">
                             <div class="col-12">
-                                <h5 class="mb-3">{{ __('messages.room_members') }}</h5>
+                                <h5 class="mb-3"><?php echo e(__('messages.room_members')); ?></h5>
                             </div>
                         </div>
 
@@ -181,7 +223,7 @@
                                     <div class="card-header bg-warning text-dark">
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-injured mr-2"></i>
-                                            {{ __('messages.patients') }} <span class="text-danger">*</span>
+                                            <?php echo e(__('messages.patients')); ?> <span class="text-danger">*</span>
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -193,7 +235,7 @@
                                                     required
                                                     style="width: 100%;">
                                             </select>
-                                            <small class="form-text text-muted">{{ __('messages.search_patients_help') }}</small>
+                                            <small class="form-text text-muted"><?php echo e(__('messages.search_patients_help')); ?></small>
                                         </div>
                                     </div>
                                 </div>
@@ -207,7 +249,8 @@
                                     <div class="card-header bg-primary text-white">
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-md mr-2"></i>
-                                            {{ __('messages.doctors') }}
+                                            <?php echo e(__('messages.doctors')); ?>
+
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -218,7 +261,7 @@
                                                     multiple
                                                     style="width: 100%;">
                                             </select>
-                                            <small class="form-text text-muted">{{ __('messages.search_doctors_help') }}</small>
+                                            <small class="form-text text-muted"><?php echo e(__('messages.search_doctors_help')); ?></small>
                                         </div>
                                     </div>
                                 </div>
@@ -232,7 +275,8 @@
                                     <div class="card-header bg-success text-white">
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-nurse mr-2"></i>
-                                            {{ __('messages.nurses') }}
+                                            <?php echo e(__('messages.nurses')); ?>
+
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -243,7 +287,7 @@
                                                     multiple
                                                     style="width: 100%;">
                                             </select>
-                                            <small class="form-text text-muted">{{ __('messages.search_nurses_help') }}</small>
+                                            <small class="form-text text-muted"><?php echo e(__('messages.search_nurses_help')); ?></small>
                                         </div>
                                     </div>
                                 </div>
@@ -261,7 +305,8 @@
                                     <div class="card-header bg-danger text-white">
                                         <h6 class="mb-0">
                                             <i class="fas fa-file-medical-alt mr-2"></i>
-                                            {{ __('messages.report_templates') }}
+                                            <?php echo e(__('messages.report_templates')); ?>
+
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -272,7 +317,7 @@
                                                     multiple
                                                     style="width: 100%;">
                                             </select>
-                                            <small class="form-text text-muted">{{ __('messages.search_report_templates_help') }}</small>
+                                            <small class="form-text text-muted"><?php echo e(__('messages.search_report_templates_help')); ?></small>
                                         </div>
                                     </div>
                                 </div>
@@ -286,14 +331,16 @@
                                     <div class="card-header bg-secondary text-white">
                                         <h6 class="mb-0">
                                             <i class="fas fa-pills mr-2"></i>
-                                            {{ __('messages.medications') }}
+                                            <?php echo e(__('messages.medications')); ?>
+
                                         </h6>
                                     </div>
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <p class="mb-0 text-muted">{{ __('messages.medications_help') }}</p>
+                                            <p class="mb-0 text-muted"><?php echo e(__('messages.medications_help')); ?></p>
                                             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addMedication()">
-                                                <i class="fas fa-plus"></i> {{ __('messages.add_medication') }}
+                                                <i class="fas fa-plus"></i> <?php echo e(__('messages.add_medication')); ?>
+
                                             </button>
                                         </div>
                                         <div id="medications-container">
@@ -307,11 +354,13 @@
 
                     <div class="card-footer">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('rooms.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> {{ __('messages.cancel') }}
+                            <a href="<?php echo e(route('rooms.index')); ?>" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> <?php echo e(__('messages.cancel')); ?>
+
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> {{ __('messages.create_room') }}
+                                <i class="fas fa-save"></i> <?php echo e(__('messages.create_room')); ?>
+
                             </button>
                         </div>
                     </div>
@@ -320,9 +369,9 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(document).ready(function() {
     let isFamilyIndividualMode = false;
@@ -331,11 +380,11 @@ $(document).ready(function() {
 
     // Initialize Select2 for patients
     $('.patients-select').select2({
-        placeholder: '{{ __("messages.search_and_select_patients") }}',
+        placeholder: '<?php echo e(__("messages.search_and_select_patients")); ?>',
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.patients.search") }}',
+            url: '<?php echo e(route("api.patients.search")); ?>',
             dataType: 'json',
             delay: 300,
             data: function (params) {
@@ -384,11 +433,11 @@ $(document).ready(function() {
 
     // Initialize Select2 for doctors
    $('.doctors-select').select2({
-    placeholder: '{{ __("messages.search_and_select_doctors") }}',
+    placeholder: '<?php echo e(__("messages.search_and_select_doctors")); ?>',
     allowClear: true,
     width: '100%',
     ajax: {
-        url: '{{ route("api.doctors.search") }}',
+        url: '<?php echo e(route("api.doctors.search")); ?>',
         dataType: 'json',
         delay: 300,
         data: function (params) {
@@ -422,11 +471,11 @@ $(document).ready(function() {
 
     // For nurses
     $('.nurses-select').select2({
-        placeholder: '{{ __("messages.search_and_select_nurses") }}',
+        placeholder: '<?php echo e(__("messages.search_and_select_nurses")); ?>',
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.nurses.search") }}',
+            url: '<?php echo e(route("api.nurses.search")); ?>',
             dataType: 'json',
             delay: 300,
             data: function (params) {
@@ -460,11 +509,11 @@ $(document).ready(function() {
 
     // Initialize Select2 for family search
     $('.family-members-select').select2({
-        placeholder: '{{ __("messages.search_and_select_families") }}',
+        placeholder: '<?php echo e(__("messages.search_and_select_families")); ?>',
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.families.search") }}',
+            url: '<?php echo e(route("api.families.search")); ?>',
             dataType: 'json',
             delay: 300,
             data: function (params) {
@@ -498,11 +547,11 @@ $(document).ready(function() {
 
     // Initialize Select2 for report templates
     $('.report-templates-select').select2({
-        placeholder: '{{ __("messages.search_and_select_report_templates") }}',
+        placeholder: '<?php echo e(__("messages.search_and_select_report_templates")); ?>',
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.report-templates.search") }}',
+            url: '<?php echo e(route("api.report-templates.search")); ?>',
             dataType: 'json',
             delay: 300,
             data: function (params) {
@@ -565,7 +614,7 @@ $(document).ready(function() {
     // Format user display in dropdown
     function formatUser(user) {
         if (user.loading) {
-            return '{{ __("messages.searching") }}...';
+            return '<?php echo e(__("messages.searching")); ?>...';
         }
 
         var userData = user.patient || user.user || user;
@@ -594,7 +643,7 @@ $(document).ready(function() {
     // Format family display in dropdown
     function formatFamily(family) {
         if (family.loading) {
-            return '{{ __("messages.searching") }}...';
+            return '<?php echo e(__("messages.searching")); ?>...';
         }
 
         if (!family.family) {
@@ -648,7 +697,7 @@ $(document).ready(function() {
     // Format report template display in dropdown
     function formatReportTemplate(template) {
         if (template.loading) {
-            return '{{ __("messages.searching") }}...';
+            return '<?php echo e(__("messages.searching")); ?>...';
         }
 
         if (!template.template) {
@@ -656,7 +705,7 @@ $(document).ready(function() {
         }
 
         var templateData = template.template;
-        var displayTitle = templateData.title_{{ App::getLocale() }} || templateData.title_en;
+        var displayTitle = templateData.title_<?php echo e(App::getLocale()); ?> || templateData.title_en;
         
         return '<div class="py-2">' +
                     '<div class="d-flex align-items-center">' +
@@ -678,7 +727,7 @@ $(document).ready(function() {
             return template.text || template.id;
         }
         
-        var displayTitle = template.template.title_{{ App::getLocale() }} || template.template.title_en;
+        var displayTitle = template.template.title_<?php echo e(App::getLocale()); ?> || template.template.title_en;
         return displayTitle;
     }
 
@@ -738,7 +787,7 @@ $(document).ready(function() {
             // Switch to family search method
             familySearchMethod.show();
             individualSearchMethod.hide();
-            toggleText.text('{{ __("messages.switch_to_individual") }}');
+            toggleText.text('<?php echo e(__("messages.switch_to_individual")); ?>');
             
             // Clear individual selections
             if ($('.individual-family-members-select').hasClass('select2-hidden-accessible')) {
@@ -750,7 +799,7 @@ $(document).ready(function() {
             // Switch to individual search method
             familySearchMethod.hide();
             individualSearchMethod.show();
-            toggleText.text('{{ __("messages.switch_to_family") }}');
+            toggleText.text('<?php echo e(__("messages.switch_to_family")); ?>');
             
             // Clear family selections and hidden inputs
             if ($('.family-members-select').hasClass('select2-hidden-accessible')) {
@@ -773,11 +822,11 @@ $(document).ready(function() {
         }
         
         $('.individual-family-members-select').select2({
-            placeholder: '{{ __("messages.search_and_select_individual_family_members") }}',
+            placeholder: '<?php echo e(__("messages.search_and_select_individual_family_members")); ?>',
             allowClear: true,
             width: '100%',
             ajax: {
-                url: '{{ route("api.patients.search") }}',
+                url: '<?php echo e(route("api.patients.search")); ?>',
                 dataType: 'json',
                 delay: 300,
                 data: function (params) {
@@ -810,12 +859,12 @@ $(document).ready(function() {
     // Add medication function
     window.addMedication = function() {
         if (selectedPatients.length === 0) {
-            alert('{{ __("messages.please_select_patients_first") }}');
+            alert('<?php echo e(__("messages.please_select_patients_first")); ?>');
             return;
         }
 
         medicationCounter++;
-        var patientOptions = '<option value="">{{ __("messages.select_patient") }}</option>';
+        var patientOptions = '<option value=""><?php echo e(__("messages.select_patient")); ?></option>';
         selectedPatients.forEach(function(patient) {
             patientOptions += '<option value="' + patient.id + '">' + patient.name + ' - ' + patient.phone + '</option>';
         });
@@ -828,7 +877,7 @@ $(document).ready(function() {
                 '<div class="row">' +
                     '<div class="col-md-4">' +
                         '<div class="form-group">' +
-                            '<label>{{ __("messages.patient") }} <span class="text-danger">*</span></label>' +
+                            '<label><?php echo e(__("messages.patient")); ?> <span class="text-danger">*</span></label>' +
                             '<select name="medications[' + medicationCounter + '][patient_id]" class="form-control" required>' +
                                 patientOptions +
                             '</select>' +
@@ -836,28 +885,28 @@ $(document).ready(function() {
                     '</div>' +
                     '<div class="col-md-4">' +
                         '<div class="form-group">' +
-                            '<label>{{ __("messages.medication_name") }} <span class="text-danger">*</span></label>' +
-                            '<input type="text" name="medications[' + medicationCounter + '][name]" class="form-control" placeholder="{{ __("messages.enter_medication_name") }}" required>' +
+                            '<label><?php echo e(__("messages.medication_name")); ?> <span class="text-danger">*</span></label>' +
+                            '<input type="text" name="medications[' + medicationCounter + '][name]" class="form-control" placeholder="<?php echo e(__("messages.enter_medication_name")); ?>" required>' +
                         '</div>' +
                     '</div>' +
                     '<div class="col-md-4">' +
                         '<div class="form-group">' +
-                            '<label>{{ __("messages.dosage") }}</label>' +
-                            '<input type="text" name="medications[' + medicationCounter + '][dosage]" class="form-control" placeholder="{{ __("messages.enter_dosage") }}">' +
+                            '<label><?php echo e(__("messages.dosage")); ?></label>' +
+                            '<input type="text" name="medications[' + medicationCounter + '][dosage]" class="form-control" placeholder="<?php echo e(__("messages.enter_dosage")); ?>">' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="row">' +
                     '<div class="col-md-4">' +
                         '<div class="form-group">' +
-                            '<label>{{ __("messages.quantity") }}</label>' +
-                            '<input type="number" name="medications[' + medicationCounter + '][quantity]" class="form-control" placeholder="{{ __("messages.enter_quantity") }}" min="1">' +
+                            '<label><?php echo e(__("messages.quantity")); ?></label>' +
+                            '<input type="number" name="medications[' + medicationCounter + '][quantity]" class="form-control" placeholder="<?php echo e(__("messages.enter_quantity")); ?>" min="1">' +
                         '</div>' +
                     '</div>' +
                     '<div class="col-md-8">' +
                         '<div class="form-group">' +
-                            '<label>{{ __("messages.notes") }}</label>' +
-                            '<textarea name="medications[' + medicationCounter + '][notes]" class="form-control" rows="2" placeholder="{{ __("messages.enter_medication_notes") }}"></textarea>' +
+                            '<label><?php echo e(__("messages.notes")); ?></label>' +
+                            '<textarea name="medications[' + medicationCounter + '][notes]" class="form-control" rows="2" placeholder="<?php echo e(__("messages.enter_medication_notes")); ?>"></textarea>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -873,7 +922,7 @@ $(document).ready(function() {
 
     // Update medication patient options when patients change
     function updateMedicationPatientOptions() {
-        var patientOptions = '<option value="">{{ __("messages.select_patient") }}</option>';
+        var patientOptions = '<option value=""><?php echo e(__("messages.select_patient")); ?></option>';
         selectedPatients.forEach(function(patient) {
             patientOptions += '<option value="' + patient.id + '">' + patient.name + ' - ' + patient.phone + '</option>';
         });
@@ -890,4 +939,5 @@ $(document).ready(function() {
     }
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\greencare\resources\views/admin/rooms/create.blade.php ENDPATH**/ ?>

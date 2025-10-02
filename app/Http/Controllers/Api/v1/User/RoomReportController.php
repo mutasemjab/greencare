@@ -10,6 +10,7 @@ use App\Models\ReportAnswer;
 use App\Models\Medication;
 use App\Models\MedicationSchedule;
 use App\Models\User;
+use App\Services\FirestoreRoomService;
 use App\Traits\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class RoomReportController extends Controller
     /**
      * Create a new room
      */
-    public function createRoom(Request $request)
+    public function createRoom(Request $request, FirestoreRoomService $firestoreService)
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
@@ -53,10 +54,13 @@ class RoomReportController extends Controller
             // Add current user (creator) to room
             $room->users()->attach(Auth::id(), ['role' => Auth::user()->user_type]);
 
+            // Sync to Firestore for chat functionality
+            $firestoreService->syncRoom($room);
+
             DB::commit();
 
             return $this->success_response('Room created successfully', [
-                'room' => $room
+                'room' => $room->load('users')
             ]);
 
         } catch (\Exception $e) {

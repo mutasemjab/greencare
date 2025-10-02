@@ -22,32 +22,28 @@ class ReportTemplateController extends Controller
         $this->middleware('permission:report-template-delete', ['only' => ['destroy']]);
     }
 
-    public function searchTemplates(Request $request)
+     public function searchTemplates(Request $request)
     {
         $search = $request->get('search');
         $perPage = 10;
 
-        $query = ReportTemplate::where('active', true); // Assuming you have an active field
-
-        // Search by template name or description
+        $query = ReportTemplate::query();
+        // Search by template title_en or description
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                ->orWhere('description', 'LIKE', "%{$search}%");
+                $q->where('title_en', 'LIKE', "%{$search}%")
+                ->orWhere('title_ar', 'LIKE', "%{$search}%");
             });
         }
 
-        $templates = $query->orderBy('name')
-                        ->paginate($perPage);
+        $templates = $query->paginate($perPage);
 
         // Transform data for Select2
         $data = $templates->getCollection()->map(function($template) {
             return [
                 'id' => $template->id,
-                'name' => $template->name,
-                'description' => $template->description,
-                'sections_count' => $template->sections()->count() ?? 0,
-                'fields_count' => $template->fields()->count() ?? 0,
+                'title_en' => $template->title_en,
+                'title_ar' => $template->title_ar,
             ];
         });
 
