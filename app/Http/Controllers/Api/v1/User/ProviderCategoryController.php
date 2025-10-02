@@ -29,7 +29,6 @@ class ProviderCategoryController extends Controller
 
             $categories = ProviderCategory::where('type_id', $typeId)
                 ->with('type:id,name_en,name_ar')
-                ->select('id', 'name_en', 'name_ar', 'photo', 'type_id')
                 ->get();
             
             $categories = $categories->map(function ($category) {
@@ -38,6 +37,8 @@ class ProviderCategoryController extends Controller
                     'name_en' => $category->name_en,
                     'name_ar' => $category->name_ar,
                     'name' => $category->name,
+                    'type_of_visit' => $category->type_of_visit,
+                    'price' => $category->price,
                     'photo' => $category->photo ? asset('assets/admin/uploads/' . $category->photo) : null,
                     'type' => [
                         'id' => $category->type->id,
