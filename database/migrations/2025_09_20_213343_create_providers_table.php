@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->double('price');
             $table->string('photo');
+            $table->double('rating')->default(0);
             $table->foreignId('provider_category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

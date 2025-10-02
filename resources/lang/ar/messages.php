@@ -875,7 +875,7 @@ return [
     "reports" => "التقارير",
   "Provider Management" => "إدارة مزودين الخدمة",
   "provider-categories" => "تصنيفات مزودين الخدمة",
-  "" => "",
+  "type_of_visit" => "نوع الزيارة",
   "" => "",
   "" => "",
 

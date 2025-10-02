@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1\User;
 
+use App\Http\Controllers\Api\v1\User\NewsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\User\AuthController;
@@ -44,7 +45,8 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
         Route::get('/home', [HomeController::class, 'index']);
-        Route::get('/news/{id}', [HomeController::class, 'newsDetails']);
+        Route::get('/news', [NewsController::class, 'index']);
+        Route::get('/news/{id}', [NewsController::class, 'newsDetails']);
 
 
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
@@ -77,6 +79,8 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::get('/product/search', [ProductController::class, 'searchProduct']);
         Route::post('/products', [ProductController::class, 'getProducts']);
 
+        Route::get('/featuredProducts', [ProductController::class, 'featuredProducts']);
+
          Route::get('/productFavourites', [FavouriteController::class,'index']); 
         Route::post('/productFavourites', [FavouriteController::class,'store']);
 
@@ -106,7 +110,6 @@ Route::group(['prefix' => 'v1/user'], function () {
         // Providers API Routes
         Route::prefix('providers')->group(function () {
             Route::get('/search', [ProviderController::class, 'search']); // GET /api/v1/providers/search?search=term
-            Route::get('/{id}', [ProviderController::class, 'show']); // GET /api/v1/providers/{id}
             Route::get('/category/{categoryId}', [ProviderController::class, 'getByCategory']); // GET /api/v1/providers/category/{categoryId}
         });
 

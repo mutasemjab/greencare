@@ -925,7 +925,7 @@ return [
     "reports" => "Reports",
     "Provider Management" => "Provider Management",
     "provider-categories" => "Provider categories",
-    "" => "",
+    "type_of_visit" => "Type of visit",
     "" => "",
     "" => "",
 

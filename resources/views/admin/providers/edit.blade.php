@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="price">{{ __('messages.price') }} <span class="text-danger">*</span></label>
                             <input type="number" 
@@ -61,7 +61,7 @@
                                    id="price" 
                                    name="price" 
                                    value="{{ old('price', $provider->price) }}" 
-                                   step="0.01"
+                                   step="any"
                                    min="0"
                                    required>
                             @error('price')
@@ -69,8 +69,25 @@
                             @enderror
                         </div>
                     </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="price">{{ __('messages.rating') }} <span class="text-danger">*</span></label>
+                            <input type="number" 
+                                   class="form-control @error('rating') is-invalid @enderror" 
+                                   id="rating" 
+                                   name="rating" 
+                                   value="{{ old('rating', $provider->rating) }}" 
+                                   step="any"
+                                   min="0"
+                                   required>
+                            @error('rating')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="provider_category_id">{{ __('messages.provider_category') }} <span class="text-danger">*</span></label>
                             <select class="form-control @error('provider_category_id') is-invalid @enderror" 

@@ -18,16 +18,13 @@ class ProductController extends Controller
         try {
             // Validate request parameters
             $validated = $request->validate([
-                'shop_id' => 'nullable|integer|exists:shops,id',
                 'brand_id' => 'nullable|integer|exists:brands,id',
-                'celebrity_id' => 'nullable|integer|exists:celebrities,id',
                 'category_id' => 'nullable|integer|exists:categories,id',
                 'search' => 'nullable|string|max:255',
                 'min_price' => 'nullable|numeric|min:0',
                 'max_price' => 'nullable|numeric|min:0',
                 'discount_only' => 'nullable|boolean',
                 'is_featured' => 'nullable|in:1,2',
-                'my_collabs' => 'nullable|in:1,2',
                 'sort_by' => 'nullable|in:name,price,created_at,price_after_discount,updated_at',
                 'sort_direction' => 'nullable|in:asc,desc',
                 'per_page' => 'nullable|integer|min:1|max:100',
@@ -38,24 +35,17 @@ class ProductController extends Controller
             $query = Product::with([
                 'images',
                 'category',
-                'celebrity',
                 'brand',
-                'shop',
-                'variations'
             ]);
 
             // Apply main filters (shop_id, brand_id, celebrity_id, category_id)
-            if (!empty($validated['shop_id'])) {
-                $query->where('shop_id', $validated['shop_id']);
-            }
+           
 
             if (!empty($validated['brand_id'])) {
                 $query->where('brand_id', $validated['brand_id']);
             }
 
-            if (!empty($validated['celebrity_id'])) {
-                $query->where('celebrity_id', $validated['celebrity_id']);
-            }
+          
 
             if (!empty($validated['category_id'])) {
                 $query->where(function ($q) use ($validated) {
@@ -84,15 +74,8 @@ class ProductController extends Controller
                         ->orWhereHas('brand', function ($subQuery) use ($searchTerm) {
                             $subQuery->where('name_en', 'LIKE', "%{$searchTerm}%")
                                 ->orWhere('name_ar', 'LIKE', "%{$searchTerm}%");
-                        })
-                        ->orWhereHas('celebrity', function ($subQuery) use ($searchTerm) {
-                            $subQuery->where('name_en', 'LIKE', "%{$searchTerm}%")
-                                ->orWhere('name_ar', 'LIKE', "%{$searchTerm}%");
-                        })
-                        ->orWhereHas('shop', function ($subQuery) use ($searchTerm) {
-                            $subQuery->where('name_en', 'LIKE', "%{$searchTerm}%")
-                                ->orWhere('name_ar', 'LIKE', "%{$searchTerm}%");
                         });
+                    
                 });
             }
 
@@ -128,10 +111,7 @@ class ProductController extends Controller
                 $query->where('is_featured', $validated['is_featured']);
             }
 
-            // Filter by collaboration status
-            if (isset($validated['my_collabs'])) {
-                $query->where('my_collabs', $validated['my_collabs']);
-            }
+           
 
             // Apply sorting - DEFAULT: Newest first (created_at DESC)
             $sortBy = $validated['sort_by'] ?? 'created_at';
@@ -255,7 +235,7 @@ class ProductController extends Controller
                 }
             }
 
-            $products = $query->with('images', 'variations')->get();
+            $products = $query->with('images')->get();
 
             // Debug: Log results count
             \Log::info('Products found: ' . $products->count());
@@ -276,7 +256,7 @@ class ProductController extends Controller
         public function productDetails($id)
     {
         // Get the main product
-        $product = Product::with('images', 'ratings', 'variations', 'variations.color', 'variations.size')
+        $product = Product::with('images')
             ->where('id', $id)
             ->first();
         
@@ -285,7 +265,7 @@ class ProductController extends Controller
         }
         
         // Get similar products from the same category (excluding the current product)
-        $similarProducts = Product::with('images', 'ratings', 'variations', 'variations.color', 'variations.size')
+        $similarProducts = Product::with('images')
             ->where('category_id', $product->category_id) // assuming you have a category_id field
             ->where('id', '!=', $id) // exclude the current product
             ->limit(10) // limit the number of similar products
@@ -298,5 +278,15 @@ class ProductController extends Controller
         ];
         
         return $this->success_response('Product retrieved successfully', $response);
+    }
+
+    public function featuredProducts()
+    {
+        $product = Product::with('images')
+            ->where('is_featured',1)
+            ->get();
+
+        return $this->success_response('Featured Product retrieved successfully', $product);
+
     }
 }

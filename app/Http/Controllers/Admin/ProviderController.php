@@ -38,6 +38,7 @@ class ProviderController extends Controller
             'number_years_experience' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'rating' => 'required|numeric|min:0',
             'provider_category_id' => 'required|exists:provider_categories,id',
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
@@ -52,6 +53,7 @@ class ProviderController extends Controller
             'number_years_experience' => $request->number_years_experience,
             'description' => $request->description,
             'price' => $request->price,
+            'rating' => $request->rating,
             'provider_category_id' => $request->provider_category_id,
             'photo' => $photoPath
         ]);
@@ -72,6 +74,7 @@ class ProviderController extends Controller
             'number_years_experience' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'rating' => 'required|numeric|min:0',
             'provider_category_id' => 'required|exists:provider_categories,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
@@ -87,6 +90,7 @@ class ProviderController extends Controller
             'number_years_experience' => $request->number_years_experience,
             'description' => $request->description,
             'price' => $request->price,
+            'rating' => $request->rating,
             'provider_category_id' => $request->provider_category_id,
             'photo' => $photoPath
         ]);

@@ -70,6 +70,50 @@
                     @enderror
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="type_of_visit">{{ __('messages.type_of_visit') }} <span class="text-danger">*</span></label>
+                            <select class="form-control @error('type_of_visit') is-invalid @enderror" 
+                                    id="type_of_visit" 
+                                    name="type_of_visit" 
+                                    required>
+                                <option value="">{{ __('messages.select_type_of_visit') }}</option>
+                                <option value="home" {{ old('type_of_visit') == 'home' ? 'selected' : '' }}>
+                                    {{ __('messages.home') }}
+                                </option>
+                                <option value="hospital" {{ old('type_of_visit') == 'hospital' ? 'selected' : '' }}>
+                                    {{ __('messages.hospital') }}
+                                </option>
+                                <option value="clinic" {{ old('type_of_visit') == 'clinic' ? 'selected' : '' }}>
+                                    {{ __('messages.clinic') }}
+                                </option>
+                            </select>
+                            @error('type_of_visit')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="price">{{ __('messages.price') }} <span class="text-danger">*</span></label>
+                            <input type="number" 
+                                step="0.01" 
+                                min="0" 
+                                class="form-control @error('price') is-invalid @enderror" 
+                                id="price" 
+                                name="price" 
+                                value="{{ old('price', 0) }}" 
+                                required>
+                            @error('price')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="form-group">
                     <label for="photo">{{ __('messages.category_photo') }} <span class="text-danger">*</span></label>
                     <input type="file" 
