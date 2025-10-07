@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('room_id')->constrained()->onDelete('cascade');
             $table->foreignId('report_template_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // doctor/nurse
+            $table->dateTime('report_datetime')->nullable();
             $table->timestamps();
         });
     }

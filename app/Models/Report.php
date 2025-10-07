@@ -10,6 +10,10 @@ class Report extends Model
     use HasFactory;
      protected $guarded = [];
 
+     protected $casts = [
+        'report_datetime' => 'datetime',
+    ];
+
       public function room()
     {
         return $this->belongsTo(Room::class);
