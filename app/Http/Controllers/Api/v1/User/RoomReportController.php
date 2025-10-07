@@ -21,6 +21,12 @@ class RoomReportController extends Controller
 {
     use Responses;
 
+    public function getPatient()
+    {
+        $data= User::where('user_type','patient')->get();
+        return $this->success_response('Patients retrieved successfully',$data);
+    }
+    
     /**
      * Create a new room
      */
@@ -226,15 +232,29 @@ class RoomReportController extends Controller
     /**
      * Submit a recurring report
      */
+    
     public function submitRecurringReport(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $currentUser = Auth::user();
+        $userType = $currentUser->user_type;
+
+        // Dynamic validation based on user type
+        $rules = [
             'room_id' => 'required|exists:rooms,id',
             'template_id' => 'required|exists:report_templates,id',
             'answers' => 'required|array',
             'answers.*.field_id' => 'required|exists:report_fields,id',
             'answers.*.value' => 'required',
-        ]);
+        ];
+
+        // Add date/hour validation based on user type
+        if ($userType === 'doctor') {
+            $rules['date'] = 'required|date_format:Y-m-d'; // e.g., 2025-10-07
+        } else if ($userType === 'nurse') {
+            $rules['hour'] = 'required|date_format:H:i'; // e.g., 04:00
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return $this->error_response('Validation failed', $validator->errors());
@@ -254,10 +274,6 @@ class RoomReportController extends Controller
             return $this->error_response('Invalid template', 'Only recurring templates are allowed');
         }
 
-        // Get user type from users table directly
-        $currentUser = Auth::user();
-        $userType = $currentUser->user_type;
-
         // Map user_type to created_for field in templates
         $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
         
@@ -267,11 +283,23 @@ class RoomReportController extends Controller
 
         DB::beginTransaction();
         try {
+            // Prepare report datetime based on user type
+            $reportDatetime = null;
+            
+            if ($userType === 'doctor') {
+                // For doctor: use the provided date with current time
+                $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
+            } else if ($userType === 'nurse') {
+                // For nurse: use today's date with the provided hour
+                $reportDatetime = now()->format('Y-m-d') . ' ' . $request->hour . ':00';
+            }
+
             // Create the report
             $report = Report::create([
                 'room_id' => $request->room_id,
                 'report_template_id' => $request->template_id,
                 'created_by' => Auth::id(),
+                'report_datetime' => $reportDatetime,
             ]);
 
             // Save report answers
@@ -296,6 +324,64 @@ class RoomReportController extends Controller
             DB::rollback();
             return $this->error_response('Failed to submit report', ['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Get reports by date (for doctors) or date+hour (for nurses)
+     */
+    public function getReportsByTime(Request $request)
+    {
+        $currentUser = Auth::user();
+        $userType = $currentUser->user_type;
+        
+        // Validate based on user type
+        if ($userType === 'doctor') {
+            $validator = Validator::make($request->all(), [
+                'room_id' => 'required|exists:rooms,id',
+                'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
+            ]);
+        } else if ($userType === 'nurse') {
+            $validator = Validator::make($request->all(), [
+                'room_id' => 'required|exists:rooms,id',
+                'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
+                'hour' => 'required|date_format:H:i', // e.g., 04:00 or 16:00
+            ]);
+        } else {
+            return $this->error_response('Access denied', 'Invalid user type');
+        }
+        
+        if ($validator->fails()) {
+            return $this->error_response('Validation failed', $validator->errors());
+        }
+        
+        // Verify user has access to the room
+        $room = Room::find($request->room_id);
+        $userInRoom = $room->users()->where('user_id', Auth::id())->first();
+        
+        if (!$userInRoom) {
+            return $this->error_response('Access denied', 'You do not have access to this room');
+        }
+        
+        // Build query based on user type
+        $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
+            ->where('room_id', $request->room_id)
+            ->whereNotNull('report_datetime');
+        
+        if ($userType === 'doctor') {
+            // Filter by DATE only (all reports on 2025-10-07)
+            $query->whereDate('report_datetime', $request->date);
+        } else if ($userType === 'nurse') {
+            // Filter by DATE AND HOUR (specific report at 2025-10-07 04:00)
+            $query->whereDate('report_datetime', $request->date)
+                ->whereRaw('TIME_FORMAT(report_datetime, "%H:%i") = ?', [$request->hour]);
+        }
+        
+        $reports = $query->orderBy('report_datetime', 'desc')->get();
+        
+        return $this->success_response('Reports retrieved successfully', [
+            'reports' => $reports,
+            'count' => $reports->count()
+        ]);
     }
 
     /**

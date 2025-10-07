@@ -43,7 +43,10 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::group(['middleware' => ['auth:user-api']], function () {
 
 
-
+        // image for chat
+        Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class,'index']);
+        Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class,'store']);
+        
         Route::get('/home', [HomeController::class, 'index']);
         Route::get('/news', [NewsController::class, 'index']);
         Route::get('/news/{id}', [NewsController::class, 'newsDetails']);
@@ -129,6 +132,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         
         // Submit recurring reports
         Route::post('reports/recurring', [RoomReportController::class, 'submitRecurringReport']);
+        Route::post('/reports/by-time', [RoomReportController::class, 'getReportsByTime']);
         
         // Get reports history
         Route::get('rooms/{room_id}/reports', [RoomReportController::class, 'getRoomReports']);
@@ -136,6 +140,9 @@ Route::group(['prefix' => 'v1/user'], function () {
         
         // Get room medications
         Route::get('rooms/{room_id}/medications', [RoomReportController::class, 'getRoomMedications']);
+
+
+        Route::get('/getPatient', [RoomReportController::class, 'getPatient']);
     
         
     });

@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('reports', function (Blueprint $table) {
+        Schema::create('upload_photo_voices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('room_id')->constrained()->onDelete('cascade');
-            $table->foreignId('report_template_id')->constrained()->onDelete('cascade');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // doctor/nurse
-            $table->dateTime('report_datetime')->nullable();
+            $table->text('photo')->nullable();
+            $table->text('voice')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('reports');
+        Schema::dropIfExists('upload_photo_voices');
     }
 };
