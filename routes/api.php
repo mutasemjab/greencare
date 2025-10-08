@@ -143,7 +143,8 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
         Route::get('/getPatient', [RoomReportController::class, 'getPatient']);
-    
+        Route::get('/rooms/createdByNurse', [RoomReportController::class, 'getNurseRooms']);
+
         
     });
 });
