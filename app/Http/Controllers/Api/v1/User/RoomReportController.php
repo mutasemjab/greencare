@@ -469,4 +469,59 @@ class RoomReportController extends Controller
             'medications' => $medications
         ]);
     }
+
+
+     /**
+     * Get all rooms for the authenticated nurse with completion status
+     */
+    public function getNurseRooms(Request $request)
+    {
+        $currentUser = Auth::user();
+        $userType = $currentUser->user_type;
+        
+        // Check if user is a nurse
+        if ($userType !== 'nurse') {
+            return $this->error_response('Access denied', 'This endpoint is only for nurses');
+        }
+        
+        // Get all rooms where the nurse is a member
+        $rooms = Room::whereHas('users', function($query) use ($currentUser) {
+            $query->where('user_id', $currentUser->id)
+                ->where('role', 'nurse');
+        })
+        ->with(['users']) // Load room users if needed
+        ->get();
+        
+        // Add is_complete flag to each room
+        $roomsWithStatus = $rooms->map(function($room) use ($currentUser) {
+            // Check if there are any reports created by this nurse for this room
+            $report = Report::where('room_id', $room->id)
+                        ->where('created_by', $currentUser->id)
+                        ->first();
+            
+            $isComplete = false;
+            
+            if ($report) {
+                // Check if the report has any answers
+                $hasAnswers = ReportAnswer::where('report_id', $report->id)->exists();
+                $isComplete = $hasAnswers;
+            }
+            
+            return [
+                'id' => $room->id,
+                'title' => $room->title,
+                'description' => $room->description,
+                'discount' => $room->discount,
+                'family_id' => $room->family_id,
+                'created_at' => $room->created_at,
+                'updated_at' => $room->updated_at,
+                'is_complete' => $isComplete,
+            ];
+        });
+        
+        return $this->success_response('Rooms retrieved successfully', [
+            'rooms' => $roomsWithStatus,
+            'count' => $roomsWithStatus->count()
+        ]);
+    }
 }
