@@ -311,6 +311,9 @@ return [
   'input_type_checkbox' => 'مربعات الاختيار',
   'input_type_boolean' => 'نعم/لا',
   'input_type_gender' => 'الجنس',
+  'input_type_photo' => 'صورة',
+    'input_type_pdf' => 'pdf',
+    'input_type_signuture' => 'توقيع',
 
   // Messages
   'report_template_created_successfully' => 'تم إنشاء قالب التقرير بنجاح',

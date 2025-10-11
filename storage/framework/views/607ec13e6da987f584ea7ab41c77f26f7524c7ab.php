@@ -1,62 +1,89 @@
-@extends('layouts.admin')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">{{ __('messages.create_report_template') }}</h3>
+                    <h3 class="card-title"><?php echo e(__('messages.create_report_template')); ?></h3>
                     <div class="card-tools">
-                        <a href="{{ route('report-templates.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
+                        <a href="<?php echo e(route('report-templates.index')); ?>" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> <?php echo e(__('messages.back')); ?>
+
                         </a>
                     </div>
                 </div>
 
-                <form action="{{ route('report-templates.store') }}" method="POST" id="templateForm">
-                    @csrf
+                <form action="<?php echo e(route('report-templates.store')); ?>" method="POST" id="templateForm">
+                    <?php echo csrf_field(); ?>
                     <div class="card-body">
-                        @if($errors->any())
+                        <?php if($errors->any()): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
+                                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <li><?php echo e($error); ?></li>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </ul>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
                         <!-- Template Basic Info -->
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="title_en">{{ __('messages.title_en') }} <span class="text-danger">*</span></label>
+                                    <label for="title_en"><?php echo e(__('messages.title_en')); ?> <span class="text-danger">*</span></label>
                                     <input type="text" 
                                            name="title_en" 
                                            id="title_en" 
-                                           class="form-control @error('title_en') is-invalid @enderror" 
-                                           value="{{ old('title_en') }}" 
-                                           placeholder="{{ __('messages.enter_title_en') }}" 
+                                           class="form-control <?php $__errorArgs = ['title_en'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           value="<?php echo e(old('title_en')); ?>" 
+                                           placeholder="<?php echo e(__('messages.enter_title_en')); ?>" 
                                            required>
-                                    @error('title_en')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['title_en'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="title_ar">{{ __('messages.title_ar') }} <span class="text-danger">*</span></label>
+                                    <label for="title_ar"><?php echo e(__('messages.title_ar')); ?> <span class="text-danger">*</span></label>
                                     <input type="text" 
                                            name="title_ar" 
                                            id="title_ar" 
-                                           class="form-control @error('title_ar') is-invalid @enderror" 
-                                           value="{{ old('title_ar') }}" 
-                                           placeholder="{{ __('messages.enter_title_ar') }}" 
+                                           class="form-control <?php $__errorArgs = ['title_ar'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           value="<?php echo e(old('title_ar')); ?>" 
+                                           placeholder="<?php echo e(__('messages.enter_title_ar')); ?>" 
                                            required>
-                                    @error('title_ar')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['title_ar'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                         </div>
@@ -64,18 +91,32 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="created_for">{{ __('messages.created_for') }} <span class="text-danger">*</span></label>
+                                    <label for="created_for"><?php echo e(__('messages.created_for')); ?> <span class="text-danger">*</span></label>
                                     <select name="created_for" 
                                             id="created_for" 
-                                            class="form-control @error('created_for') is-invalid @enderror" 
+                                            class="form-control <?php $__errorArgs = ['created_for'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                             required>
-                                        <option value="">{{ __('messages.select_user_type') }}</option>
-                                        <option value="doctor" {{ old('created_for') == 'doctor' ? 'selected' : '' }}>{{ __('messages.doctor') }}</option>
-                                        <option value="nurse" {{ old('created_for') == 'nurse' ? 'selected' : '' }}>{{ __('messages.nurse') }}</option>
+                                        <option value=""><?php echo e(__('messages.select_user_type')); ?></option>
+                                        <option value="doctor" <?php echo e(old('created_for') == 'doctor' ? 'selected' : ''); ?>><?php echo e(__('messages.doctor')); ?></option>
+                                        <option value="nurse" <?php echo e(old('created_for') == 'nurse' ? 'selected' : ''); ?>><?php echo e(__('messages.nurse')); ?></option>
                                     </select>
-                                    @error('created_for')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['created_for'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
                         </div>
@@ -83,39 +124,68 @@
                         <!-- Add these fields after the created_for field in your form -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="report_type">{{ __('messages.report_type') }} <span class="text-danger">*</span></label>
+                                <label for="report_type"><?php echo e(__('messages.report_type')); ?> <span class="text-danger">*</span></label>
                                 <select name="report_type" 
                                         id="report_type" 
-                                        class="form-control @error('report_type') is-invalid @enderror" 
+                                        class="form-control <?php $__errorArgs = ['report_type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                         onchange="handleReportTypeChange(this)"
                                         required>
-                                    <option value="">{{ __('messages.select_report_type') }}</option>
-                                    <option value="initial_setup" {{ old('report_type') == 'initial_setup' ? 'selected' : '' }}>{{ __('messages.initial_setup') }}</option>
-                                    <option value="recurring" {{ old('report_type') == 'recurring' ? 'selected' : '' }}>{{ __('messages.recurring') }}</option>
+                                    <option value=""><?php echo e(__('messages.select_report_type')); ?></option>
+                                    <option value="initial_setup" <?php echo e(old('report_type') == 'initial_setup' ? 'selected' : ''); ?>><?php echo e(__('messages.initial_setup')); ?></option>
+                                    <option value="recurring" <?php echo e(old('report_type') == 'recurring' ? 'selected' : ''); ?>><?php echo e(__('messages.recurring')); ?></option>
                                 </select>
-                                @error('report_type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <?php $__errorArgs = ['report_type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                         </div>
 
                         <!-- Frequency field - only shown when report_type is 'recurring' -->
                         <div class="col-md-6" id="frequency-container" style="display: none;">
                             <div class="form-group">
-                                <label for="frequency">{{ __('messages.frequency') }} <span class="text-danger">*</span></label>
+                                <label for="frequency"><?php echo e(__('messages.frequency')); ?> <span class="text-danger">*</span></label>
                                 <select name="frequency" 
                                         id="frequency" 
-                                        class="form-control @error('frequency') is-invalid @enderror">
-                                    <option value="">{{ __('messages.select_frequency') }}</option>
-                                    <option value="daily" {{ old('frequency') == 'daily' ? 'selected' : '' }}>{{ __('messages.daily') }}</option>
-                                    <option value="weekly" {{ old('frequency') == 'weekly' ? 'selected' : '' }}>{{ __('messages.weekly') }}</option>
-                                    <option value="monthly" {{ old('frequency') == 'monthly' ? 'selected' : '' }}>{{ __('messages.monthly') }}</option>
+                                        class="form-control <?php $__errorArgs = ['frequency'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                                    <option value=""><?php echo e(__('messages.select_frequency')); ?></option>
+                                    <option value="daily" <?php echo e(old('frequency') == 'daily' ? 'selected' : ''); ?>><?php echo e(__('messages.daily')); ?></option>
+                                    <option value="weekly" <?php echo e(old('frequency') == 'weekly' ? 'selected' : ''); ?>><?php echo e(__('messages.weekly')); ?></option>
+                                    <option value="monthly" <?php echo e(old('frequency') == 'monthly' ? 'selected' : ''); ?>><?php echo e(__('messages.monthly')); ?></option>
                                 </select>
-                                @error('frequency')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <?php $__errorArgs = ['frequency'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 <small class="form-text text-muted">
-                                    <i class="fas fa-info-circle"></i> {{ __('messages.frequency_help') }}
+                                    <i class="fas fa-info-circle"></i> <?php echo e(__('messages.frequency_help')); ?>
+
                                 </small>
                             </div>
                         </div>
@@ -126,9 +196,10 @@
                         <!-- Sections Container -->
                         <div id="sections-container">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4>{{ __('messages.template_sections') }}</h4>
+                                <h4><?php echo e(__('messages.template_sections')); ?></h4>
                                 <button type="button" class="btn btn-success" onclick="addSection()">
-                                    <i class="fas fa-plus"></i> {{ __('messages.add_section') }}
+                                    <i class="fas fa-plus"></i> <?php echo e(__('messages.add_section')); ?>
+
                                 </button>
                             </div>
 
@@ -140,11 +211,13 @@
 
                     <div class="card-footer">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('report-templates.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> {{ __('messages.cancel') }}
+                            <a href="<?php echo e(route('report-templates.index')); ?>" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> <?php echo e(__('messages.cancel')); ?>
+
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> {{ __('messages.create_template') }}
+                                <i class="fas fa-save"></i> <?php echo e(__('messages.create_template')); ?>
+
                             </button>
                         </div>
                     </div>
@@ -158,30 +231,31 @@
 <template id="section-template">
     <div class="section-item border rounded p-3 mb-3" data-section-index="">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="section-title">{{ __('messages.section') }} <span class="section-number"></span></h5>
+            <h5 class="section-title"><?php echo e(__('messages.section')); ?> <span class="section-number"></span></h5>
             <button type="button" class="btn btn-sm btn-danger" onclick="removeSection(this)">
-                <i class="fas fa-trash"></i> {{ __('messages.remove_section') }}
+                <i class="fas fa-trash"></i> <?php echo e(__('messages.remove_section')); ?>
+
             </button>
         </div>
         
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label>{{ __('messages.section_title_en') }} <span class="text-danger">*</span></label>
+                    <label><?php echo e(__('messages.section_title_en')); ?> <span class="text-danger">*</span></label>
                     <input type="text" 
                            name="sections[INDEX][title_en]" 
                            class="form-control section-title-en" 
-                           placeholder="{{ __('messages.enter_section_title_en') }}" 
+                           placeholder="<?php echo e(__('messages.enter_section_title_en')); ?>" 
                            required>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label>{{ __('messages.section_title_ar') }} <span class="text-danger">*</span></label>
+                    <label><?php echo e(__('messages.section_title_ar')); ?> <span class="text-danger">*</span></label>
                     <input type="text" 
                            name="sections[INDEX][title_ar]" 
                            class="form-control section-title-ar" 
-                           placeholder="{{ __('messages.enter_section_title_ar') }}" 
+                           placeholder="<?php echo e(__('messages.enter_section_title_ar')); ?>" 
                            required>
                 </div>
             </div>
@@ -189,9 +263,10 @@
 
         <div class="fields-container">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6>{{ __('messages.section_fields') }}</h6>
+                <h6><?php echo e(__('messages.section_fields')); ?></h6>
                 <button type="button" class="btn btn-sm btn-info" onclick="addField(this)">
-                    <i class="fas fa-plus"></i> {{ __('messages.add_field') }}
+                    <i class="fas fa-plus"></i> <?php echo e(__('messages.add_field')); ?>
+
                 </button>
             </div>
             <div class="fields-list">
@@ -205,7 +280,7 @@
 <template id="field-template">
     <div class="field-item border-left border-info pl-3 mb-3" data-field-index="">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="field-title">{{ __('messages.field') }} <span class="field-number"></span></h6>
+            <h6 class="field-title"><?php echo e(__('messages.field')); ?> <span class="field-number"></span></h6>
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeField(this)">
                 <i class="fas fa-times"></i>
             </button>
@@ -214,44 +289,43 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
-                    <label>{{ __('messages.field_label_en') }} <span class="text-danger">*</span></label>
+                    <label><?php echo e(__('messages.field_label_en')); ?> <span class="text-danger">*</span></label>
                     <input type="text" 
                            name="sections[SECTION_INDEX][fields][FIELD_INDEX][label_en]" 
                            class="form-control" 
-                           placeholder="{{ __('messages.enter_field_label_en') }}" 
+                           placeholder="<?php echo e(__('messages.enter_field_label_en')); ?>" 
                            required>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label>{{ __('messages.field_label_ar') }} <span class="text-danger">*</span></label>
+                    <label><?php echo e(__('messages.field_label_ar')); ?> <span class="text-danger">*</span></label>
                     <input type="text" 
                            name="sections[SECTION_INDEX][fields][FIELD_INDEX][label_ar]" 
                            class="form-control" 
-                           placeholder="{{ __('messages.enter_field_label_ar') }}" 
+                           placeholder="<?php echo e(__('messages.enter_field_label_ar')); ?>" 
                            required>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label>{{ __('messages.input_type') }} <span class="text-danger">*</span></label>
+                    <label><?php echo e(__('messages.input_type')); ?> <span class="text-danger">*</span></label>
                     <select name="sections[SECTION_INDEX][fields][FIELD_INDEX][input_type]" 
                             class="form-control field-input-type" 
                             onchange="handleInputTypeChange(this)"
                             required>
-                        <option value="">{{ __('messages.select_input_type') }}</option>
-                        <option value="text">{{ __('messages.input_type_text') }}</option>
-                        <option value="textarea">{{ __('messages.input_type_textarea') }}</option>
-                        <option value="number">{{ __('messages.input_type_number') }}</option>
-                        <option value="date">{{ __('messages.input_type_date') }}</option>
-                        <option value="select">{{ __('messages.input_type_select') }}</option>
-                        <option value="radio">{{ __('messages.input_type_radio') }}</option>
-                        <option value="checkbox">{{ __('messages.input_type_checkbox') }}</option>
-                        <option value="boolean">{{ __('messages.input_type_boolean') }}</option>
-                        <option value="gender">{{ __('messages.input_type_gender') }}</option>
-                        <option value="photo">{{ __('messages.input_type_photo') }}</option>
-                        <option value="pdf">{{ __('messages.input_type_pdf') }}</option>
-                        <option value="signuture">{{ __('messages.input_type_signuture') }}</option>
+                        <option value=""><?php echo e(__('messages.select_input_type')); ?></option>
+                        <option value="text"><?php echo e(__('messages.input_type_text')); ?></option>
+                        <option value="textarea"><?php echo e(__('messages.input_type_textarea')); ?></option>
+                        <option value="number"><?php echo e(__('messages.input_type_number')); ?></option>
+                        <option value="date"><?php echo e(__('messages.input_type_date')); ?></option>
+                        <option value="select"><?php echo e(__('messages.input_type_select')); ?></option>
+                        <option value="radio"><?php echo e(__('messages.input_type_radio')); ?></option>
+                        <option value="checkbox"><?php echo e(__('messages.input_type_checkbox')); ?></option>
+                        <option value="boolean"><?php echo e(__('messages.input_type_boolean')); ?></option>
+                        <option value="gender"><?php echo e(__('messages.input_type_gender')); ?></option>
+                        <option value="photo"><?php echo e(__('messages.input_type_photo')); ?></option>
+                        <option value="pdf"><?php echo e(__('messages.input_type_pdf')); ?></option>
                     </select>
                 </div>
             </div>
@@ -265,7 +339,8 @@
                            class="form-check-input" 
                            value="1">
                     <label class="form-check-label">
-                        {{ __('messages.required_field') }}
+                        <?php echo e(__('messages.required_field')); ?>
+
                     </label>
                 </div>
             </div>
@@ -274,9 +349,10 @@
         <!-- Field Options Container (for select, radio, checkbox) -->
         <div class="field-options-container mt-3" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="font-weight-bold">{{ __('messages.field_options') }}</label>
+                <label class="font-weight-bold"><?php echo e(__('messages.field_options')); ?></label>
                 <button type="button" class="btn btn-sm btn-success" onclick="addFieldOption(this)">
-                    <i class="fas fa-plus"></i> {{ __('messages.add_option') }}
+                    <i class="fas fa-plus"></i> <?php echo e(__('messages.add_option')); ?>
+
                 </button>
             </div>
             <div class="options-list">
@@ -293,14 +369,14 @@
             <input type="text" 
                    name="sections[SECTION_INDEX][fields][FIELD_INDEX][options][OPTION_INDEX][value_en]" 
                    class="form-control" 
-                   placeholder="{{ __('messages.option_value_en') }}" 
+                   placeholder="<?php echo e(__('messages.option_value_en')); ?>" 
                    required>
         </div>
         <div class="col-md-5">
             <input type="text" 
                    name="sections[SECTION_INDEX][fields][FIELD_INDEX][options][OPTION_INDEX][value_ar]" 
                    class="form-control" 
-                   placeholder="{{ __('messages.option_value_ar') }}" 
+                   placeholder="<?php echo e(__('messages.option_value_ar')); ?>" 
                    required>
         </div>
         <div class="col-md-2">
@@ -310,9 +386,9 @@
         </div>
     </div>
 </template>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 let sectionIndex = 0;
 
@@ -350,7 +426,7 @@ function addSection() {
 
 function removeSection(button) {
     if (document.querySelectorAll('.section-item').length <= 1) {
-        alert('{{ __("messages.cannot_remove_last_section") }}');
+        alert('<?php echo e(__("messages.cannot_remove_last_section")); ?>');
         return;
     }
     
@@ -392,7 +468,7 @@ function removeField(button) {
     const fieldsList = section.querySelector('.fields-list');
     
     if (fieldsList.querySelectorAll('.field-item').length <= 1) {
-        alert('{{ __("messages.cannot_remove_last_field") }}');
+        alert('<?php echo e(__("messages.cannot_remove_last_field")); ?>');
         return;
     }
     
@@ -448,7 +524,7 @@ function removeFieldOption(button) {
     const optionsList = button.closest('.options-list');
     
     if (optionsList.querySelectorAll('.option-item').length <= 1) {
-        alert('{{ __("messages.cannot_remove_last_option") }}');
+        alert('<?php echo e(__("messages.cannot_remove_last_option")); ?>');
         return;
     }
     
@@ -565,5 +641,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
+
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\greencare\resources\views/admin/report-templates/create.blade.php ENDPATH**/ ?>
