@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('report_section_id')->constrained()->onDelete('cascade');
             $table->string('label_en'); // e.g. "Blood Pressure", "Gender"
             $table->string('label_ar'); // e.g. "Blood Pressure", "Gender"
-            $table->enum('input_type', ['text', 'textarea', 'number', 'date', 'select', 'radio', 'checkbox', 'boolean', 'gender']);
+            $table->enum('input_type', ['text', 'textarea', 'number', 'date', 'select', 'radio', 'checkbox', 'boolean', 'gender','photo','pdf','signuture']);
             $table->boolean('required')->default(false);
             $table->timestamps();
         });

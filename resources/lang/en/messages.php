@@ -314,6 +314,9 @@ return [
     'input_type_checkbox' => 'Checkboxes',
     'input_type_boolean' => 'Yes/No',
     'input_type_gender' => 'Gender',
+    'input_type_photo' => 'photo',
+    'input_type_pdf' => 'pdf',
+    'input_type_signuture' => 'signuture',
     
     // Messages
     'report_template_created_successfully' => 'Report template created successfully',

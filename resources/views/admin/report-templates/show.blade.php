@@ -192,6 +192,7 @@
                                                                                         <label class="form-check-label">{{ __('messages.female') }}</label>
                                                                                     </div>
                                                                                     @break
+                                                    
                                                                                 
                                                                                 @default
                                                                                     <input type="text" class="form-control" placeholder="{{ $field->label }}" disabled>
