@@ -252,6 +252,7 @@
                         <option value="photo">{{ __('messages.input_type_photo') }}</option>
                         <option value="pdf">{{ __('messages.input_type_pdf') }}</option>
                         <option value="signuture">{{ __('messages.input_type_signuture') }}</option>
+                        <option value="medicine">{{ __('messages.input_type_medicine') }}</option>
                     </select>
                 </div>
             </div>

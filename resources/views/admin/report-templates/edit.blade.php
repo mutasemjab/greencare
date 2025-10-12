@@ -229,6 +229,7 @@
                                                                         <option value="photo" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'photo' ? 'selected' : '' }}>{{ __('messages.input_type_photo') }}</option>
                                                                         <option value="pdf" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'pdf' ? 'selected' : '' }}>{{ __('messages.input_type_pdf') }}</option>
                                                                         <option value="signuture" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'signuture' ? 'selected' : '' }}>{{ __('messages.input_type_signuture') }}</option>
+                                                                        <option value="medicine" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'medicine' ? 'selected' : '' }}>{{ __('messages.input_type_medicine') }}</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
