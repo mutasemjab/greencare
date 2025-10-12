@@ -317,6 +317,7 @@ return [
     'input_type_photo' => 'photo',
     'input_type_pdf' => 'pdf',
     'input_type_signuture' => 'signuture',
+    'input_type_medicine' => 'medicine',
     
     // Messages
     'report_template_created_successfully' => 'Report template created successfully',
