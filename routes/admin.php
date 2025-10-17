@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppConfigController;
+use App\Http\Controllers\Admin\AppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\NurseController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PledgeFormController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProviderCategoryController;
 use App\Http\Controllers\Admin\ProviderController;
@@ -24,6 +26,9 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportTemplateController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\TypeController;
+use App\Http\Controllers\Admin\TypeElderlyCareController;
+use App\Http\Controllers\Admin\TypeHomeXrayController;
+use App\Http\Controllers\Admin\TypeMedicalTestController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -131,6 +136,16 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         
         
         Route::resource('news', NewsController::class);
+        Route::get('/pledge-forms', [PledgeFormController::class, 'index'])->name('pledge-forms.index');
+        Route::get('/pledge-forms/{pledgeForm}', [PledgeFormController::class, 'show'])->name('pledge-forms.show');
+        Route::resource('elderly-cares', TypeElderlyCareController::class);
+        // Home X-ray Types Routes
+        Route::resource('home-xrays', TypeHomeXrayController::class);
+
+        // Medical Test Types Routes
+        Route::resource('medical-tests', TypeMedicalTestController::class);
+
+        Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
 
         // ajax
         Route::get('/patients/search', [UserController::class, 'searchPatients'])->name('api.patients.search');

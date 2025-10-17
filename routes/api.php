@@ -28,7 +28,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //Route unAuth
 Route::group(['prefix' => 'v1/user'], function () {
 
-
+    Route::get('appointment-service-types', [AppointmentApiController::class, 'getServiceTypes']);
     Route::get('/pages/{type}', [PageController::class, 'index']);
 
     Route::get('/banners', [BannerController::class, 'index']); // Done
@@ -145,6 +145,15 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::get('/getPatient', [RoomReportController::class, 'getPatient']);
         Route::get('/rooms/createdByNurse', [RoomReportController::class, 'getNurseRooms']);
 
+        Route::prefix('pledgeForms')->group(function () {
+        Route::get('/', [PledgeFormController::class, 'index']);
+        Route::post('/', [PledgeFormController::class, 'store']);
+        });
         
+        Route::post('appointments', [AppointmentApiController::class, 'storeAppointment']);
+
+
+
+
     });
 });
