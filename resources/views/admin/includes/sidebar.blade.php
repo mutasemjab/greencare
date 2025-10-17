@@ -23,9 +23,6 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                 data-accordion="false">
-            
-
-
 
                 @if ($user->can('banner-table') || $user->can('banner-add') || $user->can('banner-edit') || $user->can('banner-delete'))
                     <li class="nav-item">
@@ -36,65 +33,102 @@
                     </li>
                 @endif
 
-
-
-                <li class="nav-item has-treeview">
-                   
-
-                    <li class="nav-item">
-                        <a href="{{ route('users.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.users') }} </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('families.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.families') }} </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('doctors.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.doctors') }} </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('nurses.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.nurses') }} </p>
-                        </a>
-                    </li>
-
-                </li>
-
+                <!-- User Management Section -->
                 <li class="nav-item">
-                        <a href="{{ route('report-templates.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.report_templates') }} </p>
-                        </a>
+                    <a href="{{ route('users.index') }}" class="nav-link">
+                        <i class="fas fa-users nav-icon"></i>
+                        <p> {{ __('messages.users') }} </p>
+                    </a>
                 </li>
                 <li class="nav-item">
-                        <a href="{{ route('rooms.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.rooms') }} </p>
-                        </a>
+                    <a href="{{ route('families.index') }}" class="nav-link">
+                        <i class="fas fa-home nav-icon"></i>
+                        <p> {{ __('messages.families') }} </p>
+                    </a>
                 </li>
                 <li class="nav-item">
-                        <a href="{{ route('medications.index') }}" class="nav-link">
-                            <i class="fas fa-images nav-icon"></i>
-                            <p> {{ __('messages.medications') }} </p>
-                        </a>
+                    <a href="{{ route('doctors.index') }}" class="nav-link">
+                        <i class="fas fa-user-md nav-icon"></i>
+                        <p> {{ __('messages.doctors') }} </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('nurses.index') }}" class="nav-link">
+                        <i class="fas fa-user-nurse nav-icon"></i>
+                        <p> {{ __('messages.nurses') }} </p>
+                    </a>
                 </li>
 
+                <!-- Medical Management -->
+                <li class="nav-item">
+                    <a href="{{ route('report-templates.index') }}" class="nav-link">
+                        <i class="fas fa-file-medical nav-icon"></i>
+                        <p> {{ __('messages.report_templates') }} </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('rooms.index') }}" class="nav-link">
+                        <i class="fas fa-bed nav-icon"></i>
+                        <p> {{ __('messages.rooms') }} </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('medications.index') }}" class="nav-link">
+                        <i class="fas fa-pills nav-icon"></i>
+                        <p> {{ __('messages.medications') }} </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('pledge-forms.index') }}" class="nav-link">
+                        <i class="fas fa-file-signature nav-icon"></i>
+                        <p> {{ __('messages.pledge_forms') }} </p>
+                    </a>
+                </li>
 
+                <!-- Service Types Management -->
+                <li class="nav-item {{ request()->is('elderly-cares*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-clipboard-list"></i>
+                        <p>
+                            {{ __('messages.service_types_management') }}
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('elderly-cares.index') }}"
+                                class="nav-link {{ request()->routeIs('elderly-cares.*') ? 'active' : '' }}">
+                                <i class="fas fa-heart nav-icon"></i>
+                                <p>{{ __('messages.elderly_care_types') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('home-xrays.index') }}"
+                                class="nav-link {{ request()->routeIs('home-xrays.*') ? 'active' : '' }}">
+                                <i class="fas fa-x-ray nav-icon"></i>
+                                <p>{{ __('messages.home_xray_types') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('medical-tests.index') }}"
+                                class="nav-link {{ request()->routeIs('medical-tests.*') ? 'active' : '' }}">
+                                <i class="fas fa-flask nav-icon"></i>
+                                <p>{{ __('messages.medical_test_types') }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
+                <!-- Appointments Management -->
+                <li class="nav-item">
+                    <a href="{{ route('appointments.index') }}" class="nav-link {{ request()->routeIs('appointments.*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-check nav-icon"></i>
+                        <p> {{ __('messages.all_appointments') }} </p>
+                    </a>
+                </li>
 
-             
-
-                   <!-- Catalog Management (NEW SECTION) -->
-                <li
-                    class="nav-item {{ request()->is('deliveries*')  || request()->is('categories*') || request()->is('products*') ? 'menu-open' : '' }}">
+                <!-- Catalog Management (Existing Section) -->
+                <li class="nav-item {{ request()->is('deliveries*') || request()->is('categories*') || request()->is('products*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -103,8 +137,6 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                      
-                        
                         <li class="nav-item">
                             <a href="{{ route('brands.index') }}"
                                 class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}">
@@ -126,7 +158,6 @@
                                 <p>{{ __('messages.Products') }}</p>
                             </a>
                         </li>
-                        
                         <li class="nav-item">
                             <a href="{{ route('deliveries.index') }}"
                                 class="nav-link {{ request()->routeIs('deliveries.*') ? 'active' : '' }}">
@@ -136,9 +167,9 @@
                         </li>
                     </ul>
                 </li>
-                
-                <li
-                    class="nav-item {{ request()->is('types*')  || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : '' }}">
+
+                <!-- Provider Management (Existing Section) -->
+                <li class="nav-item {{ request()->is('types*') || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -147,8 +178,6 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                      
-                        
                         <li class="nav-item">
                             <a href="{{ route('types.index') }}"
                                 class="nav-link {{ request()->routeIs('types.*') ? 'active' : '' }}">
@@ -170,24 +199,23 @@
                                 <p>{{ __('messages.providers') }}</p>
                             </a>
                         </li>
-                        
-                       
                     </ul>
                 </li>
 
                 @canany(['order-table', 'order-add', 'order-edit', 'order-delete'])
-                                <li class="nav-item">
-                                    <a href="{{ route('orders.index') }}"
-                                        class="nav-link {{ request()->routeIs('orders.index') ? 'active' : '' }}">
-                                        <i class="fas fa-handshake nav-icon"></i>
-                                        <p>{{ __('messages.orders') }}</p>
-                                    </a>
-                                </li>
-                 @endcanany
-
                     <li class="nav-item">
+                        <a href="{{ route('orders.index') }}"
+                            class="nav-link {{ request()->routeIs('orders.index') ? 'active' : '' }}">
+                            <i class="fas fa-handshake nav-icon"></i>
+                            <p>{{ __('messages.orders') }}</p>
+                        </a>
+                    </li>
+                @endcanany
+
+                <!-- Content Management -->
+                <li class="nav-item">
                     <a href="{{ route('pages.index') }}" class="nav-link">
-                        <i class="fas fa-bullhorn nav-icon"></i>
+                        <i class="fas fa-file-alt nav-icon"></i>
                         <p> {{ __('messages.pages_management') }} </p>
                     </a>
                 </li>
@@ -198,26 +226,24 @@
                         <p> {{ __('messages.news') }} </p>
                     </a>
                 </li>
-                
-                {{-- System Configuration --}}
 
+                <!-- System Configuration -->
                 <li class="nav-item">
                     <a href="{{ route('settings.index') }}" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
                         <p>{{ __('messages.Settings') }} </p>
                     </a>
-                  
-                    <li class="nav-item">
-                            <a href="{{ route('app-configs.index') }}" class="nav-link {{ request()->routeIs('app-configs.index') ? 'active' : '' }}">
-                                <i class="fas fa-wrench nav-icon"></i>
-                                <p>{{ __('messages.app_configurations') }}</p>
-                            </a>
-                    </li>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('app-configs.index') }}"
+                        class="nav-link {{ request()->routeIs('app-configs.index') ? 'active' : '' }}">
+                        <i class="fas fa-wrench nav-icon"></i>
+                        <p>{{ __('messages.app_configurations') }}</p>
+                    </a>
+                </li>
 
-
-                {{-- User Management --}}
+                <!-- User Management -->
                 <li class="nav-header">{{ __('messages.user_management') }}</li>
 
                 <li class="nav-item">
@@ -248,8 +274,6 @@
                         </a>
                     </li>
                 @endif
-
-
 
             </ul>
         </nav>
