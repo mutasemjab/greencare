@@ -25,6 +25,7 @@
                                             <option value="elderly_care" {{ $type == 'elderly_care' ? 'selected' : '' }}>{{ __('messages.elderly_care') }}</option>
                                             <option value="home_xray" {{ $type == 'home_xray' ? 'selected' : '' }}>{{ __('messages.home_xray') }}</option>
                                             <option value="medical_test" {{ $type == 'medical_test' ? 'selected' : '' }}>{{ __('messages.medical_test') }}</option>
+                                            <option value="request_nurse" {{ $type == 'request_nurse' ? 'selected' : '' }}>{{ __('messages.request_nurse') }}</option>
                                         </select>
                                     </div>
 
@@ -114,6 +115,9 @@
                                                     @break
                                                 @case('medical_test')
                                                     <span class="badge bg-warning">{{ __('messages.medical_test') }}</span>
+                                                    @break
+                                                @case('request_nurse')
+                                                    <span class="badge bg-info">{{ __('messages.request_nurse') }}</span>
                                                     @break
                                             @endswitch
                                         </td>

@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="type_of_visit">{{ __('messages.type_of_visit') }} <span class="text-danger">*</span></label>
                             <select class="form-control @error('type_of_visit') is-invalid @enderror" 
@@ -95,11 +95,11 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="price">{{ __('messages.price') }} <span class="text-danger">*</span></label>
                             <input type="number" 
-                                step="0.01" 
+                                step="any" 
                                 min="0" 
                                 class="form-control @error('price') is-invalid @enderror" 
                                 id="price" 
@@ -107,6 +107,20 @@
                                 value="{{ old('price', 0) }}" 
                                 required>
                             @error('price')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="price">{{ __('messages.phone_of_emeregency') }} <span class="text-danger">*</span></label>
+                            <input type="text"  
+                                class="form-control @error('phone_of_emeregency') is-invalid @enderror" 
+                                id="phone_of_emeregency" 
+                                name="phone_of_emeregency" 
+                                value="{{ old('phone_of_emeregency') }}" 
+                                required>
+                            @error('phone_of_emeregency')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>

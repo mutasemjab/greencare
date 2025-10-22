@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('title'); // e.g. "Mansour Family - Case 1"
             $table->text('description')->nullable(); // description of the case/room
             $table->double('discount')->default(0); // discount in store for this room
+            $table->string('code')->unique()->nullable(); // code unique for patient for shower
             $table->foreignId('family_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
