@@ -4,11 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Str;
 class Room extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    protected $appends = ['code'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($room) {
+            // Generate a unique 6-letter uppercase code
+            do {
+                $code = strtoupper(Str::random(6));
+            } while (self::where('code', $code)->exists());
+
+            $room->code = $code;
+        });
+    }
+
+    // ✅ Accessor to ensure "code" is always returned properly
+    public function getCodeAttribute($value)
+    {
+        return $value ?? $this->attributes['code'] ?? null;
+    }
 
      public function family()
     {

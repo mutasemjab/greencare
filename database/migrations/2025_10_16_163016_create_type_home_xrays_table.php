@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->double('price')->default(0);
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->foreign('parent_id')->references('id')->on('type_home_xrays')->onDelete('cascade');
             $table->timestamps();
         });
     }

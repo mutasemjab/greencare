@@ -1018,6 +1018,229 @@ return [
   'of' => 'من',
   'results' => 'النتائج',
   'service_types_management' => 'إدارة أنواع الخدمات',
+'request_nurse_created_successfully' => 'تم إنشاء نوع طلب الممرضة بنجاح',
+'request_nurse_updated_successfully' => 'تم تحديث نوع طلب الممرضة بنجاح',
+'request_nurse_deleted_successfully' => 'تم حذف نوع طلب الممرضة بنجاح',
+'request_nurses_types' => 'أنواع طلبات الممرضات',
+'request_nurses_details' => 'تفاصيل طلب الممرضة',
+'add_request_nurses_type' => 'إضافة نوع طلب ممرضة',
+'edit_request_nurses_type' => 'تعديل نوع طلب ممرضة',
+'request_nurse' => 'طلب ممرضة',
+'phone_of_emeregency' => 'هاتف الطوارئ',
+
+'appointment_providers' => 'مواعيد مقدمي الخدمة',
+    'appointment_provider' => 'موعد مقدم الخدمة',
+    'add_appointment_provider' => 'إضافة موعد مقدم خدمة',
+    'edit_appointment_provider' => 'تعديل موعد مقدم الخدمة',
+    'view_appointment_provider' => 'عرض موعد مقدم الخدمة',
+    'appointment_provider_details' => 'تفاصيل موعد مقدم الخدمة',
+    'no_appointment_providers_found' => 'لم يتم العثور على مواعيد لمقدمي الخدمة',
+    'appointment_provider_created_successfully' => 'تم إنشاء موعد مقدم الخدمة بنجاح',
+    'appointment_provider_updated_successfully' => 'تم تحديث موعد مقدم الخدمة بنجاح',
+    'appointment_provider_deleted_successfully' => 'تم حذف موعد مقدم الخدمة بنجاح',
+    'error_creating_appointment_provider' => 'خطأ في إنشاء موعد مقدم الخدمة',
+    'error_updating_appointment_provider' => 'خطأ في تحديث موعد مقدم الخدمة',
+    'error_deleting_appointment_provider' => 'خطأ في حذف موعد مقدم الخدمة',
+
+    // Patient Information
+    'patient_information' => 'معلومات المريض',
+    'patient_name' => 'اسم المريض',
+    'patient_phone' => 'هاتف المريض',
+    'enter_patient_name' => 'أدخل اسم المريض',
+    'enter_patient_phone' => 'أدخل رقم هاتف المريض',
+
+    // Appointment Details
+    'appointment_details' => 'تفاصيل الموعد',
+    'appointment_date' => 'تاريخ الموعد',
+    'appointment_time' => 'وقت الموعد',
+    'save_appointment' => 'حفظ الموعد',
+    'update_appointment' => 'تحديث الموعد',
+    'delete_appointment' => 'حذف الموعد',
+    'edit_appointment' => 'تعديل الموعد',
+    'confirm_delete_appointment' => 'هل أنت متأكد من حذف هذا الموعد؟',
+
+    // Status Messages
+    'status' => 'الحالة',
+    'all_statuses' => 'جميع الحالات',
+    'filtered_by_status' => 'مرشح حسب الحالة',
+    'status_pending' => 'في الانتظار',
+    'status_accepted' => 'مقبول',
+    'status_on_the_way' => 'في الطريق',
+    'status_delivered' => 'تم التسليم',
+    'status_canceled' => 'ملغي',
+    'status_updated_successfully' => 'تم تحديث الحالة بنجاح',
+    'error_updating_status' => 'خطأ في تحديث الحالة',
+    'current_status' => 'الحالة الحالية',
+    'click_edit_to_change_status' => 'انقر على تعديل لتغيير الحالة',
+
+    // Provider Information
+    'provider_information' => 'معلومات مقدم الخدمة',
+    'provider' => 'مقدم الخدمة',
+    'all_providers' => 'جميع مقدمي الخدمة',
+    'select_provider' => 'اختر مقدم الخدمة',
+    'provider_name' => 'اسم مقدم الخدمة',
+    'provider_price' => 'سعر مقدم الخدمة',
+    'provider_not_available' => 'معلومات مقدم الخدمة غير متوفرة',
+
+    // User Information
+    'user_information' => 'معلومات المستخدم',
+    'user' => 'المستخدم',
+    'all_users' => 'جميع المستخدمين',
+    'select_user' => 'اختر المستخدم',
+    'user_name' => 'اسم المستخدم',
+    'user_not_available' => 'معلومات المستخدم غير متوفرة',
+    'member_since' => 'عضو منذ',
+    'total_appointments_by_user' => 'إجمالي المواعيد لهذا المستخدم',
+
+    // Location
+    'address' => 'العنوان',
+    'enter_address' => 'أدخل العنوان',
+    'latitude' => 'خط العرض',
+    'longitude' => 'خط الطول',
+    'coordinates' => 'الإحداثيات',
+    'enter_latitude' => 'أدخل خط العرض',
+    'enter_longitude' => 'أدخل خط الطول',
+    'location_helper' => 'مساعد الموقع',
+    'get_current_location' => 'الحصول على الموقع الحالي',
+    'open_maps' => 'فتح الخرائط',
+    'view_on_map' => 'عرض على الخريطة',
+    'view_saved_location' => 'عرض الموقع المحفوظ',
+    'get_directions' => 'الحصول على الاتجاهات',
+    'location_helper_text' => 'استخدم هذه الأدوات للمساعدة في تحديد إحداثيات الموقع',
+    'location_obtained_successfully' => 'تم الحصول على الموقع بنجاح',
+    'location_error' => 'خطأ في الحصول على الموقع',
+    'location_permission_denied' => 'تم رفض الوصول للموقع من قبل المستخدم',
+    'location_unavailable' => 'معلومات الموقع غير متوفرة',
+    'location_timeout' => 'انتهت مهلة طلب الموقع',
+    'geolocation_not_supported' => 'تحديد الموقع الجغرافي غير مدعوم في هذا المتصفح',
+    'please_enter_coordinates_first' => 'يرجى إدخال الإحداثيات أولاً',
+
+    // Common Fields
+    'description' => 'الوصف',
+    'enter_description' => 'أدخل الوصف',
+    'no_description' => 'لا يوجد وصف',
+    'name' => 'الاسم',
+    'email' => 'البريد الإلكتروني',
+    'phone' => 'الهاتف',
+    'experience' => 'الخبرة',
+    'years' => 'سنوات',
+    'price' => 'السعر',
+    'rating' => 'التقييم',
+    'currency' => 'د.أ',
+
+    // Filter and Search
+    'filter' => 'تصفية',
+    'clear' => 'مسح',
+    'search' => 'بحث',
+    'search_patients_phone_address' => 'البحث في اسم المريض أو الهاتف أو العنوان',
+    'date_from' => 'التاريخ من',
+    'date_to' => 'التاريخ إلى',
+    'export' => 'تصدير',
+
+    // Actions
+    'actions' => 'الإجراءات',
+    'view' => 'عرض',
+    'edit' => 'تعديل',
+    'delete' => 'حذف',
+    'save' => 'حفظ',
+    'cancel' => 'إلغاء',
+    'back_to_list' => 'العودة للقائمة',
+    'quick_actions' => 'إجراءات سريعة',
+    'call_patient' => 'اتصال بالمريض',
+    'email_user' => 'مراسلة المستخدم',
+
+    // Time and Dates
+    'created_at' => 'تاريخ الإنشاء',
+    'last_updated' => 'آخر تحديث',
+    'not_specified' => 'غير محدد',
+    'not_available' => 'غير متوفر',
+
+    // Statistics
+    'total_appointments' => 'إجمالي المواعيد',
+    'current_information' => 'المعلومات الحالية',
+
+    // Validation
+    'validation_error' => 'خطأ في التحقق',
+    'please_fill_required_fields' => 'يرجى ملء جميع الحقول المطلوبة',
+    'unauthorized_access' => 'وصول غير مصرح',
+
+    // General
+    'id' => 'المعرف',
+    'error_occurred' => 'حدث خطأ',
+     'category_type' => 'نوع الفئة',
+    'main_category' => 'فئة رئيسية',
+    'subcategory' => 'فئة فرعية',
+    'all_categories' => 'جميع الفئات',
+    'main_categories' => 'الفئات الرئيسية',
+    'subcategories' => 'الفئات الفرعية',
+    'parent_category' => 'الفئة الأصل',
+    'all_parent_categories' => 'جميع الفئات الأصل',
+    'select_parent_category' => 'اختر الفئة الأصل',
+    'no_parent_category' => 'لا توجد فئة أصل',
+    
+    // Category Information
+    'category_name' => 'اسم الفئة',
+    'enter_category_name' => 'أدخل اسم الفئة',
+    'category_information' => 'معلومات الفئة',
+    'hierarchy_information' => 'معلومات التسلسل الهرمي',
+    'basic_information' => 'المعلومات الأساسية',
+    'current_status' => 'الحالة الحالية',
+    'current_type' => 'النوع الحالي',
+    'current_parent' => 'الأصل الحالي',
+    'full_path' => 'المسار الكامل',
+    'type' => 'النوع',
+    
+    // Category Actions
+    'add_subcategory' => 'إضافة فئة فرعية',
+    'view_parent' => 'عرض الأصل',
+    'view_parent_category' => 'عرض الفئة الأصل',
+    'view_subcategories' => 'عرض الفئات الفرعية',
+    'view_siblings' => 'عرض الفئات الشقيقة',
+    'edit_category' => 'تعديل الفئة',
+    'sibling_categories' => 'الفئات الشقيقة',
+    
+    // Category Descriptions
+    'main_category_description' => 'فئة من المستوى الأعلى',
+    'subcategory_description' => 'فرع من الفئة الرئيسية',
+    'main_category_info' => 'الفئات الرئيسية هي فئات من المستوى الأعلى يمكن أن تحتوي على فئات فرعية.',
+    'subcategory_info' => 'الفئات الفرعية تنتمي إلى فئة رئيسية ولا يمكن أن تحتوي على فروع.',
+    'price_info' => 'السعر ينطبق على هذه الفئة/الخدمة المحددة.',
+    'this_is_main_category' => 'هذه فئة رئيسية ليس لها أصل.',
+    
+    // Counts and Statistics
+    'subcategories_count' => 'الفئات الفرعية',
+    'subcategories_found' => 'فئة فرعية موجودة',
+    'no_subcategories_found' => 'لم يتم العثور على فئات فرعية',
+    'total_subcategories' => 'إجمالي الفئات الفرعية',
+    'category_statistics' => 'إحصائيات الفئة',
+    'lowest_price' => 'أقل سعر',
+    'highest_price' => 'أعلى سعر',
+    'average_price' => 'متوسط السعر',
+    'total_items' => 'إجمالي العناصر',
+    
+    // Filters
+    'clear_filters' => 'مسح المرشحات',
+    
+    // Validation Messages
+    'cannot_select_subcategory_as_parent' => 'لا يمكن اختيار فئة فرعية كأصل. يرجى اختيار فئة رئيسية.',
+    'cannot_set_self_as_parent' => 'لا يمكن تعيين الفئة كأصل لنفسها.',
+    'cannot_set_child_as_parent' => 'لا يمكن تعيين فئة فرعية كأصل لفئتها الحالية.',
+    'cannot_delete_category_with_subcategories' => 'لا يمكن حذف فئة تحتوي على فئات فرعية. يرجى حذف الفئات الفرعية أولاً.',
+    'cannot_change_type_has_subcategories' => 'لا يمكن التغيير إلى فئة فرعية لأن هذه الفئة تحتوي على فئات فرعية.',
+    
+    // Confirmation Messages
+    'confirm_delete_category' => 'هل أنت متأكد من حذف الفئة ":name"؟',
+    
+    // Important Notes
+    'important_notes' => 'ملاحظات مهمة',
+    'edit_category_note_1' => 'التغيير من فئة رئيسية إلى فرعية سيؤثر على التسلسل الهرمي.',
+    'edit_category_note_2' => 'تغييرات السعر ستؤثر فقط على هذه الفئة المحددة.',
+    'edit_category_note_3' => 'لا يمكن التغيير إلى فئة فرعية أثناء وجود فئات فرعية.',
+    
+    // Success Messages
+    'home_xray_created_successfully' => 'تم إنشاء نوع الأشعة بنجاح',
+    'home_xray_updated_successfully' => 'تم تحديث نوع الأشعة بنجاح',
+    'home_xray_deleted_successfully' => 'تم حذف نوع الأشعة بنجاح',
 
   "" => "",
   "" => "",

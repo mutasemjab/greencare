@@ -86,7 +86,7 @@
                 </li>
 
                 <!-- Service Types Management -->
-                <li class="nav-item {{ request()->is('elderly-cares*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : '' }}">
+                <li class="nav-item {{ request()->is('elderly-cares*') || request()->is('request-nurses*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <p>
@@ -95,6 +95,13 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('request-nurses.index') }}"
+                                class="nav-link {{ request()->routeIs('request-nurses.*') ? 'active' : '' }}">
+                                <i class="fas fa-heart nav-icon"></i>
+                                <p>{{ __('messages.request_nurses_types') }}</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="{{ route('elderly-cares.index') }}"
                                 class="nav-link {{ request()->routeIs('elderly-cares.*') ? 'active' : '' }}">
@@ -124,6 +131,13 @@
                     <a href="{{ route('appointments.index') }}" class="nav-link {{ request()->routeIs('appointments.*') ? 'active' : '' }}">
                         <i class="fas fa-calendar-check nav-icon"></i>
                         <p> {{ __('messages.all_appointments') }} </p>
+                    </a>
+                </li>
+              
+                <li class="nav-item">
+                    <a href="{{ route('appointment-providers.index') }}" class="nav-link {{ request()->routeIs('appointment-providers.*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-check nav-icon"></i>
+                        <p> {{ __('messages.appointment_providers') }} </p>
                     </a>
                 </li>
 

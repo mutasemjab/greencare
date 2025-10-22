@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\User;
 
 use App\Http\Controllers\Api\v1\User\NewsController;
+use App\Http\Controllers\Api\v1\User\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\User\AuthController;
@@ -36,7 +37,7 @@ Route::group(['prefix' => 'v1/user'], function () {
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-
+    Route::get('/settings', [SettingController::class, 'index']);
 
 
     // Auth Route
@@ -44,9 +45,9 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
         // image for chat
-        Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class,'index']);
-        Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class,'store']);
-        
+        Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'index']);
+        Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'store']);
+
         Route::get('/home', [HomeController::class, 'index']);
         Route::get('/news', [NewsController::class, 'index']);
         Route::get('/news/{id}', [NewsController::class, 'newsDetails']);
@@ -84,8 +85,8 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         Route::get('/featuredProducts', [ProductController::class, 'featuredProducts']);
 
-         Route::get('/productFavourites', [FavouriteController::class,'index']); 
-        Route::post('/productFavourites', [FavouriteController::class,'store']);
+        Route::get('/productFavourites', [FavouriteController::class, 'index']);
+        Route::post('/productFavourites', [FavouriteController::class, 'store']);
 
         Route::get('/cart', [CartController::class, 'index']);
         Route::post('/cart', [CartController::class, 'store']);
@@ -100,7 +101,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/coupons/validate', [CouponController::class, 'validateCoupon']);
 
 
-         // Types API Routes
+        // Types API Routes
         Route::prefix('types')->group(function () {
             Route::get('/', [TypeController::class, 'index']); // GET /api/v1/types
         });
@@ -110,34 +111,32 @@ Route::group(['prefix' => 'v1/user'], function () {
             Route::get('/type/{typeId}', [ProviderCategoryController::class, 'getByType']); // GET /api/v1/provider-categories/type/{typeId}
         });
 
-        // Providers API Routes
-        Route::prefix('providers')->group(function () {
-            Route::get('/search', [ProviderController::class, 'search']); // GET /api/v1/providers/search?search=term
-            Route::get('/category/{categoryId}', [ProviderController::class, 'getByCategory']); // GET /api/v1/providers/category/{categoryId}
-        });
+        Route::post('/appointment-providers', [AppointmentProviderController::class, 'store']);
+        // Get user appointments
+        Route::get('/appointment-providers/user', [AppointmentProviderController::class, 'getUserAppointments']);
 
 
 
         // api for rooms
-         Route::post('rooms', [RoomReportController::class, 'createRoom']);
-    
+        Route::post('rooms', [RoomReportController::class, 'createRoom']);
+
         // Get initial templates (separate function after room creation)
         Route::get('rooms/{room_id}/initial-templates', [RoomReportController::class, 'getInitialTemplates']);
-        
+
         // Submit initial report
         Route::post('reports/initial', [RoomReportController::class, 'submitInitialReport']);
-        
+
         // Get available templates and pending reports for recurring reports
         Route::get('rooms/{room_id}/templates', [RoomReportController::class, 'getAvailableTemplates']);
-        
+
         // Submit recurring reports
         Route::post('reports/recurring', [RoomReportController::class, 'submitRecurringReport']);
         Route::post('/reports/by-time', [RoomReportController::class, 'getReportsByTime']);
-        
+
         // Get reports history
         Route::get('rooms/{room_id}/reports', [RoomReportController::class, 'getRoomReports']);
         Route::get('reports/{report}', [RoomReportController::class, 'getReport']);
-        
+
         // Get room medications
         Route::get('rooms/{room_id}/medications', [RoomReportController::class, 'getRoomMedications']);
 
@@ -146,14 +145,13 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::get('/rooms/createdByNurse', [RoomReportController::class, 'getNurseRooms']);
 
         Route::prefix('pledgeForms')->group(function () {
-        Route::get('/', [PledgeFormController::class, 'index']);
-        Route::post('/', [PledgeFormController::class, 'store']);
+            Route::get('/', [PledgeFormController::class, 'index']);
+            Route::post('/', [PledgeFormController::class, 'store']);
         });
-        
+
         Route::post('appointments', [AppointmentApiController::class, 'storeAppointment']);
 
-
-
+        Route::post('/showers', [ShowerController::class, 'store']);
 
     });
 });

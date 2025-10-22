@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('photo');
             $table->enum('type_of_visit', ['home', 'hospital', 'clinic'])->default('home');
             $table->double('price')->default(0);
+            $table->string('phone_of_emeregency');
             $table->foreignId('type_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

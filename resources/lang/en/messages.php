@@ -1014,6 +1014,7 @@ return [
     'elderly_care_created_successfully' => 'Elderly care type created successfully',
     'elderly_care_updated_successfully' => 'Elderly care type updated successfully',
     'elderly_care_deleted_successfully' => 'Elderly care type deleted successfully',
+
        'home_xray_types' => 'Home X-ray Types',
     'home_xray_details' => 'Home X-ray Details',
     'add_home_xray_type' => 'Add Home X-ray Type',
@@ -1057,6 +1058,7 @@ return [
     
     // Appointment Types
     'elderly_care' => 'Elderly Care',
+
     'home_xray' => 'Home X-ray',
     'medical_test' => 'Medical Test',
     
@@ -1069,7 +1071,228 @@ return [
     'results' => 'results',
    'service_types_management' => 'Service Types Management',
 
-    "" => "",
+    'request_nurse_created_successfully' => 'Request Nurse care type created successfully',
+    'request_nurse_updated_successfully' => 'Request Nurse care type updated successfully',
+    'request_nurse_deleted_successfully' => 'Request Nurse care type deleted successfully',
+    'request_nurses_types' => 'Request Nurse Types',
+    'request_nurses_details' => 'Request Nurse Details',
+    'add_request_nurses_type' => 'Add Request Nurse Type',
+    'edit_request_nurses_type' => 'Edit Request Nurse Type',
+   'request_nurse' => 'Request Nurse',
+    "phone_of_emeregency" => "Phone of emeregency",
+      'appointment_providers' => 'Appointment Providers',
+    'appointment_provider' => 'Appointment Provider',
+    'add_appointment_provider' => 'Add Appointment Provider',
+    'edit_appointment_provider' => 'Edit Appointment Provider',
+    'view_appointment_provider' => 'View Appointment Provider',
+    'appointment_provider_details' => 'Appointment Provider Details',
+    'no_appointment_providers_found' => 'No appointment providers found',
+    'appointment_provider_created_successfully' => 'Appointment provider created successfully',
+    'appointment_provider_updated_successfully' => 'Appointment provider updated successfully',
+    'appointment_provider_deleted_successfully' => 'Appointment provider deleted successfully',
+    'error_creating_appointment_provider' => 'Error creating appointment provider',
+    'error_updating_appointment_provider' => 'Error updating appointment provider',
+    'error_deleting_appointment_provider' => 'Error deleting appointment provider',
+
+    // Patient Information
+    'patient_information' => 'Patient Information',
+    'patient_name' => 'Patient Name',
+    'patient_phone' => 'Patient Phone',
+    'enter_patient_name' => 'Enter patient name',
+    'enter_patient_phone' => 'Enter patient phone number',
+
+    // Appointment Details
+    'appointment_details' => 'Appointment Details',
+    'appointment_date' => 'Appointment Date',
+    'appointment_time' => 'Appointment Time',
+    'save_appointment' => 'Save Appointment',
+    'update_appointment' => 'Update Appointment',
+    'delete_appointment' => 'Delete Appointment',
+    'edit_appointment' => 'Edit Appointment',
+    'confirm_delete_appointment' => 'Are you sure you want to delete this appointment?',
+
+    // Status Messages
+    'status' => 'Status',
+    'all_statuses' => 'All Statuses',
+    'filtered_by_status' => 'Filtered by Status',
+    'status_pending' => 'Pending',
+    'status_accepted' => 'Accepted',
+    'status_on_the_way' => 'On The Way',
+    'status_delivered' => 'Delivered',
+    'status_canceled' => 'Canceled',
+    'status_updated_successfully' => 'Status updated successfully',
+    'error_updating_status' => 'Error updating status',
+    'current_status' => 'Current Status',
+    'click_edit_to_change_status' => 'Click edit to change status',
+
+    // Provider Information
+    'provider_information' => 'Provider Information',
+    'provider' => 'Provider',
+    'all_providers' => 'All Providers',
+    'select_provider' => 'Select Provider',
+    'provider_name' => 'Provider Name',
+    'provider_price' => 'Provider Price',
+    'provider_not_available' => 'Provider information not available',
+
+    // User Information
+    'user_information' => 'User Information',
+    'user' => 'User',
+    'all_users' => 'All Users',
+    'select_user' => 'Select User',
+    'user_name' => 'User Name',
+    'user_not_available' => 'User information not available',
+    'member_since' => 'Member Since',
+    'total_appointments_by_user' => 'Total appointments by this user',
+
+    // Location
+    'address' => 'Address',
+    'enter_address' => 'Enter address',
+    'latitude' => 'Latitude',
+    'longitude' => 'Longitude',
+    'coordinates' => 'Coordinates',
+    'enter_latitude' => 'Enter latitude',
+    'enter_longitude' => 'Enter longitude',
+    'location_helper' => 'Location Helper',
+    'get_current_location' => 'Get Current Location',
+    'open_maps' => 'Open Maps',
+    'view_on_map' => 'View on Map',
+    'view_saved_location' => 'View Saved Location',
+    'get_directions' => 'Get Directions',
+    'location_helper_text' => 'Use these tools to help set the location coordinates',
+    'location_obtained_successfully' => 'Location obtained successfully',
+    'location_error' => 'Error getting location',
+    'location_permission_denied' => 'Location access denied by user',
+    'location_unavailable' => 'Location information unavailable',
+    'location_timeout' => 'Location request timed out',
+    'geolocation_not_supported' => 'Geolocation is not supported by this browser',
+    'please_enter_coordinates_first' => 'Please enter coordinates first',
+
+    // Common Fields
+    'description' => 'Description',
+    'enter_description' => 'Enter description',
+    'no_description' => 'No description provided',
+    'name' => 'Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'experience' => 'Experience',
+    'years' => 'Years',
+    'price' => 'Price',
+    'rating' => 'Rating',
+    'currency' => 'JD',
+
+    // Filter and Search
+    'filter' => 'Filter',
+    'clear' => 'Clear',
+    'search' => 'Search',
+    'search_patients_phone_address' => 'Search in patient name, phone, or address',
+    'date_from' => 'Date From',
+    'date_to' => 'Date To',
+    'export' => 'Export',
+
+    // Actions
+    'actions' => 'Actions',
+    'view' => 'View',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+    'back_to_list' => 'Back to List',
+    'quick_actions' => 'Quick Actions',
+    'call_patient' => 'Call Patient',
+    'email_user' => 'Email User',
+
+    // Time and Dates
+    'created_at' => 'Created At',
+    'last_updated' => 'Last Updated',
+    'not_specified' => 'Not Specified',
+    'not_available' => 'Not Available',
+
+    // Statistics
+    'total_appointments' => 'Total Appointments',
+    'current_information' => 'Current Information',
+
+    // Validation
+    'validation_error' => 'Validation Error',
+    'please_fill_required_fields' => 'Please fill all required fields',
+    'unauthorized_access' => 'Unauthorized Access',
+
+    // General
+    'id' => 'ID',
+    'error_occurred' => 'An error occurred',
+    'category_type' => 'Category Type',
+    'main_category' => 'Main Category',
+    'subcategory' => 'Subcategory',
+    'all_categories' => 'All Categories',
+    'main_categories' => 'Main Categories',
+    'subcategories' => 'Subcategories',
+    'parent_category' => 'Parent Category',
+    'all_parent_categories' => 'All Parent Categories',
+    'select_parent_category' => 'Select Parent Category',
+    'no_parent_category' => 'No Parent Category',
+    
+    // Category Information
+    'category_name' => 'Category Name',
+    'enter_category_name' => 'Enter category name',
+    'category_information' => 'Category Information',
+    'hierarchy_information' => 'Hierarchy Information',
+    'basic_information' => 'Basic Information',
+    'current_status' => 'Current Status',
+    'current_type' => 'Current Type',
+    'current_parent' => 'Current Parent',
+    'full_path' => 'Full Path',
+    'type' => 'Type',
+    
+    // Category Actions
+    'add_subcategory' => 'Add Subcategory',
+    'view_parent' => 'View Parent',
+    'view_parent_category' => 'View Parent Category',
+    'view_subcategories' => 'View Subcategories',
+    'view_siblings' => 'View Siblings',
+    'edit_category' => 'Edit Category',
+    'sibling_categories' => 'Sibling Categories',
+    
+    // Category Descriptions
+    'main_category_description' => 'Top-level category',
+    'subcategory_description' => 'Child of main category',
+    'main_category_info' => 'Main categories are top-level categories that can have subcategories.',
+    'subcategory_info' => 'Subcategories belong to a main category and cannot have children.',
+    'price_info' => 'Price applies to this specific category/service.',
+    'this_is_main_category' => 'This is a main category with no parent.',
+    
+    // Counts and Statistics
+    'subcategories_count' => 'Subcategories',
+    'subcategories_found' => 'subcategories found',
+    'no_subcategories_found' => 'No subcategories found',
+    'total_subcategories' => 'Total Subcategories',
+    'category_statistics' => 'Category Statistics',
+    'lowest_price' => 'Lowest Price',
+    'highest_price' => 'Highest Price',
+    'average_price' => 'Average Price',
+    'total_items' => 'Total Items',
+    
+    // Filters
+    'clear_filters' => 'Clear Filters',
+    
+    // Validation Messages
+    'cannot_select_subcategory_as_parent' => 'Cannot select a subcategory as parent. Please select a main category.',
+    'cannot_set_self_as_parent' => 'Cannot set category as its own parent.',
+    'cannot_set_child_as_parent' => 'Cannot set a child category as parent of its current parent.',
+    'cannot_delete_category_with_subcategories' => 'Cannot delete category that has subcategories. Please delete subcategories first.',
+    'cannot_change_type_has_subcategories' => 'Cannot change to subcategory because this category has subcategories.',
+    
+    // Confirmation Messages
+    'confirm_delete_category' => 'Are you sure you want to delete the category ":name"?',
+    
+    // Important Notes
+    'important_notes' => 'Important Notes',
+    'edit_category_note_1' => 'Changing from main category to subcategory will affect the hierarchy.',
+    'edit_category_note_2' => 'Price changes will only affect this specific category.',
+    'edit_category_note_3' => 'Cannot change to subcategory while having subcategories.',
+    
+    // Success Messages
+    'home_xray_created_successfully' => 'X-ray type created successfully',
+    'home_xray_updated_successfully' => 'X-ray type updated successfully',
+    'home_xray_deleted_successfully' => 'X-ray type deleted successfully',
     "" => "",
 
 ];

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AppConfigController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\AppointmentProviderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\Admin\TypeController;
 use App\Http\Controllers\Admin\TypeElderlyCareController;
 use App\Http\Controllers\Admin\TypeHomeXrayController;
 use App\Http\Controllers\Admin\TypeMedicalTestController;
+use App\Http\Controllers\Admin\TypeRequestNurseController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -139,6 +141,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/pledge-forms', [PledgeFormController::class, 'index'])->name('pledge-forms.index');
         Route::get('/pledge-forms/{pledgeForm}', [PledgeFormController::class, 'show'])->name('pledge-forms.show');
         Route::resource('elderly-cares', TypeElderlyCareController::class);
+        Route::resource('request-nurses', TypeRequestNurseController::class);
         // Home X-ray Types Routes
         Route::resource('home-xrays', TypeHomeXrayController::class);
 
@@ -146,6 +149,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('medical-tests', TypeMedicalTestController::class);
 
         Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
+
+        Route::resource('appointment-providers', AppointmentProviderController::class);
+    
+        // Additional routes for appointment providers
+        Route::post('/appointment-providers/{id}/update-status', [AppointmentProviderController::class, 'updateStatus'])
+            ->name('appointment-providers.update-status');
 
         // ajax
         Route::get('/patients/search', [UserController::class, 'searchPatients'])->name('api.patients.search');

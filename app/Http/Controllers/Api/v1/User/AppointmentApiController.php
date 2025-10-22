@@ -9,7 +9,9 @@ use App\Models\TypeMedicalTest;
 use App\Models\ElderlyCare;
 use App\Models\HomeXray;
 use App\Models\MedicalTest;
+use App\Models\RequestNurse;
 use App\Models\Room;
+use App\Models\TypeRequestNurse;
 use App\Traits\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -40,20 +42,22 @@ class AppointmentApiController extends Controller
                     ];
                 });
 
-            // Get home x-ray types
-            $homeXrayTypes = TypeHomeXray::select('id', 'name', 'price')
-                ->orderBy('name')
+            $typeRequestNurse = TypeRequestNurse::select('id', 'type_of_service', 'price')
+                ->orderBy('type_of_service')
                 ->get()
                 ->map(function ($item) {
                     return [
                         'id' => $item->id,
-                        'name' => $item->name,
-                        'type_key' => null,
+                        'name' => __('messages.' . $item->type_of_service),
+                        'type_key' => $item->type_of_service,
                         'price' => $item->price,
                         'formatted_price' => number_format($item->price, 2) . ' ' . __('messages.currency'),
-                        'service_type' => 'home_xray'
+                        'service_type' => 'request_nurse'
                     ];
                 });
+
+            // Get home x-ray types in hierarchical structure
+            $homeXrayTypes = $this->getHierarchicalXrayTypes();
 
             // Get medical test types
             $medicalTestTypes = TypeMedicalTest::select('id', 'name', 'price')
@@ -77,26 +81,9 @@ class AppointmentApiController extends Controller
                 __('messages.service_types_retrieved_successfully'),
                 [
                     'elderly_care_types' => $elderlyCareTypes,
+                    'request_nurse' => $typeRequestNurse,
                     'home_xray_types' => $homeXrayTypes,
                     'medical_test_types' => $medicalTestTypes,
-                    'rooms' => $rooms,
-                    'service_categories' => [
-                        [
-                            'key' => 'elderly_care',
-                            'name' => __('messages.elderly_care'),
-                            'description' => __('messages.elderly_care_description')
-                        ],
-                        [
-                            'key' => 'home_xray',
-                            'name' => __('messages.home_xray'),
-                            'description' => __('messages.home_xray_description')
-                        ],
-                        [
-                            'key' => 'medical_test',
-                            'name' => __('messages.medical_test'),
-                            'description' => __('messages.medical_test_description')
-                        ]
-                    ]
                 ]
             );
 
@@ -109,6 +96,82 @@ class AppointmentApiController extends Controller
     }
 
     /**
+     * Get hierarchical x-ray types (main categories with their subcategories)
+     */
+    private function getHierarchicalXrayTypes()
+    {
+        // Get main categories with their children
+        $mainCategories = TypeHomeXray::with(['children' => function($query) {
+                $query->orderBy('name');
+            }])
+            ->whereNull('parent_id')
+            ->orderBy('name')
+            ->get();
+
+        $hierarchicalTypes = [];
+
+        foreach ($mainCategories as $mainCategory) {
+            $categoryData = [
+                'id' => $mainCategory->id,
+                'name' => $mainCategory->name,
+                'price' => $mainCategory->price,
+                'service_type' => 'home_xray',
+                'is_main_category' => true,
+                'subcategories_count' => $mainCategory->children->count(),
+                'children' => []
+            ];
+
+            // Add subcategories if any
+            if ($mainCategory->children->count() > 0) {
+                $categoryData['children'] = $mainCategory->children->map(function ($child) {
+                    return [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'type_key' => null,
+                        'price' => $child->price,
+                        'formatted_price' => number_format($child->price, 2) . ' ' . __('messages.currency'),
+                        'service_type' => 'home_xray',
+                        'is_main_category' => false,
+                        'parent_id' => $child->parent_id,
+                        'parent_name' => $child->parent->name,
+                    ];
+                })->toArray();
+            }
+
+            $hierarchicalTypes[] = $categoryData;
+        }
+
+        // Also get standalone subcategories (in case some don't have parents due to data issues)
+        $standaloneSubcategories = TypeHomeXray::whereNotNull('parent_id')
+            ->whereDoesntHave('parent')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'type_key' => null,
+                    'price' => $item->price,
+                    'formatted_price' => number_format($item->price, 2) . ' ' . __('messages.currency'),
+                    'service_type' => 'home_xray',
+                    'is_main_category' => false,
+                    'parent_id' => $item->parent_id,
+                    'parent_name' => 'Unknown Parent',
+                    'is_orphaned' => true
+                ];
+            });
+
+        // Add orphaned subcategories as separate items
+        foreach ($standaloneSubcategories as $orphaned) {
+            $hierarchicalTypes[] = $orphaned;
+        }
+
+        return $hierarchicalTypes;
+    }
+
+   
+
+    /**
      * Store a new appointment
      */
     public function storeAppointment(Request $request)
@@ -116,7 +179,7 @@ class AppointmentApiController extends Controller
         try {
             // Base validation rules
             $rules = [
-                'service_type' => 'required|in:elderly_care,home_xray,medical_test',
+                'service_type' => 'required|in:elderly_care,request_nurse,home_xray,medical_test',
                 'date_of_appointment' => 'required|date|after_or_equal:today',
                 'time_of_appointment' => 'nullable|date_format:H:i',
                 'note' => 'nullable|string|max:1000',
@@ -126,6 +189,9 @@ class AppointmentApiController extends Controller
             switch ($request->service_type) {
                 case 'elderly_care':
                     $rules['type_elderly_care_id'] = 'required|exists:type_elderly_cares,id';
+                    break;
+                case 'request_nurse':
+                    $rules['type_request_nurse_id'] = 'required|exists:type_request_nurses,id';
                     break;
                 case 'home_xray':
                     $rules['type_home_xray_id'] = 'required|exists:type_home_xrays,id';
@@ -172,11 +238,17 @@ class AppointmentApiController extends Controller
                     $appointment->load(['user', 'typeElderlyCare']);
                     $serviceInfo = $appointment->typeElderlyCare;
                     break;
+                case 'request_nurse':
+                    $appointmentData['type_request_nurse_id'] = $request->type_request_nurse_id;
+                    $appointment = RequestNurse::create($appointmentData);
+                    $appointment->load(['user', 'typeRequestNurse']);
+                    $serviceInfo = $appointment->typeRequestNurse;
+                    break;
 
                 case 'home_xray':
                     $appointmentData['type_home_xray_id'] = $request->type_home_xray_id;
                     $appointment = HomeXray::create($appointmentData);
-                    $appointment->load(['user', 'typeHomeXray']);
+                    $appointment->load(['user', 'typeHomeXray.parent']);
                     $serviceInfo = $appointment->typeHomeXray;
                     break;
 
@@ -188,12 +260,19 @@ class AppointmentApiController extends Controller
                     break;
             }
 
-            // Format response data
+            // Format response data with enhanced x-ray info
+            $serviceDisplayName = $serviceInfo->name ?? __('messages.' . ($serviceInfo->type_of_service ?? 'unknown'));
+            
+            // For x-ray types, include hierarchy information
+            if ($request->service_type === 'home_xray' && $serviceInfo) {
+                $serviceDisplayName = $serviceInfo->isSubcategory() ? $serviceInfo->full_name : $serviceInfo->name;
+            }
+
             $responseData = [
                 'appointment' => [
                     'id' => $appointment->id,
                     'service_type' => $request->service_type,
-                    'service_name' => $serviceInfo->name ?? __('messages.' . ($serviceInfo->type_of_service ?? 'unknown')),
+                    'service_name' => $serviceDisplayName,
                     'price' => $serviceInfo->price ?? 0,
                     'formatted_price' => number_format($serviceInfo->price ?? 0, 2) . ' ' . __('messages.currency'),
                     'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d'),
@@ -209,6 +288,17 @@ class AppointmentApiController extends Controller
                 ]
             ];
 
+            // Add hierarchy information for x-ray appointments
+            if ($request->service_type === 'home_xray' && $serviceInfo) {
+                $responseData['appointment']['hierarchy_info'] = [
+                    'is_main_category' => $serviceInfo->isMainCategory(),
+                    'is_subcategory' => $serviceInfo->isSubcategory(),
+                    'parent_id' => $serviceInfo->parent_id,
+                    'parent_name' => $serviceInfo->parent ? $serviceInfo->parent->name : null,
+                    'full_path' => $serviceInfo->full_name
+                ];
+            }
+
             return $this->success_response(
                 __('messages.appointment_created_successfully'),
                 $responseData
@@ -221,4 +311,6 @@ class AppointmentApiController extends Controller
             );
         }
     }
+
+  
 }

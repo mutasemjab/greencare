@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,16 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('type_request_nurses', function (Blueprint $table) {
             $table->id();
-            $table->string('key');
-            $table->double('value');
+            $table->enum('type_of_service',['hour','day','sleep','number_of_days'])->default('hour');
+            $table->double('price')->default(0);
             $table->timestamps();
         });
-
-         DB::table('settings')->insert([
-            ['key' => "amount_of_shower_patient", 'value' => 10],
-        ]);
     }
 
     /**
@@ -33,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('type_request_nurses');
     }
 };

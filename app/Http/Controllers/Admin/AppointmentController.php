@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ElderlyCare;
 use App\Models\HomeXray;
 use App\Models\MedicalTest;
+use App\Models\RequestNurse;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -110,6 +111,30 @@ class AppointmentController extends Controller
                     ];
                 });
             $appointments = $appointments->merge($medicalTests);
+        }
+
+        // ADD THIS NEW SECTION FOR REQUEST NURSES
+        if ($type === 'all' || $type === 'request_nurse') {
+            $requestNurses = RequestNurse::with(['user', 'typeRequestNurse'])
+                ->where($conditions)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'type' => 'request_nurse',
+                        'type_name' => $item->typeRequestNurse->type_of_service ?? 'N/A',
+                        'service_name' => __('messages.' . ($item->typeRequestNurse->type_of_service ?? 'unknown')),
+                        'price' => $item->typeRequestNurse->price ?? 0,
+                        'date_of_appointment' => $item->date_of_appointment,
+                        'time_of_appointment' => $item->time_of_appointment,
+                        'note' => $item->note,
+                        'user_name' => $item->user->name ?? 'N/A',
+                        'user_email' => $item->user->email ?? 'N/A',
+                        'created_at' => $item->created_at,
+                        'model_instance' => $item
+                    ];
+                });
+            $appointments = $appointments->merge($requestNurses);
         }
 
         // Sort by date and time

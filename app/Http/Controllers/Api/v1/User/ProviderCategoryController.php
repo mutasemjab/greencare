@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Provider;
 use App\Models\ProviderCategory;
 use App\Models\Type;
 use App\Traits\Responses;
@@ -15,7 +16,7 @@ class ProviderCategoryController extends Controller
     /**
      * Get provider categories by type ID
      */
-    public function getByType($typeId)
+     public function getByType($typeId)
     {
         try {
             // Check if type exists
@@ -32,6 +33,23 @@ class ProviderCategoryController extends Controller
                 ->get();
             
             $categories = $categories->map(function ($category) {
+                // Get first provider for this category
+                $firstProvider = Provider::where('provider_category_id', $category->id)
+                    ->first();
+
+                $providerData = null;
+                if ($firstProvider) {
+                    $providerData = [
+                        'id' => $firstProvider->id,
+                        'name' => $firstProvider->name,
+                        'experience' => $firstProvider->number_years_experience,
+                        'description' => $firstProvider->description,
+                        'price' => $firstProvider->price,
+                        'photo' => $firstProvider->photo ? asset('assets/admin/uploads/' . $firstProvider->photo) : null,
+                        'rating' => $firstProvider->rating,
+                    ];
+                }
+
                 return [
                     'id' => $category->id,
                     'name_en' => $category->name_en,
@@ -39,7 +57,9 @@ class ProviderCategoryController extends Controller
                     'name' => $category->name,
                     'type_of_visit' => $category->type_of_visit,
                     'price' => $category->price,
+                    'phone_of_emeregency' => $category->phone_of_emeregency,
                     'photo' => $category->photo ? asset('assets/admin/uploads/' . $category->photo) : null,
+                    'provider' => $providerData,
                     'type' => [
                         'id' => $category->type->id,
                         'name_en' => $category->type->name_en,
@@ -60,6 +80,5 @@ class ProviderCategoryController extends Controller
             );
         }
     }
-
     
 }

@@ -13,12 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('type_medical_tests', function (Blueprint $table) {
+        Schema::create('showers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('code_patient')->nullable();
+            $table->date('date_of_shower');
+            $table->time('time_of_shower')->nullable();
+            $table->text('note')->nullable();
             $table->double('price')->default(0);
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->foreign('parent_id')->references('id')->on('type_medical_tests')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('type_medical_tests');
+        Schema::dropIfExists('showers');
     }
 };

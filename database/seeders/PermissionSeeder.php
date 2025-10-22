@@ -107,6 +107,11 @@ class PermissionSeeder extends Seeder
             'order-add',
             'order-edit',
             'order-delete',
+        
+            'appointmentProvider-table',
+            'appointmentProvider-add',
+            'appointmentProvider-edit',
+            'appointmentProvider-delete',
 
         ];
 
