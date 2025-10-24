@@ -37,6 +37,7 @@ class ProviderCategoryController extends Controller
             'name_en' => 'required|string|max:255',
             'name_ar' => 'required|string|max:255',
             'type_of_visit' => 'required',
+            'phone_of_emeregency' => 'required',
             'price' => 'required',
             'type_id' => 'required|exists:types,id',
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
@@ -51,6 +52,7 @@ class ProviderCategoryController extends Controller
             'name_en' => $request->name_en,
             'name_ar' => $request->name_ar,
             'type_of_visit' => $request->type_of_visit,
+            'phone_of_emeregency' => $request->phone_of_emeregency,
             'price' => $request->price,
             'type_id' => $request->type_id,
             'photo' => $photoPath
@@ -71,6 +73,7 @@ class ProviderCategoryController extends Controller
             'name_en' => 'required|string|max:255',
             'name_ar' => 'required|string|max:255',
             'type_of_visit' => 'required',
+            'phone_of_emeregency' => 'required',
             'price' => 'required',
             'type_id' => 'required|exists:types,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
@@ -86,6 +89,7 @@ class ProviderCategoryController extends Controller
             'name_en' => $request->name_en,
             'name_ar' => $request->name_ar,
             'type_of_visit' => $request->type_of_visit,
+            'phone_of_emeregency' => $request->phone_of_emeregency,
             'price' => $request->price,
             'type_id' => $request->type_id,
             'photo' => $photoPath
