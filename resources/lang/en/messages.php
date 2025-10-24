@@ -1293,6 +1293,18 @@ return [
     'home_xray_created_successfully' => 'X-ray type created successfully',
     'home_xray_updated_successfully' => 'X-ray type updated successfully',
     'home_xray_deleted_successfully' => 'X-ray type deleted successfully',
+        'settings' => 'Settings',
+    'key' => 'Key',
+    'value' => 'Value',
+    'actions' => 'Actions',
+    'edit' => 'Edit',
+    'edit_setting' => 'Edit Setting',
+    'update' => 'Update',
+    'cancel' => 'Cancel',
+    'updated_successfully' => 'Updated successfully',
+
+    // Setting keys translation
+    'amount_of_shower_patient' => 'Amount of Shower per Patient',
     "" => "",
 
 ];
