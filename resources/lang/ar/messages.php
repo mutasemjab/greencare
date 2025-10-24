@@ -1241,6 +1241,18 @@ return [
     'home_xray_created_successfully' => 'تم إنشاء نوع الأشعة بنجاح',
     'home_xray_updated_successfully' => 'تم تحديث نوع الأشعة بنجاح',
     'home_xray_deleted_successfully' => 'تم حذف نوع الأشعة بنجاح',
+     'settings' => 'الإعدادات',
+    'key' => 'المفتاح',
+    'value' => 'القيمة',
+    'actions' => 'العمليات',
+    'edit' => 'تعديل',
+    'edit_setting' => 'تعديل الإعداد',
+    'update' => 'تحديث',
+    'cancel' => 'إلغاء',
+    'updated_successfully' => 'تم التحديث بنجاح',
+
+    // Setting keys translation
+    'amount_of_shower_patient' => 'عدد مرات الاستحمام لكل مريض',
 
   "" => "",
   "" => "",
