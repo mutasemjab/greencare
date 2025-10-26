@@ -17,6 +17,21 @@ class AuthController extends Controller
 {
     use Responses;
 
+       public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+        $user->update([
+            'fcm_token' => $request->fcm_token,
+        ]);
+
+        return $this->success_response('FCM token updated successfully', [
+            'fcm_token' => $user->fcm_token
+        ]);
+    }
 
     // Register
     public function register(Request $request)
