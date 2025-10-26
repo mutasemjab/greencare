@@ -47,6 +47,8 @@ Route::group(['prefix' => 'v1/user'], function () {
         // image for chat
         Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'index']);
         Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'store']);
+        
+        Route::post('updateFcmToken', [AuthController::class, 'updateFcmToken']);
 
         Route::get('/home', [HomeController::class, 'index']);
         Route::get('/news', [NewsController::class, 'index']);
@@ -150,8 +152,15 @@ Route::group(['prefix' => 'v1/user'], function () {
         });
 
         Route::post('appointments', [AppointmentApiController::class, 'storeAppointment']);
+        Route::get('appointments', [AppointmentApiController::class, 'getAppointmentsByType']);
 
         Route::post('/showers', [ShowerController::class, 'store']);
+
+        Route::get('medications', [MedicationController::class, 'index']);
+        Route::post('medications', [MedicationController::class, 'store']);
+        Route::put('medications/{id}', [MedicationController::class, 'update']);
+        Route::delete('medications/{id}', [MedicationController::class, 'destroy']);
+
 
     });
 });

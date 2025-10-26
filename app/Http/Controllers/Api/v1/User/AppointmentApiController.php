@@ -312,5 +312,107 @@ class AppointmentApiController extends Controller
         }
     }
 
+
+    public function getAppointmentsByType(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return $this->error_response(__('messages.user_not_authenticated'), []);
+            }
+
+            $request->validate([
+                'service_type' => 'required|in:elderly_care,request_nurse,home_xray,medical_test',
+            ]);
+
+            $serviceType = $request->service_type;
+            $appointments = [];
+
+            switch ($serviceType) {
+                case 'elderly_care':
+                    $appointments = ElderlyCare::with(['typeElderlyCare'])
+                        ->where('user_id', $user->id)
+                        ->get()
+                        ->map(function ($item) {
+                            return [
+                                'id' => $item->id,
+                                'service_type' => 'elderly_care',
+                                'service_name' => $item->typeElderlyCare->name ?? null,
+                                'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
+                                'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
+                                'note' => $item->note,
+                                'price' => $item->typeElderlyCare->price ?? 0,
+                            ];
+                        });
+                    break;
+
+                case 'request_nurse':
+                    $appointments = RequestNurse::with(['typeRequestNurse'])
+                        ->where('user_id', $user->id)
+                        ->get()
+                        ->map(function ($item) {
+                            return [
+                                'id' => $item->id,
+                                'service_type' => 'request_nurse',
+                                'service_name' => $item->typeRequestNurse->name ?? null,
+                                'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
+                                'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
+                                'note' => $item->note,
+                                'price' => $item->typeRequestNurse->price ?? 0,
+                            ];
+                        });
+                    break;
+
+                case 'home_xray':
+                    $appointments = HomeXray::with(['typeHomeXray.parent'])
+                        ->where('user_id', $user->id)
+                        ->get()
+                        ->map(function ($item) {
+                            $type = $item->typeHomeXray;
+                            return [
+                                'id' => $item->id,
+                                'service_type' => 'home_xray',
+                                'service_name' => $type ? ($type->isSubcategory() ? $type->full_name : $type->name) : null,
+                                'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
+                                'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
+                                'note' => $item->note,
+                                'price' => $type->price ?? 0,
+                                'parent_name' => $type->parent->name ?? null,
+                            ];
+                        });
+                    break;
+
+                case 'medical_test':
+                    $appointments = MedicalTest::with(['typeMedicalTest'])
+                        ->where('user_id', $user->id)
+                        ->get()
+                        ->map(function ($item) {
+                            return [
+                                'id' => $item->id,
+                                'service_type' => 'medical_test',
+                                'service_name' => $item->typeMedicalTest->name ?? null,
+                                'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
+                                'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
+                                'note' => $item->note,
+                                'price' => $item->typeMedicalTest->price ?? 0,
+                            ];
+                        });
+                    break;
+            }
+
+            return $this->success_response(
+                __('messages.appointments_fetched_successfully'),
+                ['appointments' => $appointments]
+            );
+
+        } catch (\Exception $e) {
+            return $this->error_response(
+                __('messages.error_fetching_appointments'),
+                ['error' => $e->getMessage()]
+            );
+        }
+    }
+
   
 }
