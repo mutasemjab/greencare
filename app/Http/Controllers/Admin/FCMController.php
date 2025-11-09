@@ -23,7 +23,7 @@ class FCMController extends BaseController
             return false;
         }
 
-        $credentialsFilePath = base_path('json/green-care-app-a1237-312d2df3ae3e.json');
+        $credentialsFilePath = base_path('json/green-care-app-a1237-8dd4bd0cf297.json');
 
         try {
             $client = new GoogleClient();
