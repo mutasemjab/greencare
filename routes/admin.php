@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\FamilyController;
 use App\Http\Controllers\Admin\MedicationController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\NurseController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
@@ -71,6 +72,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
             return response()->json(Permission::where('guard_name', $guard_name)->get());
         });
 
+
+        // Notification
+        Route::get('/notifications/create',[NotificationController::class,'create'])->name('notifications.create');
+        Route::post('/notifications/send',[NotificationController::class,'send'])->name('notifications.send');
 
 
         // User (Patient) management routes
