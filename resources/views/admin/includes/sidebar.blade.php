@@ -256,6 +256,14 @@
                         <p>{{ __('messages.app_configurations') }}</p>
                     </a>
                 </li>
+          
+                <li class="nav-item">
+                    <a href="{{ route('notifications.create') }}"
+                        class="nav-link {{ request()->routeIs('notifications.create') ? 'active' : '' }}">
+                        <i class="fas fa-wrench nav-icon"></i>
+                        <p>{{ __('messages.notifications') }}</p>
+                    </a>
+                </li>
 
                 <!-- User Management -->
                 <li class="nav-header">{{ __('messages.user_management') }}</li>

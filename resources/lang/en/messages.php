@@ -254,6 +254,7 @@ return [
     'fcm_token_help' => 'Firebase Cloud Messaging token for push notifications',
     'confirm_status_change' => 'Are you sure you want to change the status?',
     'error_updating_status' => 'Error updating status',
+    'notifications' => 'Notifications',
 
     // Navigation
     'dashboard' => 'Dashboard',

@@ -1253,6 +1253,7 @@ return [
 
     // Setting keys translation
     'amount_of_shower_patient' => 'عدد مرات الاستحمام لكل مريض',
+    'notifications' => 'الإشعارات',
 
   "" => "",
   "" => "",
