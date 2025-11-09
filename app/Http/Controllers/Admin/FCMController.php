@@ -97,4 +97,44 @@ class FCMController extends BaseController
     }
 
 
+     public static function sendMessageToAll($title, $body, $screen = "order")
+    {
+        $users = User::whereNotNull('fcm_token')->get();
+        
+        if ($users->isEmpty()) {
+            \Log::warning("No users with FCM tokens found");
+            return false;
+        }
+
+        $successCount = 0;
+        $failCount = 0;
+
+        foreach ($users as $user) {
+            $result = self::sendMessage($title, $body, $user->fcm_token, $user->id, $screen);
+            if ($result) {
+                $successCount++;
+            } else {
+                $failCount++;
+            }
+        }
+
+        \Log::info("FCM Bulk Send - Success: $successCount, Failed: $failCount");
+        
+        return $successCount > 0; // Return true if at least one notification was sent
+    }
+
+    // New method to send to specific user
+    public static function sendToUser($userId, $title, $body, $screen = "order")
+    {
+        $user = User::find($userId);
+        
+        if (!$user || !$user->fcm_token) {
+            \Log::error("User not found or no FCM token for user ID: $userId");
+            return false;
+        }
+
+        return self::sendMessage($title, $body, $user->fcm_token, $user->id, $screen);
+    }
+
+
 }

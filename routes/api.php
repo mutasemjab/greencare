@@ -60,7 +60,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::get('/user_profile', [AuthController::class, 'userProfile']);
 
         //Notification
-        Route::get('/notifications', [AuthController::class, 'notifications']);
+        Route::get('/notifications', [AuthController::class, 'index']);
 
 
 
