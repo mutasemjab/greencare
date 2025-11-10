@@ -144,11 +144,26 @@ class RoomReportController extends Controller
             ]);
 
             // Save report answers
-            foreach ($request->answers as $answer) {
+            foreach ($request->answers as $index => $answer) {
+                // Get the field to check its input type
+                $field = \App\Models\ReportField::find($answer['field_id']);
+                
+                $value = $answer['value'];
+                
+                // Handle file uploads for photo, pdf, and signature fields
+                if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                    // Check if file exists in the request
+                    $fileKey = "answers.{$index}.value";
+                    if ($request->hasFile($fileKey)) {
+                        $uploadedFile = $request->file($fileKey);
+                        $value = uploadImage('assets/admin/uploads', $uploadedFile);
+                    }
+                }
+                
                 ReportAnswer::create([
                     'report_id' => $report->id,
                     'report_field_id' => $answer['field_id'],
-                    'value' => json_encode($answer['value']),
+                    'value' => json_encode($value),
                 ]);
             }
 
