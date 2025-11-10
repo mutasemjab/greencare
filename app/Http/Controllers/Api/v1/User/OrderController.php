@@ -37,7 +37,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'address_id' => 'required|exists:user_addresses,id',
+            'address_id' => 'nullable|exists:user_addresses,id',
             'payment_type' => 'required|in:cash,card',
             'coupon_code' => 'nullable|string'
         ]);

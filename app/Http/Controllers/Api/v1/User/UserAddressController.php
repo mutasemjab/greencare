@@ -47,7 +47,7 @@ class UserAddressController extends Controller
                 'address' => 'nullable',
                 'lat' => 'required|numeric',
                 'lng' => 'required|numeric',
-                'delivery_id' => 'required',
+                'delivery_id' => 'nullable',
             ]);
 
             if ($validator->fails()) {
@@ -103,7 +103,7 @@ class UserAddressController extends Controller
                 'address' => 'nullable',
                 'lat' => 'sometimes|numeric',
                 'lng' => 'sometimes|numeric',
-                'delivery_id' => 'sometimes',
+                'delivery_id' => 'nullable',
             ]);
 
             if ($validator->fails()) {
