@@ -407,36 +407,70 @@ class RoomReportController extends Controller
         $validator = Validator::make($request->all(), [
             'room_id' => 'required|exists:rooms,id',
             'template_type' => 'nullable|in:initial_setup,recurring',
-            'per_page' => 'nullable|integer|min:1|max:100'
         ]);
 
         if ($validator->fails()) {
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Verify user has access to the room
+        // Verify user access
         $room = Room::find($request->room_id);
         if (!$room->users()->where('user_id', Auth::id())->exists()) {
             return $this->error_response('Access denied', 'You do not have access to this room');
         }
 
+        // Query all reports (no pagination)
         $query = Report::where('room_id', $request->room_id)
-            ->with(['template', 'creator:id,name', 'answers.field']);
+            ->with([
+                'template:id,title_en,title_ar,report_type',
+                'creator:id,name',
+                'answers.field.section' // load section through field
+            ]);
 
         // Filter by template type if specified
         if ($request->has('template_type')) {
-            $query->whereHas('template', function($q) use ($request) {
+            $query->whereHas('template', function ($q) use ($request) {
                 $q->where('report_type', $request->template_type);
             });
         }
 
-        $perPage = $request->get('per_page', 15);
-        $reports = $query->latest()->paginate($perPage);
+        $reports = $query->latest()->get();
+
+        // Group each report's answers under its sections
+        $structuredReports = $reports->map(function ($report) {
+            $sections = [];
+
+            foreach ($report->answers as $answer) {
+                $section = $answer->field->section ?? null;
+                $sectionTitle = $section ? $section->title_en : 'General';
+
+                // Build section structure
+                $sections[$sectionTitle][] = [
+                    'field_id' => $answer->field->id,
+                    'field_label' => $answer->field->label_en,
+                    'input_type' => $answer->field->input_type,
+                    'answer' => json_decode($answer->value, true), // decode JSON value
+                ];
+            }
+
+            // Sort sections by section order if needed
+            $sortedSections = collect($sections)->sortKeys()->toArray();
+
+            return [
+                'report_id' => $report->id,
+                'template_title' => $report->template->title_en,
+                'report_type' => $report->template->report_type,
+                'creator' => $report->creator->name ?? null,
+                'sections' => $sortedSections,
+                'created_at' => $report->created_at->toDateTimeString(),
+            ];
+        });
 
         return $this->success_response('Reports retrieved successfully', [
-            'reports' => $reports
+            'reports' => $structuredReports
         ]);
     }
+
 
     /**
      * Get specific report details
