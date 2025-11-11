@@ -418,8 +418,14 @@ class RoomReportController extends Controller
         $lang = in_array(strtolower($lang), ['ar', 'en']) ? strtolower($lang) : 'en';
 
         // Verify user access
+        $user = Auth::user();
+        if (!$user) {
+            return $this->error_response('Unauthenticated', 'Please log in first');
+        }
+
+        // Verify room access
         $room = Room::find($request->room_id);
-        if (!$room->users()->where('user_id', Auth::id())->exists()) {
+        if (!$room->users()->where('user_id', $user->id)->exists()) {
             return $this->error_response('Access denied', 'You do not have access to this room');
         }
 
