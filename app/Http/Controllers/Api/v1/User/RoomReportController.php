@@ -413,29 +413,19 @@ class RoomReportController extends Controller
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Detect language from header (default to English)
+        // Detect language from header (default en)
         $lang = $request->header('Accept-Language', 'en');
         $lang = in_array(strtolower($lang), ['ar', 'en']) ? strtolower($lang) : 'en';
 
-        // Verify user access
-        $user = Auth::user();
-        if (!$user) {
-            return $this->error_response('Unauthenticated', 'Please log in first');
-        }
+    
 
-        // Verify room access
-        $room = Room::find($request->room_id);
-        
-
-        // Query all reports (no pagination)
+        // Fetch reports with relations
         $query = Report::where('room_id', $request->room_id)
             ->with([
-                'template:id,title_en,title_ar,report_type',
-                'creator:id,name',
+                'template.sections.fields.options',
                 'answers.field.section'
             ]);
 
-        // Filter by template type if specified
         if ($request->has('template_type')) {
             $query->whereHas('template', function ($q) use ($request) {
                 $q->where('report_type', $request->template_type);
@@ -444,36 +434,51 @@ class RoomReportController extends Controller
 
         $reports = $query->latest()->get();
 
-        // Group each report's answers under its sections
-        $structuredReports = $reports->map(function ($report) use ($lang) {
-            $sections = [];
+        // Build templates → sections → fields (with answers)
+        $templates = [];
 
-            foreach ($report->answers as $answer) {
-                $section = $answer->field->section ?? null;
-                $sectionTitle = $section ? ($section->{'title_'.$lang} ?? 'General') : 'General';
+        foreach ($reports as $report) {
+            $template = $report->template;
 
-                $sections[$sectionTitle][] = [
-                    'field_id' => $answer->field->id,
-                    'field_label' => $answer->field->{'label_'.$lang} ?? null,
-                    'input_type' => $answer->field->input_type,
-                    'answer' => json_decode($answer->value, true),
+            // Skip if already added (to merge multiple reports of same template)
+            if (!isset($templates[$template->id])) {
+                $templates[$template->id] = [
+                    'id' => $template->id,
+                    'title' => $template->{'title_'.$lang},
+                    'report_type' => $template->report_type,
+                    'sections' => [],
                 ];
             }
 
-            $sortedSections = collect($sections)->sortKeys()->toArray();
+            // Map sections
+            foreach ($template->sections as $section) {
+                $sectionData = [
+                    'id' => $section->id,
+                    'title' => $section->{'title_'.$lang},
+                    'fields' => [],
+                ];
 
-            return [
-                'report_id' => $report->id,
-                'template_title' => $report->template->{'title_'.$lang} ?? null,
-                'report_type' => $report->template->report_type,
-                'creator' => $report->creator->name ?? null,
-                'sections' => $sortedSections,
-                'created_at' => $report->created_at->toDateTimeString(),
-            ];
-        });
+                foreach ($section->fields as $field) {
+                    // Find the answer for this field in the current report
+                    $answer = $report->answers->firstWhere('report_field_id', $field->id);
+
+                    $sectionData['fields'][] = [
+                        'id' => $field->id,
+                        'label' => $field->{'label_'.$lang},
+                        'input_type' => $field->input_type,
+                        'answer' => $answer ? json_decode($answer->value, true) : null,
+                    ];
+                }
+
+                $templates[$template->id]['sections'][] = $sectionData;
+            }
+        }
+
+        // Re-index array
+        $templates = array_values($templates);
 
         return $this->success_response('Reports retrieved successfully', [
-            'reports' => $structuredReports
+            'templates' => $templates
         ]);
     }
 
