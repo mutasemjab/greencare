@@ -17,15 +17,14 @@ class NotificationController extends Controller
     {
         try {
             $user = Auth::user();
-            $perPage = $request->get('per_page', 15);
 
             // Get notifications where user_id is null (for all) OR user_id matches current user
             $notifications = Notification::where(function($query) use ($user) {
                 $query->whereNull('user_id')
-                      ->orWhere('user_id', $user->id);
+                    ->orWhere('user_id', $user->id);
             })
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            ->get(); // Removed pagination
 
             return $this->success_response(
                 'Notifications retrieved successfully',
@@ -38,5 +37,6 @@ class NotificationController extends Controller
             );
         }
     }
+
 
 }
