@@ -413,6 +413,10 @@ class RoomReportController extends Controller
             return $this->error_response('Validation failed', $validator->errors());
         }
 
+        // Detect language from header (default to English)
+        $lang = $request->header('Accept-Language', 'en');
+        $lang = in_array(strtolower($lang), ['ar', 'en']) ? strtolower($lang) : 'en';
+
         // Verify user access
         $room = Room::find($request->room_id);
         if (!$room->users()->where('user_id', Auth::id())->exists()) {
@@ -424,7 +428,7 @@ class RoomReportController extends Controller
             ->with([
                 'template:id,title_en,title_ar,report_type',
                 'creator:id,name',
-                'answers.field.section' // load section through field
+                'answers.field.section'
             ]);
 
         // Filter by template type if specified
@@ -437,28 +441,26 @@ class RoomReportController extends Controller
         $reports = $query->latest()->get();
 
         // Group each report's answers under its sections
-        $structuredReports = $reports->map(function ($report) {
+        $structuredReports = $reports->map(function ($report) use ($lang) {
             $sections = [];
 
             foreach ($report->answers as $answer) {
                 $section = $answer->field->section ?? null;
-                $sectionTitle = $section ? $section->title_en : 'General';
+                $sectionTitle = $section ? ($section->{'title_'.$lang} ?? 'General') : 'General';
 
-                // Build section structure
                 $sections[$sectionTitle][] = [
                     'field_id' => $answer->field->id,
-                    'field_label' => $answer->field->label_en,
+                    'field_label' => $answer->field->{'label_'.$lang} ?? null,
                     'input_type' => $answer->field->input_type,
-                    'answer' => json_decode($answer->value, true), // decode JSON value
+                    'answer' => json_decode($answer->value, true),
                 ];
             }
 
-            // Sort sections by section order if needed
             $sortedSections = collect($sections)->sortKeys()->toArray();
 
             return [
                 'report_id' => $report->id,
-                'template_title' => $report->template->title_en,
+                'template_title' => $report->template->{'title_'.$lang} ?? null,
                 'report_type' => $report->template->report_type,
                 'creator' => $report->creator->name ?? null,
                 'sections' => $sortedSections,
@@ -470,6 +472,7 @@ class RoomReportController extends Controller
             'reports' => $structuredReports
         ]);
     }
+
 
 
     /**
