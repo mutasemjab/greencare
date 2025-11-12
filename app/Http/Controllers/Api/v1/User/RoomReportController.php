@@ -417,7 +417,8 @@ class RoomReportController extends Controller
         $lang = $request->header('Accept-Language', 'en');
         $lang = in_array(strtolower($lang), ['ar', 'en']) ? strtolower($lang) : 'en';
 
-    
+        $room = Room::find($request->room_id);
+
 
         // Fetch reports with relations
         $query = Report::where('room_id', $request->room_id)
@@ -478,7 +479,8 @@ class RoomReportController extends Controller
         $templates = array_values($templates);
 
         return $this->success_response('Reports retrieved successfully', [
-            'templates' => $templates
+            'room' => $room,
+            'templates' => $templates,
         ]);
     }
 
