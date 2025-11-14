@@ -23,10 +23,10 @@ class RoomReportController extends Controller
 
     public function getPatient()
     {
-        $data= User::where('user_type','patient')->get();
-        return $this->success_response('Patients retrieved successfully',$data);
+        $data = User::where('user_type', 'patient')->get();
+        return $this->success_response('Patients retrieved successfully', $data);
     }
-    
+
     /**
      * Create a new room
      */
@@ -56,7 +56,7 @@ class RoomReportController extends Controller
 
             // Add patient to room
             $room->users()->attach($request->patient_id, ['role' => 'patient']);
-            
+
             // Add current user (creator) to room
             $room->users()->attach(Auth::id(), ['role' => Auth::user()->user_type]);
 
@@ -68,7 +68,6 @@ class RoomReportController extends Controller
             return $this->success_response('Room created successfully', [
                 'room' => $room->load('users')
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return $this->error_response('Failed to create room', ['error' => $e->getMessage()]);
@@ -78,13 +77,13 @@ class RoomReportController extends Controller
     /**
      * Get initial setup templates for a room
      */
-    public function getInitialTemplates(Request $request,$room_id)
+    public function getInitialTemplates(Request $request, $room_id)
     {
 
         // Verify user has access to the room
         $room = Room::find($room_id);
-       
-        
+
+
 
         // Get initial setup templates
         $initialTemplates = ReportTemplate::where('report_type', 'initial_setup')
@@ -123,7 +122,7 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($request->room_id);
-       
+
 
         // Verify template is initial setup type
         $template = ReportTemplate::find($request->template_id);
@@ -144,9 +143,9 @@ class RoomReportController extends Controller
             foreach ($request->answers as $index => $answer) {
                 // Get the field to check its input type
                 $field = \App\Models\ReportField::find($answer['field_id']);
-                
+
                 $value = $answer['value'];
-                
+
                 // Handle file uploads for photo, pdf, and signature fields
                 if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
                     // Check if file exists in the request
@@ -156,7 +155,7 @@ class RoomReportController extends Controller
                         $value = uploadImage('assets/admin/uploads', $uploadedFile);
                     }
                 }
-                
+
                 ReportAnswer::create([
                     'report_id' => $report->id,
                     'report_field_id' => $answer['field_id'],
@@ -199,7 +198,6 @@ class RoomReportController extends Controller
                 'report' => $report,
                 'medications_count' => $request->has('medications') ? count($request->medications) : 0
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return $this->error_response('Failed to submit initial report', ['error' => $e->getMessage()]);
@@ -209,14 +207,14 @@ class RoomReportController extends Controller
     /**
      * Get available report templates for current user type
      */
-    public function getAvailableTemplates(Request $request,$room_id)
+    public function getAvailableTemplates(Request $request, $room_id)
     {
 
         // Verify user has access to the room
         $room = Room::find($room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
-        
-        
+
+
 
         // Get user type from users table directly
         $currentUser = Auth::user();
@@ -237,12 +235,12 @@ class RoomReportController extends Controller
         ]);
     }
 
-   
+
 
     /**
      * Submit a recurring report
      */
-    
+
     public function submitRecurringReport(Request $request)
     {
         $currentUser = Auth::user();
@@ -273,8 +271,8 @@ class RoomReportController extends Controller
         // Verify user has access to the room
         $room = Room::find($request->room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
-        
-        
+
+
 
         // Verify template is recurring type and matches user type
         $template = ReportTemplate::find($request->template_id);
@@ -284,7 +282,7 @@ class RoomReportController extends Controller
 
         // Map user_type to created_for field in templates
         $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
-     
+
 
         DB::beginTransaction();
         try {
@@ -294,6 +292,14 @@ class RoomReportController extends Controller
             if ($userType === 'doctor') {
                 $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
 
+                // 🔥 Prevent duplicate report in the same hour (doctor)
+                $existingReport = Report::where('room_id', $request->room_id)
+                    ->whereDate('report_datetime', $request->date)
+                    ->exists();
+
+                if ($existingReport) {
+                    return $this->error_response('A report for this hour already exists for doctor', null);
+                }
             } else if ($userType === 'nurse') {
                 $reportDatetime = now()->format('Y-m-d') . ' ' . $request->hour . ':00';
 
@@ -333,7 +339,6 @@ class RoomReportController extends Controller
             return $this->success_response('Report submitted successfully', [
                 'report' => $report
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return $this->error_response('Failed to submit report', ['error' => $e->getMessage()]);
@@ -347,7 +352,7 @@ class RoomReportController extends Controller
     {
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
-        
+
         // Validate based on user type
         if ($userType === 'doctor') {
             $validator = Validator::make($request->all(), [
@@ -361,22 +366,22 @@ class RoomReportController extends Controller
                 'hour' => 'required|date_format:H', // e.g., 04:00 or 16:00
             ]);
         }
-        
+
         if ($validator->fails()) {
             return $this->error_response('Validation failed', $validator->errors());
         }
-        
+
         // Verify user has access to the room
         $room = Room::find($request->room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
-        
-        
-        
+
+
+
         // Build query based on user type
         $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
             ->where('room_id', $request->room_id)
             ->whereNotNull('report_datetime');
-        
+
         if ($userType === 'doctor') {
             // Filter by DATE only (all reports on 2025-10-07)
             $query->whereDate('report_datetime', $request->date);
@@ -385,9 +390,9 @@ class RoomReportController extends Controller
             $query->whereDate('report_datetime', $request->date)
                 ->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
         }
-        
+
         $reports = $query->orderBy('report_datetime', 'desc')->get();
-        
+
         return $this->success_response('Reports retrieved successfully', [
             'reports' => $reports,
             'count' => $reports->count()
@@ -440,7 +445,7 @@ class RoomReportController extends Controller
             if (!isset($templates[$template->id])) {
                 $templates[$template->id] = [
                     'id' => $template->id,
-                    'title' => $template->{'title_'.$lang},
+                    'title' => $template->{'title_' . $lang},
                     'report_type' => $template->report_type,
                     'sections' => [],
                 ];
@@ -450,7 +455,7 @@ class RoomReportController extends Controller
             foreach ($template->sections as $section) {
                 $sectionData = [
                     'id' => $section->id,
-                    'title' => $section->{'title_'.$lang},
+                    'title' => $section->{'title_' . $lang},
                     'fields' => [],
                 ];
 
@@ -460,7 +465,7 @@ class RoomReportController extends Controller
 
                     $sectionData['fields'][] = [
                         'id' => $field->id,
-                        'label' => $field->{'label_'.$lang},
+                        'label' => $field->{'label_' . $lang},
                         'input_type' => $field->input_type,
                         'answer' => $answer ? json_decode($answer->value, true) : null,
                     ];
@@ -497,7 +502,7 @@ class RoomReportController extends Controller
             return $this->error_response('Report not found', null);
         }
 
-        
+
 
         return $this->success_response('Report retrieved successfully', [
             'report' => $report
@@ -507,12 +512,12 @@ class RoomReportController extends Controller
     /**
      * Get room medications
      */
-    public function getRoomMedications(Request $request,$room_id)
+    public function getRoomMedications(Request $request, $room_id)
     {
 
         // Verify user has access to the room
         $room = Room::find($room_id);
-      
+
 
         $medications = Medication::where('room_id', $request->room_id)
             ->with(['schedules', 'patient:id,name'])
@@ -524,38 +529,38 @@ class RoomReportController extends Controller
     }
 
 
-     /**
+    /**
      * Get all rooms for the authenticated nurse with completion status
      */
     public function getNurseRooms(Request $request)
     {
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
-        
-     
+
+
         // Get all rooms where the nurse is a member
-        $rooms = Room::whereHas('users', function($query) use ($currentUser) {
+        $rooms = Room::whereHas('users', function ($query) use ($currentUser) {
             $query->where('user_id', $currentUser->id)
                 ->where('role', 'nurse');
         })
-        ->with(['users']) // Load room users if needed
-        ->get();
-        
+            ->with(['users']) // Load room users if needed
+            ->get();
+
         // Add is_complete flag to each room
-        $roomsWithStatus = $rooms->map(function($room) use ($currentUser) {
+        $roomsWithStatus = $rooms->map(function ($room) use ($currentUser) {
             // Check if there are any reports created by this nurse for this room
             $report = Report::where('room_id', $room->id)
-                        ->where('created_by', $currentUser->id)
-                        ->first();
-            
+                ->where('created_by', $currentUser->id)
+                ->first();
+
             $isComplete = false;
-            
+
             if ($report) {
                 // Check if the report has any answers
                 $hasAnswers = ReportAnswer::where('report_id', $report->id)->exists();
                 $isComplete = $hasAnswers;
             }
-            
+
             return [
                 'id' => $room->id,
                 'title' => $room->title,
@@ -567,7 +572,7 @@ class RoomReportController extends Controller
                 'is_complete' => $isComplete,
             ];
         });
-        
+
         return $this->success_response('Rooms retrieved successfully', [
             'rooms' => $roomsWithStatus,
             'count' => $roomsWithStatus->count()
