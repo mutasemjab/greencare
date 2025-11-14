@@ -83,9 +83,8 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($room_id);
-        if (!$room->users()->where('user_id', Auth::id())->exists()) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+       
+        
 
         // Get initial setup templates
         $initialTemplates = ReportTemplate::where('report_type', 'initial_setup')
@@ -124,9 +123,7 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($request->room_id);
-        if (!$room->users()->where('user_id', Auth::id())->exists()) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+       
 
         // Verify template is initial setup type
         $template = ReportTemplate::find($request->template_id);
@@ -219,9 +216,7 @@ class RoomReportController extends Controller
         $room = Room::find($room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
         
-        if (!$userInRoom) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+        
 
         // Get user type from users table directly
         $currentUser = Auth::user();
@@ -279,9 +274,7 @@ class RoomReportController extends Controller
         $room = Room::find($request->room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
         
-        if (!$userInRoom) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+        
 
         // Verify template is recurring type and matches user type
         $template = ReportTemplate::find($request->template_id);
@@ -291,10 +284,7 @@ class RoomReportController extends Controller
 
         // Map user_type to created_for field in templates
         $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
-        
-        if ($template->created_for !== $createdFor) {
-            return $this->error_response('Access denied', 'This template is not for your user type');
-        }
+     
 
         DB::beginTransaction();
         try {
@@ -361,8 +351,6 @@ class RoomReportController extends Controller
                 'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
                 'hour' => 'required|date_format:H:i', // e.g., 04:00 or 16:00
             ]);
-        } else {
-            return $this->error_response('Access denied', 'Invalid user type');
         }
         
         if ($validator->fails()) {
@@ -373,9 +361,7 @@ class RoomReportController extends Controller
         $room = Room::find($request->room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
         
-        if (!$userInRoom) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+        
         
         // Build query based on user type
         $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
@@ -502,10 +488,7 @@ class RoomReportController extends Controller
             return $this->error_response('Report not found', null);
         }
 
-        // Verify user has access to the room
-        if (!$report->room->users()->where('user_id', Auth::id())->exists()) {
-            return $this->error_response('Access denied', 'You do not have access to this report');
-        }
+        
 
         return $this->success_response('Report retrieved successfully', [
             'report' => $report
@@ -520,9 +503,7 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($room_id);
-        if (!$room->users()->where('user_id', Auth::id())->exists()) {
-            return $this->error_response('Access denied', 'You do not have access to this room');
-        }
+      
 
         $medications = Medication::where('room_id', $request->room_id)
             ->with(['schedules', 'patient:id,name'])
@@ -542,11 +523,7 @@ class RoomReportController extends Controller
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
         
-        // Check if user is a nurse
-        if ($userType !== 'nurse') {
-            return $this->error_response('Access denied', 'This endpoint is only for nurses');
-        }
-        
+     
         // Get all rooms where the nurse is a member
         $rooms = Room::whereHas('users', function($query) use ($currentUser) {
             $query->where('user_id', $currentUser->id)

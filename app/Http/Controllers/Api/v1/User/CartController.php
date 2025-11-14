@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Variation;
 use App\Traits\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,14 +62,13 @@ class CartController extends Controller
         }
 
         $product = Product::find($request->product_id);
-        $variation = null;
         $price = $product->price_after_discount ?? $product->price;
 
         
 
         $userId =  $user->id;
 
-        // Check if the same product with same variation already exists in cart
+        // Check if the same product with same  already exists in cart
         $cart = Cart::where('user_id', $userId)
                     ->where('product_id', $request->product_id)
                     ->where('status', 1)

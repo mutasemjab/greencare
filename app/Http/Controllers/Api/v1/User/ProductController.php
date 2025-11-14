@@ -242,7 +242,7 @@ class ProductController extends Controller
 
             // If no search term, return all products
             if (!$request->has('search') || empty($request->search)) {
-                $allProducts = Product::with('images', 'variations')->get();
+                $allProducts = Product::with('images')->get();
                 return $this->success_response('All products retrieved successfully', $allProducts);
             }
 
