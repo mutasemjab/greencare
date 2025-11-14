@@ -26,9 +26,6 @@ class OrderController extends Controller
             'orderProducts',
             'orderProducts.product',
             'orderProducts.product.images',
-            'orderProducts.variation',
-            'orderProducts.variation.color',
-            'orderProducts.variation.size'
         ])->where('user_id', $request->user()->id)->get();
 
         return $this->success_response('Orders retrieved successfully', $orders);
@@ -47,8 +44,8 @@ class OrderController extends Controller
         try {
             $user = $request->user();
             
-            // Get cart items with product and variation relationships
-            $cartItems = Cart::with(['product', 'variation', 'variation.color', 'variation.size'])
+            // Get cart items with product relationships
+            $cartItems = Cart::with(['product'])
                             ->where('user_id', $user->id)
                             ->where('status', 1)
                             ->get();
@@ -69,19 +66,14 @@ class OrderController extends Controller
             // Process each cart item
             foreach ($cartItems as $item) {
                 $product = $item->product;
-                $variation = $item->variation;
 
-                // Calculate base price (product price + variation adjustment if any)
+                // Calculate base price (product price adjustment if any)
                 $basePrice = $product->price_after_discount ?? $product->price;
-                if ($variation) {
-                    $basePrice += $variation->price_adjustment;
-                }
+               
 
                 // Calculate discount value per unit
                 $originalPrice = $product->price;
-                if ($variation) {
-                    $originalPrice += $variation->price_adjustment;
-                }
+                
                 $discountValue = $originalPrice - $basePrice;
 
                 // Calculate subtotal before tax
@@ -95,7 +87,6 @@ class OrderController extends Controller
                 $orderProducts[] = [
                     'order_id' => null, // Will be set after order creation
                     'product_id' => $item->product_id,
-                    'variation_id' => $item->variation_id,
                     'quantity' => $item->quantity,
                     'unit_price' => $basePrice,
                     'total_price_before_tax' => $productSubtotal,
@@ -207,9 +198,6 @@ class OrderController extends Controller
                 'orderProducts',
                 'orderProducts.product',
                 'orderProducts.product.images',
-                'orderProducts.variation',
-                'orderProducts.variation.color',
-                'orderProducts.variation.size',
                 'address'
             ]);
 

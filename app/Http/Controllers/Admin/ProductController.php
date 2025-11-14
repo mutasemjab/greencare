@@ -9,9 +9,6 @@ use App\Models\Celebrity;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductImage;
-use App\Models\Variation;
-use App\Models\Shop;
-use App\Models\Size;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -106,7 +103,7 @@ class ProductController extends Controller
         $brands = Brand::all();
    
         
-        $product->load(['images', 'variations']);
+        $product->load(['images']);
         
         return view('admin.products.edit', compact('product', 'categories','brands',));
     }
