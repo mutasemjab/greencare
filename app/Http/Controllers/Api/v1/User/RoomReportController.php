@@ -290,13 +290,22 @@ class RoomReportController extends Controller
         try {
             // Prepare report datetime based on user type
             $reportDatetime = null;
-            
+
             if ($userType === 'doctor') {
-                // For doctor: use the provided date with current time
                 $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
+
             } else if ($userType === 'nurse') {
-                // For nurse: use today's date with the provided hour
                 $reportDatetime = now()->format('Y-m-d') . ' ' . $request->hour . ':00';
+
+                // 🔥 Prevent duplicate reports in the same hour
+                $existingReport = Report::where('room_id', $request->room_id)
+                    ->whereDate('report_datetime', now()->format('Y-m-d'))
+                    ->whereRaw('HOUR(report_datetime) = ?', [date('H', strtotime($reportDatetime))])
+                    ->exists();
+
+                if ($existingReport) {
+                    return $this->error_response('A report for this hour already exists', null);
+                }
             }
 
             // Create the report
@@ -349,7 +358,7 @@ class RoomReportController extends Controller
             $validator = Validator::make($request->all(), [
                 'room_id' => 'required|exists:rooms,id',
                 'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
-                'hour' => 'required|date_format:H:i', // e.g., 04:00 or 16:00
+                'hour' => 'required|date_format:H', // e.g., 04:00 or 16:00
             ]);
         }
         
@@ -374,7 +383,7 @@ class RoomReportController extends Controller
         } else if ($userType === 'nurse') {
             // Filter by DATE AND HOUR (specific report at 2025-10-07 04:00)
             $query->whereDate('report_datetime', $request->date)
-                ->whereRaw('TIME_FORMAT(report_datetime, "%H:%i") = ?', [$request->hour]);
+                ->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
         }
         
         $reports = $query->orderBy('report_datetime', 'desc')->get();
