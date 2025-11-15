@@ -393,6 +393,19 @@ class RoomReportController extends Controller
 
         $reports = $query->orderBy('report_datetime', 'desc')->get();
 
+        // Merge answers into fields
+        $reports->each(function ($report) {
+            $answersGrouped = $report->answers->keyBy('report_field_id');
+
+            $report->template->sections->each(function ($section) use ($answersGrouped) {
+                $section->fields->each(function ($field) use ($answersGrouped) {
+                    $field->answer = $answersGrouped[$field->id]->value ?? null;
+                });
+            });
+
+            unset($report->answers); // optional
+        });
+
         return $this->success_response('Reports retrieved successfully', [
             'reports' => $reports,
             'count' => $reports->count()
