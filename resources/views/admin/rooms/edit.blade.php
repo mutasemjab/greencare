@@ -335,7 +335,7 @@ $(document).ready(function() {
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.doctors") }}',
+            url: '{{ route("api.doctors.search") }}',
             dataType: 'json',
             delay: 300,
             data: function (params) {
@@ -367,7 +367,7 @@ $(document).ready(function() {
         allowClear: true,
         width: '100%',
         ajax: {
-            url: '{{ route("api.nurses") }}',
+            url: '{{ route("api.nurses.search") }}',
             dataType: 'json',
             delay: 300,
             data: function (params) {
