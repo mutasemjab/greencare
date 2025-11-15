@@ -353,19 +353,13 @@ class RoomReportController extends Controller
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
 
-        // Validate based on user type
-        if ($userType === 'doctor') {
-            $validator = Validator::make($request->all(), [
-                'room_id' => 'required|exists:rooms,id',
-                'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
-            ]);
-        } else if ($userType === 'nurse') {
-            $validator = Validator::make($request->all(), [
-                'room_id' => 'required|exists:rooms,id',
-                'date' => 'required|date_format:Y-m-d', // e.g., 2025-10-07
-                'hour' => 'required|date_format:H', // e.g., 04:00 or 16:00
-            ]);
-        }
+        // Validate request - same validation for all user types now
+        $validator = Validator::make($request->all(), [
+            'room_id' => 'required|exists:rooms,id',
+            'date' => 'required|date_format:Y-m-d',
+            'hour' => 'nullable|date_format:H', // Optional - if provided, filter by hour
+            'report_type' => 'nullable|in:doctor,nurse,all', // Optional - filter by report creator type
+        ]);
 
         if ($validator->fails()) {
             return $this->error_response('Validation failed', $validator->errors());
@@ -373,22 +367,26 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($request->room_id);
-        $userInRoom = $room->users()->where('user_id', Auth::id())->first();
+        
 
-
-
-        // Build query based on user type
+        // Build query - accessible to all user types (patient, doctor, nurse)
         $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
             ->where('room_id', $request->room_id)
             ->whereNotNull('report_datetime');
 
-        if ($userType === 'doctor') {
-            // Filter by DATE only (all reports on 2025-10-07)
-            $query->whereDate('report_datetime', $request->date);
-        } else if ($userType === 'nurse') {
-            // Filter by DATE AND HOUR (specific report at 2025-10-07 04:00)
-            $query->whereDate('report_datetime', $request->date)
-                ->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
+        // Filter by date
+        $query->whereDate('report_datetime', $request->date);
+
+        // Optionally filter by hour if provided
+        if ($request->filled('hour')) {
+            $query->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
+        }
+
+        // Optionally filter by report creator type (doctor or nurse reports)
+        if ($request->filled('report_type') && $request->report_type !== 'all') {
+            $query->whereHas('creator', function ($q) use ($request) {
+                $q->where('user_type', $request->report_type);
+            });
         }
 
         $reports = $query->orderBy('report_datetime', 'desc')->get();
@@ -403,12 +401,17 @@ class RoomReportController extends Controller
                 });
             });
 
-            unset($report->answers); // optional
+            unset($report->answers);
         });
 
         return $this->success_response('Reports retrieved successfully', [
             'reports' => $reports,
-            'count' => $reports->count()
+            'count' => $reports->count(),
+            'filters_applied' => [
+                'date' => $request->date,
+                'hour' => $request->hour ?? 'all hours',
+                'report_type' => $request->report_type ?? 'all types'
+            ]
         ]);
     }
 
