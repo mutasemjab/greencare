@@ -326,10 +326,46 @@ $(document).ready(function() {
     @foreach($room->patients as $patient)
         selectedPatients.push({
             id: {{ $patient->id }},
-            name: '{{ $patient->name }}',
+            name: '{{ addslashes($patient->name) }}',
             phone: '{{ $patient->phone }}'
         });
     @endforeach
+
+    // Format user display in dropdown
+    function formatUser(user) {
+        if (user.loading) {
+            return '{{ __("messages.searching") }}...';
+        }
+
+        var userData = user.patient || user.user || user;
+        if (!userData || !userData.name) {
+            return user.text;
+        }
+
+        return '<div class="d-flex align-items-center">' +
+                    '<div class="mr-2">' +
+                        '<div class="font-weight-bold">' + userData.name + '</div>' +
+                        '<small class="text-muted">' + (userData.phone || '') + '</small>' +
+                    '</div>' +
+                '</div>';
+    }
+
+    // Format selected user - FIXED to handle pre-selected options
+    function formatUserSelection(user) {
+        // For AJAX-loaded selections
+        var userData = user.patient || user.user;
+        if (userData && userData.name) {
+            return userData.name + ' - ' + (userData.phone || '');
+        }
+        
+        // For pre-selected options (already formatted as "Name - Phone")
+        if (user.text && user.text.includes(' - ')) {
+            return user.text;
+        }
+        
+        // Fallback
+        return user.text || user.id;
+    }
 
     // Initialize Select2 for patients
     $('.patients-select').select2({
@@ -374,17 +410,19 @@ $(document).ready(function() {
         selectedPatients = [];
         $(this).select2('data').forEach(function(item) {
             if (item.patient) {
+                // From AJAX search
                 selectedPatients.push({
                     id: item.patient.id,
                     name: item.patient.name,
                     phone: item.patient.phone
                 });
-            } else {
-                // For pre-selected options
+            } else if (item.text && item.text.includes(' - ')) {
+                // From pre-selected options
+                var parts = item.text.split(' - ');
                 selectedPatients.push({
                     id: item.id,
-                    name: item.text.split(' - ')[0],
-                    phone: item.text.split(' - ')[1]
+                    name: parts[0],
+                    phone: parts[1] || ''
                 });
             }
         });
@@ -504,35 +542,6 @@ $(document).ready(function() {
                 return markup;
             }
         });
-    }
-
-    // Format user display in dropdown
-    function formatUser(user) {
-        if (user.loading) {
-            return '{{ __("messages.searching") }}...';
-        }
-
-        var userData = user.patient || user.user || user;
-        if (!userData) {
-            return user.text;
-        }
-
-        return '<div class="d-flex align-items-center">' +
-                    '<div class="mr-2">' +
-                        '<div class="font-weight-bold">' + userData.name + '</div>' +
-                        '<small class="text-muted">' + userData.phone + '</small>' +
-                    '</div>' +
-                '</div>';
-    }
-
-    // Format selected user
-    function formatUserSelection(user) {
-        var userData = user.patient || user.user || user;
-        if (!userData) {
-            return user.text || user.id;
-        }
-        
-        return userData.name + ' - ' + userData.phone;
     }
 });
 </script>
