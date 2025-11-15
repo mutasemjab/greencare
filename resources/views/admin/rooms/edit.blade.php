@@ -42,15 +42,47 @@
 .card.border-info .card-header {
     background-color: #17a2b8 !important;
 }
+
+.card.border-danger .card-header {
+    background-color: #dc3545 !important;
+}
+
+.card.border-secondary .card-header {
+    background-color: #6c757d !important;
+}
+
+.family-members-preview {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.medication-item {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+}
+
+.medication-item .remove-medication {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.medication-item {
+    position: relative;
+}
 </style>
 @endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">{{ __('messages.edit_room') }}: {{ $room->title }}</h3>
+                    <h3 class="card-title">{{ __('messages.edit_room') }}</h3>
                     <div class="card-tools">
                         <a href="{{ route('rooms.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
@@ -58,7 +90,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('rooms.update', $room) }}" method="POST">
+                <form action="{{ route('rooms.update', $room->id) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="card-body">
@@ -119,7 +151,7 @@
                                 </div>
                             </div>
                         </div>
-                  
+
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
@@ -151,7 +183,6 @@
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-injured mr-2"></i>
                                             {{ __('messages.patients') }} <span class="text-danger">*</span>
-                                            <small class="float-right">{{ __('messages.current') }}: {{ $room->patients->count() }}</small>
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -183,7 +214,6 @@
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-md mr-2"></i>
                                             {{ __('messages.doctors') }}
-                                            <small class="float-right">{{ __('messages.current') }}: {{ $room->doctors->count() }}</small>
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -214,7 +244,6 @@
                                         <h6 class="mb-0">
                                             <i class="fas fa-user-nurse mr-2"></i>
                                             {{ __('messages.nurses') }}
-                                            <small class="float-right">{{ __('messages.current') }}: {{ $room->nurses->count() }}</small>
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -237,7 +266,8 @@
                             </div>
                         </div>
 
-                        <!-- Family Members -->
+                        <!-- Family Members (if needed) -->
+                        @if($room->familyMembers->count() > 0)
                         <div class="row mb-4">
                             <div class="col-12">
                                 <div class="card border-info">
@@ -245,19 +275,18 @@
                                         <h6 class="mb-0">
                                             <i class="fas fa-users mr-2"></i>
                                             {{ __('messages.family_members') }}
-                                            <small class="float-right">{{ __('messages.current') }}: {{ $room->familyMembers->count() }}</small>
                                         </h6>
                                     </div>
                                     <div class="card-body">
                                         <div class="form-group">
                                             <select name="family_members[]" 
                                                     id="family_members_select" 
-                                                    class="form-control family-members-select" 
+                                                    class="form-control family-members-individual-select" 
                                                     multiple
                                                     style="width: 100%;">
-                                                @foreach($room->familyMembers as $member)
-                                                    <option value="{{ $member->id }}" selected>
-                                                        {{ $member->name }} - {{ $member->phone }}
+                                                @foreach($room->familyMembers as $familyMember)
+                                                    <option value="{{ $familyMember->id }}" selected>
+                                                        {{ $familyMember->name }} - {{ $familyMember->phone }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -267,6 +296,8 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
+
                     </div>
 
                     <div class="card-footer">
@@ -274,14 +305,9 @@
                             <a href="{{ route('rooms.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> {{ __('messages.cancel') }}
                             </a>
-                            <div>
-                                <a href="{{ route('rooms.show', $room) }}" class="btn btn-info mr-2">
-                                    <i class="fas fa-eye"></i> {{ __('messages.view_details') }}
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> {{ __('messages.update_room') }}
-                                </button>
-                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ __('messages.update_room') }}
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -294,6 +320,17 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    let selectedPatients = [];
+
+    // Initialize selected patients from pre-loaded data
+    @foreach($room->patients as $patient)
+        selectedPatients.push({
+            id: {{ $patient->id }},
+            name: '{{ $patient->name }}',
+            phone: '{{ $patient->phone }}'
+        });
+    @endforeach
+
     // Initialize Select2 for patients
     $('.patients-select').select2({
         placeholder: '{{ __("messages.search_and_select_patients") }}',
@@ -326,7 +363,31 @@ $(document).ready(function() {
         },
         minimumInputLength: 2,
         templateResult: formatUser,
-        templateSelection: formatUserSelection
+        templateSelection: formatUserSelection,
+        escapeMarkup: function (markup) {
+            return markup;
+        }
+    });
+
+    // Track selected patients
+    $('.patients-select').on('change', function() {
+        selectedPatients = [];
+        $(this).select2('data').forEach(function(item) {
+            if (item.patient) {
+                selectedPatients.push({
+                    id: item.patient.id,
+                    name: item.patient.name,
+                    phone: item.patient.phone
+                });
+            } else {
+                // For pre-selected options
+                selectedPatients.push({
+                    id: item.id,
+                    name: item.text.split(' - ')[0],
+                    phone: item.text.split(' - ')[1]
+                });
+            }
+        });
     });
 
     // Initialize Select2 for doctors
@@ -344,21 +405,27 @@ $(document).ready(function() {
                     page: params.page || 1
                 };
             },
-            processResults: function (data) {
+            processResults: function (data, params) {
                 return {
-                    results: data.map(function(doctor) {
+                    results: data.data.map(function(doctor) {
                         return {
                             id: doctor.id,
                             text: doctor.name + ' - ' + doctor.phone,
                             user: doctor
                         };
-                    })
+                    }),
+                    pagination: {
+                        more: data.current_page < data.last_page
+                    }
                 };
             }
         },
         minimumInputLength: 2,
         templateResult: formatUser,
-        templateSelection: formatUserSelection
+        templateSelection: formatUserSelection,
+        escapeMarkup: function (markup) {
+            return markup;
+        }
     });
 
     // Initialize Select2 for nurses
@@ -376,54 +443,68 @@ $(document).ready(function() {
                     page: params.page || 1
                 };
             },
-            processResults: function (data) {
+            processResults: function (data, params) {
                 return {
-                    results: data.map(function(nurse) {
+                    results: data.data.map(function(nurse) {
                         return {
                             id: nurse.id,
                             text: nurse.name + ' - ' + nurse.phone,
                             user: nurse
                         };
-                    })
+                    }),
+                    pagination: {
+                        more: data.current_page < data.last_page
+                    }
                 };
             }
         },
         minimumInputLength: 2,
         templateResult: formatUser,
-        templateSelection: formatUserSelection
+        templateSelection: formatUserSelection,
+        escapeMarkup: function (markup) {
+            return markup;
+        }
     });
 
-    // Initialize Select2 for family members
-    $('.family-members-select').select2({
-        placeholder: '{{ __("messages.search_and_select_family_members") }}',
-        allowClear: true,
-        width: '100%',
-        ajax: {
-            url: '{{ route("api.patients.search") }}',
-            dataType: 'json',
-            delay: 300,
-            data: function (params) {
-                return {
-                    search: params.term,
-                    page: params.page || 1
-                };
+    // Initialize Select2 for family members (if present)
+    if ($('.family-members-individual-select').length) {
+        $('.family-members-individual-select').select2({
+            placeholder: '{{ __("messages.search_and_select_family_members") }}',
+            allowClear: true,
+            width: '100%',
+            ajax: {
+                url: '{{ route("api.patients.search") }}',
+                dataType: 'json',
+                delay: 300,
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        page: params.page || 1
+                    };
+                },
+                processResults: function (data, params) {
+                    return {
+                        results: data.data.map(function(user) {
+                            return {
+                                id: user.id,
+                                text: user.name + ' - ' + user.phone,
+                                user: user
+                            };
+                        }),
+                        pagination: {
+                            more: data.current_page < data.last_page
+                        }
+                    };
+                }
             },
-            processResults: function (data) {
-                return {
-                    results: data.data.map(function(user) {
-                        return {
-                            id: user.id,
-                            text: user.name + ' - ' + user.phone,
-                            user: user
-                        };
-                    })
-                };
+            minimumInputLength: 2,
+            templateResult: formatUser,
+            templateSelection: formatUserSelection,
+            escapeMarkup: function (markup) {
+                return markup;
             }
-        },
-        minimumInputLength: 2,
-        templateResult: formatUser,
-        templateSelection: formatUserSelection
-    });
+        });
+    }
 
     // Format user display in dropdown
     function formatUser(user) {
@@ -438,11 +519,6 @@ $(document).ready(function() {
 
         return '<div class="d-flex align-items-center">' +
                     '<div class="mr-2">' +
-                        '<div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white" style="width: 30px; height: 30px; font-size: 0.8rem;">' +
-                            userData.name.charAt(0).toUpperCase() +
-                        '</div>' +
-                    '</div>' +
-                    '<div>' +
                         '<div class="font-weight-bold">' + userData.name + '</div>' +
                         '<small class="text-muted">' + userData.phone + '</small>' +
                     '</div>' +
@@ -458,11 +534,6 @@ $(document).ready(function() {
         
         return userData.name + ' - ' + userData.phone;
     }
-
-    // Auto-hide alerts
-    setTimeout(function() {
-        $('.alert').fadeOut('slow');
-    }, 5000);
 });
 </script>
 @endpush
