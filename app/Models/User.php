@@ -18,6 +18,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'date_of_birth' => 'date',
     ];
 
     public function families()
