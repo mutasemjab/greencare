@@ -283,7 +283,6 @@ class AppointmentApiController extends Controller
                 'time_of_appointment' => $request->time_of_appointment,
                 'note' => $request->note,
                 'user_id' => $userId,
-                'room_id' => $roomValidation['room']->id ?? null, // Store room_id if room code is provided
             ];
 
             // Create appointment based on service type
