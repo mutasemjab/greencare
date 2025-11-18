@@ -138,8 +138,11 @@ class AppointmentController extends Controller
         }
 
         // Sort by date and time
-        $appointments = $appointments->sortByDesc('date_of_appointment')->sortByDesc('time_of_appointment');
-
+        // Sort by date and time (newest to oldest)
+        $appointments = $appointments->sortBy([
+            ['date_of_appointment', 'desc'],
+            ['time_of_appointment', 'desc']
+        ]);
         // Get users for filter dropdown
         $users = User::select('id', 'name')->orderBy('name')->get();
 
