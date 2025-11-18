@@ -122,6 +122,7 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         // api for rooms
         Route::post('rooms', [RoomReportController::class, 'createRoom']);
+        Route::get('reportTemplates', [RoomReportController::class, 'getReportTemplates']);
 
         // Get initial templates (separate function after room creation)
         Route::get('rooms/{room_id}/initial-templates', [RoomReportController::class, 'getInitialTemplates']);

@@ -27,6 +27,27 @@ class RoomReportController extends Controller
         return $this->success_response('Patients retrieved successfully', $data);
     }
 
+
+    public function getReportTemplates(Request $request)
+    {
+        try {
+            $query = ReportTemplate::query();
+            
+            // Optional: Filter by user type if needed
+            if ($request->has('created_for')) {
+                $query->where('created_for', $request->created_for);
+            }
+            
+            $templates = $query->get();
+            
+            return $this->success_response('Report templates retrieved successfully', [
+                'templates' => $templates
+            ]);
+        } catch (\Exception $e) {
+            return $this->error_response('Failed to retrieve templates', ['error' => $e->getMessage()]);
+        }
+    }
+
     /**
      * Create a new room
      */
@@ -37,7 +58,9 @@ class RoomReportController extends Controller
             'description' => 'nullable|string',
             'discount' => 'required',
             'family_id' => 'nullable|exists:families,id',
-            'patient_id' => 'required|exists:users,id'
+            'patient_id' => 'required|exists:users,id',
+            'report_templates' => 'nullable|array',
+            'report_templates.*' => 'exists:report_templates,id'
         ]);
 
         if ($validator->fails()) {
@@ -60,13 +83,25 @@ class RoomReportController extends Controller
             // Add current user (creator) to room
             $room->users()->attach(Auth::id(), ['role' => Auth::user()->user_type]);
 
+            // Create reports from selected templates
+            if ($request->has('report_templates')) {
+                foreach ($request->report_templates as $templateId) {
+                    Report::create([
+                        'room_id' => $room->id,
+                        'report_template_id' => $templateId,
+                        'created_by' => Auth::id(), // Current user (doctor/nurse)
+                        'report_datetime' => now(), // Optional: set initial datetime
+                    ]);
+                }
+            }
+
             // Sync to Firestore for chat functionality
             $firestoreService->syncRoom($room);
 
             DB::commit();
 
             return $this->success_response('Room created successfully', [
-                'room' => $room->load('users')
+                'room' => $room->load('users', 'reports.reportTemplate')
             ]);
         } catch (\Exception $e) {
             DB::rollback();
