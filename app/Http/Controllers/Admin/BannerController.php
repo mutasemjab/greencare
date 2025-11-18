@@ -24,12 +24,14 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'for_shop' => 'nullable',
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $photoPath = uploadImage('assets/admin/uploads', $request->photo);
 
         DB::table('banners')->insert([
+            'for_shop' => $request->for_shop,
             'photo' => $photoPath,
             'created_at' => now(),
             'updated_at' => now(),
@@ -50,6 +52,7 @@ class BannerController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+           'for_shop' => 'nullable',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -59,6 +62,7 @@ class BannerController extends Controller
         }
 
         $updateData = [
+            'for_shop' => $request->for_shop,
             'updated_at' => now(),
         ];
 

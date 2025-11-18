@@ -18,6 +18,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>{{ __('messages.for_shop') }}</th>
                             <th>{{ __('messages.photo') }}</th>
                             <th>{{ __('messages.created_at') }}</th>
                             <th>{{ __('messages.actions') }}</th>
@@ -27,6 +28,7 @@
                         @foreach($banners as $banner)
                         <tr>
                             <td>{{ $banner->id }}</td>
+                            <td>{{ $banner->for_shop == 1 ? 'YES' : 'NO' }}</td>
                            
                             <td>
                                 @if($banner->photo)
