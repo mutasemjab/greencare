@@ -24,6 +24,11 @@ class RequestNurse extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
+
     /**
      * Get the elderly care type.
      */
