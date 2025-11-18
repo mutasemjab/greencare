@@ -171,6 +171,53 @@ class AppointmentApiController extends Controller
 
    
 
+     /**
+     * Validate room code and get discount
+     */
+    private function validateRoomCodeAndGetDiscount($roomCode)
+    {
+        if (empty($roomCode)) {
+            return [
+                'valid' => false,
+                'discount' => 0,
+                'room' => null
+            ];
+        }
+
+        $room = Room::where('code', $roomCode)->first();
+
+        if (!$room) {
+            return [
+                'valid' => false,
+                'discount' => 0,
+                'room' => null,
+                'error' => __('messages.invalid_room_code')
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'discount' => $room->discount ?? 0,
+            'room' => $room
+        ];
+    }
+
+    /**
+     * Calculate final price after discount
+     */
+    private function calculateFinalPrice($originalPrice, $discountPercent)
+    {
+        $discountAmount = ($originalPrice * $discountPercent) / 100;
+        $finalPrice = $originalPrice - $discountAmount;
+
+        return [
+            'original_price' => $originalPrice,
+            'discount_percent' => $discountPercent,
+            'discount_amount' => $discountAmount,
+            'final_price' => $finalPrice
+        ];
+    }
+
     /**
      * Store a new appointment
      */
@@ -183,6 +230,7 @@ class AppointmentApiController extends Controller
                 'date_of_appointment' => 'required|date|after_or_equal:today',
                 'time_of_appointment' => 'nullable|date_format:H:i',
                 'note' => 'nullable|string|max:1000',
+                'room_code' => 'nullable|string|exists:rooms,code', // Add room code validation
             ];
 
             // Add specific type validation based on service type
@@ -210,6 +258,16 @@ class AppointmentApiController extends Controller
                 );
             }
 
+            // Validate room code and get discount
+            $roomValidation = $this->validateRoomCodeAndGetDiscount($request->room_code);
+            
+            if ($request->room_code && !$roomValidation['valid']) {
+                return $this->error_response(
+                    $roomValidation['error'] ?? __('messages.invalid_room_code'),
+                    []
+                );
+            }
+
             // Get authenticated user ID
             $userId = Auth::id();
             if (!$userId) {
@@ -225,6 +283,7 @@ class AppointmentApiController extends Controller
                 'time_of_appointment' => $request->time_of_appointment,
                 'note' => $request->note,
                 'user_id' => $userId,
+                'room_id' => $roomValidation['room']->id ?? null, // Store room_id if room code is provided
             ];
 
             // Create appointment based on service type
@@ -235,30 +294,35 @@ class AppointmentApiController extends Controller
                 case 'elderly_care':
                     $appointmentData['type_elderly_care_id'] = $request->type_elderly_care_id;
                     $appointment = ElderlyCare::create($appointmentData);
-                    $appointment->load(['user', 'typeElderlyCare']);
+                    $appointment->load(['user', 'typeElderlyCare', 'room']);
                     $serviceInfo = $appointment->typeElderlyCare;
                     break;
                 case 'request_nurse':
                     $appointmentData['type_request_nurse_id'] = $request->type_request_nurse_id;
                     $appointment = RequestNurse::create($appointmentData);
-                    $appointment->load(['user', 'typeRequestNurse']);
+                    $appointment->load(['user', 'typeRequestNurse', 'room']);
                     $serviceInfo = $appointment->typeRequestNurse;
                     break;
 
                 case 'home_xray':
                     $appointmentData['type_home_xray_id'] = $request->type_home_xray_id;
                     $appointment = HomeXray::create($appointmentData);
-                    $appointment->load(['user', 'typeHomeXray.parent']);
+                    $appointment->load(['user', 'typeHomeXray.parent', 'room']);
                     $serviceInfo = $appointment->typeHomeXray;
                     break;
 
                 case 'medical_test':
                     $appointmentData['type_medical_test_id'] = $request->type_medical_test_id;
                     $appointment = MedicalTest::create($appointmentData);
-                    $appointment->load(['user', 'typeMedicalTest']);
+                    $appointment->load(['user', 'typeMedicalTest', 'room']);
                     $serviceInfo = $appointment->typeMedicalTest;
                     break;
             }
+
+            // Calculate pricing with discount
+            $originalPrice = $serviceInfo->price ?? 0;
+            $discountPercent = $roomValidation['discount'] ?? 0;
+            $priceCalculation = $this->calculateFinalPrice($originalPrice, $discountPercent);
 
             // Format response data with enhanced x-ray info
             $serviceDisplayName = $serviceInfo->name ?? __('messages.' . ($serviceInfo->type_of_service ?? 'unknown'));
@@ -273,11 +337,22 @@ class AppointmentApiController extends Controller
                     'id' => $appointment->id,
                     'service_type' => $request->service_type,
                     'service_name' => $serviceDisplayName,
-                    'price' => $serviceInfo->price ?? 0,
-                    'formatted_price' => number_format($serviceInfo->price ?? 0, 2) . ' ' . __('messages.currency'),
+                    'original_price' => $priceCalculation['original_price'],
+                    'discount_percent' => $priceCalculation['discount_percent'],
+                    'discount_amount' => $priceCalculation['discount_amount'],
+                    'final_price' => $priceCalculation['final_price'],
+                    'formatted_original_price' => number_format($priceCalculation['original_price'], 2) . ' ' . __('messages.currency'),
+                    'formatted_discount_amount' => number_format($priceCalculation['discount_amount'], 2) . ' ' . __('messages.currency'),
+                    'formatted_final_price' => number_format($priceCalculation['final_price'], 2) . ' ' . __('messages.currency'),
                     'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d'),
                     'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i') : null,
                     'note' => $appointment->note,
+                    'room_info' => $appointment->room ? [
+                        'id' => $appointment->room->id,
+                        'code' => $appointment->room->code,
+                        'name' => $appointment->room->name ?? null,
+                        'discount' => $appointment->room->discount
+                    ] : null,
                     'user' => [
                         'id' => $appointment->user->id,
                         'name' => $appointment->user->name,
