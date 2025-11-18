@@ -33,6 +33,7 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::get('/pages/{type}', [PageController::class, 'index']);
 
     Route::get('/banners', [BannerController::class, 'index']); // Done
+    Route::get('/bannersForShop', [BannerController::class, 'getBannersForShop']); // Done
 
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);

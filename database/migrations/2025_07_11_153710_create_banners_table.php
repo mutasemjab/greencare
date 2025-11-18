@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('banners', function (Blueprint $table) {
             $table->id();
             $table->string('photo');
+            $table->tinyInteger('for_shop')->default(2); // 1 yes // 2 no
             $table->timestamps();
         });
     }

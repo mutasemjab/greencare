@@ -15,5 +15,11 @@ class BannerController extends Controller
         $data = Banner::get();
         return $this->success_response('Banners retrieved successfully', $data);
     }
+    
+    public function getBannersForShop()
+    {
+        $data = Banner::where('for_shop',1)->get();
+        return $this->success_response('Banners retrieved successfully', $data);
+    }
 
 }
