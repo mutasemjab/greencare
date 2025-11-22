@@ -374,16 +374,29 @@ class AppointmentApiController extends Controller
                 ];
             }
 
-            if ($request->room_code && isset($roomValidation['room'])) {
-                dispatch(function () use ($roomValidation, $appointment, $request, $userId, $priceCalculation, $serviceDisplayName) {
+           if ($request->room_code && isset($roomValidation['room'])) {
+            try {
+                $room = $roomValidation['room'];
+                
+                // Extract only serializable data
+                $messageData = [
+                    'room_id' => $room->id,
+                    'room_code' => $room->code,
+                    'user_id' => $userId,
+                    'user_name' => $appointment->user->name,
+                    'user_photo' => $appointment->user->photo ?? 'null',
+                    'appointment_id' => $appointment->id,
+                    'service_name' => $serviceDisplayName,
+                    'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d H:i:s'),
+                    'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i:s') : null,
+                    'note' => $appointment->note,
+                    'final_price' => $priceCalculation['final_price'],
+                    'discount_percent' => $priceCalculation['discount_percent'],
+                    'discount_amount' => $priceCalculation['discount_amount'],
+                ];
+                
+                dispatch(function () use ($messageData) {
                     try {
-                        $room = $roomValidation['room'];
-                        $user = \App\Models\User::find($userId);
-                        
-                        if (!$user) {
-                            return;
-                        }
-                        
                         $projectId = config('firebase.project_id');
                         $baseUrl = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents";
                         
@@ -392,25 +405,25 @@ class AppointmentApiController extends Controller
                         
                         // Format appointment message
                         $messageText = "📅 New Appointment Booked\n\n";
-                        $messageText .= "Service: {$serviceDisplayName}\n";
-                        $messageText .= "Date: " . \Carbon\Carbon::parse($appointment->date_of_appointment)->format('M d, Y') . "\n";
+                        $messageText .= "Service: {$messageData['service_name']}\n";
+                        $messageText .= "Date: " . \Carbon\Carbon::parse($messageData['date_of_appointment'])->format('M d, Y') . "\n";
                         
-                        if ($appointment->time_of_appointment) {
-                            $messageText .= "Time: " . \Carbon\Carbon::parse($appointment->time_of_appointment)->format('h:i A') . "\n";
+                        if ($messageData['time_of_appointment']) {
+                            $messageText .= "Time: " . \Carbon\Carbon::parse($messageData['time_of_appointment'])->format('h:i A') . "\n";
                         }
                         
-                        $messageText .= "Price: $" . number_format($priceCalculation['final_price'], 2) . "\n";
+                        $messageText .= "Price: $" . number_format($messageData['final_price'], 2) . "\n";
                         
-                        if ($priceCalculation['discount_percent'] > 0) {
-                            $messageText .= "Discount: " . $priceCalculation['discount_percent'] . "% (-$" . number_format($priceCalculation['discount_amount'], 2) . ")\n";
+                        if ($messageData['discount_percent'] > 0) {
+                            $messageText .= "Discount: " . $messageData['discount_percent'] . "% (-$" . number_format($messageData['discount_amount'], 2) . ")\n";
                         }
                         
-                        if ($appointment->note) {
-                            $messageText .= "\nNote: " . $appointment->note;
+                        if ($messageData['note']) {
+                            $messageText .= "\nNote: " . $messageData['note'];
                         }
                         
                         // Prepare message data
-                        $messageData = [
+                        $firestoreData = [
                             'fields' => [
                                 'created_at' => ['timestampValue' => now()->toIso8601String()],
                                 'id' => ['stringValue' => $messageId],
@@ -418,9 +431,9 @@ class AppointmentApiController extends Controller
                                 'is_read' => ['booleanValue' => false],
                                 'media_url' => ['stringValue' => ''],
                                 'reply_to' => ['stringValue' => ''],
-                                'sender_avatar' => ['stringValue' => $user->photo ?? 'null'],
-                                'sender_id' => ['integerValue' => (string)$user->id],
-                                'sender_name' => ['stringValue' => $user->name],
+                                'sender_avatar' => ['stringValue' => $messageData['user_photo']],
+                                'sender_id' => ['integerValue' => (string)$messageData['user_id']],
+                                'sender_name' => ['stringValue' => $messageData['user_name']],
                                 'text' => ['stringValue' => $messageText],
                                 'type' => ['stringValue' => 'appointment'],
                             ]
@@ -428,12 +441,12 @@ class AppointmentApiController extends Controller
                         
                         // Send to Firestore messages subcollection
                         $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
-                            "{$baseUrl}/rooms/room_{$room->id}/messages/{$messageId}",
-                            $messageData
+                            "{$baseUrl}/rooms/room_{$messageData['room_id']}/messages/{$messageId}",
+                            $firestoreData
                         );
                         
                         if ($response->successful()) {
-                            \Log::info("Appointment message sent to room: {$room->code} (ID: {$room->id})");
+                            \Log::info("Appointment message sent to room: {$messageData['room_code']} (ID: {$messageData['room_id']})");
                             
                             // Update room's last_message
                             $roomUpdate = [
@@ -444,12 +457,12 @@ class AppointmentApiController extends Controller
                             ];
                             
                             \Illuminate\Support\Facades\Http::timeout(10)->patch(
-                                "{$baseUrl}/rooms/room_{$room->id}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
+                                "{$baseUrl}/rooms/room_{$messageData['room_id']}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
                                 $roomUpdate
                             );
                         } else {
                             \Log::error('Failed to send appointment message', [
-                                'room_code' => $room->code,
+                                'room_code' => $messageData['room_code'],
                                 'status' => $response->status(),
                                 'body' => $response->body()
                             ]);
@@ -459,7 +472,12 @@ class AppointmentApiController extends Controller
                         \Log::error('Failed to send appointment message: ' . $e->getMessage());
                     }
                 })->afterResponse();
+                
+            } catch (\Exception $e) {
+                \Log::error('Failed to dispatch appointment message: ' . $e->getMessage());
             }
+        }
+
 
             return $this->success_response(
                 __('messages.appointment_created_successfully'),
