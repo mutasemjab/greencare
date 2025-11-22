@@ -374,6 +374,93 @@ class AppointmentApiController extends Controller
                 ];
             }
 
+            if ($request->room_code && isset($roomValidation['room'])) {
+                dispatch(function () use ($roomValidation, $appointment, $request, $userId, $priceCalculation, $serviceDisplayName) {
+                    try {
+                        $room = $roomValidation['room'];
+                        $user = \App\Models\User::find($userId);
+                        
+                        if (!$user) {
+                            return;
+                        }
+                        
+                        $projectId = config('firebase.project_id');
+                        $baseUrl = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents";
+                        
+                        // Generate 20 character random ID
+                        $messageId = \Illuminate\Support\Str::random(20);
+                        
+                        // Format appointment message
+                        $messageText = "📅 New Appointment Booked\n\n";
+                        $messageText .= "Service: {$serviceDisplayName}\n";
+                        $messageText .= "Date: " . \Carbon\Carbon::parse($appointment->date_of_appointment)->format('M d, Y') . "\n";
+                        
+                        if ($appointment->time_of_appointment) {
+                            $messageText .= "Time: " . \Carbon\Carbon::parse($appointment->time_of_appointment)->format('h:i A') . "\n";
+                        }
+                        
+                        $messageText .= "Price: $" . number_format($priceCalculation['final_price'], 2) . "\n";
+                        
+                        if ($priceCalculation['discount_percent'] > 0) {
+                            $messageText .= "Discount: " . $priceCalculation['discount_percent'] . "% (-$" . number_format($priceCalculation['discount_amount'], 2) . ")\n";
+                        }
+                        
+                        if ($appointment->note) {
+                            $messageText .= "\nNote: " . $appointment->note;
+                        }
+                        
+                        // Prepare message data
+                        $messageData = [
+                            'fields' => [
+                                'created_at' => ['timestampValue' => now()->toIso8601String()],
+                                'id' => ['stringValue' => $messageId],
+                                'is_delivered' => ['booleanValue' => false],
+                                'is_read' => ['booleanValue' => false],
+                                'media_url' => ['stringValue' => ''],
+                                'reply_to' => ['stringValue' => ''],
+                                'sender_avatar' => ['stringValue' => $user->photo ?? 'null'],
+                                'sender_id' => ['integerValue' => (string)$user->id],
+                                'sender_name' => ['stringValue' => $user->name],
+                                'text' => ['stringValue' => $messageText],
+                                'type' => ['stringValue' => 'appointment'],
+                            ]
+                        ];
+                        
+                        // Send to Firestore messages subcollection
+                        $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                            "{$baseUrl}/rooms/room_{$room->id}/messages/{$messageId}",
+                            $messageData
+                        );
+                        
+                        if ($response->successful()) {
+                            \Log::info("Appointment message sent to room: {$room->code} (ID: {$room->id})");
+                            
+                            // Update room's last_message
+                            $roomUpdate = [
+                                'fields' => [
+                                    'last_message' => ['stringValue' => $messageText],
+                                    'last_message_at' => ['timestampValue' => now()->toIso8601String()],
+                                ]
+                            ];
+                            
+                            \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                                "{$baseUrl}/rooms/room_{$room->id}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
+                                $roomUpdate
+                            );
+                        } else {
+                            \Log::error('Failed to send appointment message', [
+                                'room_code' => $room->code,
+                                'status' => $response->status(),
+                                'body' => $response->body()
+                            ]);
+                        }
+                        
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send appointment message: ' . $e->getMessage());
+                    }
+                })->afterResponse();
+            }
+
             return $this->success_response(
                 __('messages.appointment_created_successfully'),
                 $responseData
