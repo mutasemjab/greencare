@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\FirestoreMessageService;
 
 class OrderController extends Controller
 {
@@ -31,12 +32,16 @@ class OrderController extends Controller
         return $this->success_response('Orders retrieved successfully', $orders);
     }
 
+
+
+
     public function store(Request $request)
     {
         $request->validate([
             'address_id' => 'nullable|exists:user_addresses,id',
             'payment_type' => 'required|in:cash,card',
-            'coupon_code' => 'nullable|string'
+            'coupon_code' => 'nullable|string',
+            'code' => 'nullable|exists:rooms,code', 
         ]);
 
         DB::beginTransaction();
@@ -69,7 +74,7 @@ class OrderController extends Controller
 
                 // Calculate base price (product price adjustment if any)
                 $basePrice = $product->price_after_discount ?? $product->price;
-               
+            
 
                 // Calculate discount value per unit
                 $originalPrice = $product->price;
@@ -203,6 +208,44 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // ============================================
+            // Send message to Firestore room
+            // ============================================
+            try {
+            if ($request->code) {
+                // Find room by code
+                $room = \App\Models\Room::where('code', $request->code)->first();
+                
+                if ($room) {
+                    $firestoreMessageService = app(FirestoreMessageService::class);
+                    
+                    $orderMessageData = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->number,
+                        'total' => $totalFinal,
+                        'currency' => '$', // Or get from config
+                        'items_count' => $cartItems->sum('quantity'),
+                        'payment_type' => $order->payment_type,
+                        'delivery_fee' => $deliveryFee,
+                        'discount' => $totalDiscount + $couponDiscount,
+                        'status' => 'pending',
+                        'sender_avatar' => $user->photo ?? '',
+                    ];
+                    
+                    $firestoreMessageService->sendOrderMessage(
+                        $room->id,
+                        $orderMessageData,
+                        $user->id,
+                        $user->name
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the order creation
+            \Log::error('Failed to send order message to Firestore: ' . $e->getMessage());
+        }
+            // ============================================
+
             return $this->success_response('Order created successfully', [
                 'order' => $order,
                 'order_summary' => [
@@ -226,6 +269,7 @@ class OrderController extends Controller
             ]);
         }
     }
+
 
 
     public function details($id)
