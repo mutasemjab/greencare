@@ -134,6 +134,111 @@ class ShowerController extends Controller
                 'updated_at' => $shower->updated_at->format('Y-m-d H:i:s'),
             ];
 
+            if ($request->code_patient) {
+                dispatch(function () use ($request, $shower, $userId, $finalPrice, $discountInfo) {
+                    try {
+                        // Find room by code
+                        $room = \App\Models\Room::where('code', $request->code_patient)->first();
+                        
+                        if (!$room) {
+                            return;
+                        }
+                        
+                        // Check if user is in this room
+                        $userInRoom = DB::table('room_users')
+                            ->where('room_id', $room->id)
+                            ->where('user_id', $userId)
+                            ->where('role', 'patient')
+                            ->exists();
+                        
+                        if (!$userInRoom) {
+                            return;
+                        }
+                        
+                        $user = \App\Models\User::find($userId);
+                        
+                        if (!$user) {
+                            return;
+                        }
+                        
+                        $projectId = config('firebase.project_id');
+                        $baseUrl = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents";
+                        
+                        // Generate 20 character random ID
+                        $messageId = \Illuminate\Support\Str::random(20);
+                        
+                        // Format shower appointment message
+                        $messageText = "🚿 New Shower Appointment\n\n";
+                        $messageText .= "Patient Code: {$request->code_patient}\n";
+                        $messageText .= "Date: " . \Carbon\Carbon::parse($shower->date_of_shower)->format('M d, Y') . "\n";
+                        
+                        if ($shower->time_of_shower) {
+                            $messageText .= "Time: " . \Carbon\Carbon::parse($shower->time_of_shower)->format('h:i A') . "\n";
+                        }
+                        
+                        $messageText .= "Price: $" . number_format($finalPrice, 2) . "\n";
+                        
+                        if ($discountInfo) {
+                            $messageText .= "Original Price: $" . number_format($discountInfo['original_price'], 2) . "\n";
+                            $messageText .= "Discount: " . $discountInfo['discount_percentage'] . "% (-$" . number_format($discountInfo['discount_amount'], 2) . ")\n";
+                        }
+                        
+                        if ($shower->note) {
+                            $messageText .= "\nNote: " . $shower->note;
+                        }
+                        
+                        // Prepare message data
+                        $messageData = [
+                            'fields' => [
+                                'created_at' => ['timestampValue' => now()->toIso8601String()],
+                                'id' => ['stringValue' => $messageId],
+                                'is_delivered' => ['booleanValue' => false],
+                                'is_read' => ['booleanValue' => false],
+                                'media_url' => ['stringValue' => ''],
+                                'reply_to' => ['stringValue' => ''],
+                                'sender_avatar' => ['stringValue' => $user->photo ?? 'null'],
+                                'sender_id' => ['integerValue' => (string)$user->id],
+                                'sender_name' => ['stringValue' => $user->name],
+                                'text' => ['stringValue' => $messageText],
+                                'type' => ['stringValue' => 'shower'],
+                            ]
+                        ];
+                        
+                        // Send to Firestore messages subcollection
+                        $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                            "{$baseUrl}/rooms/room_{$room->id}/messages/{$messageId}",
+                            $messageData
+                        );
+                        
+                        if ($response->successful()) {
+                            \Log::info("Shower appointment message sent to room: {$room->code} (ID: {$room->id})");
+                            
+                            // Update room's last_message
+                            $roomUpdate = [
+                                'fields' => [
+                                    'last_message' => ['stringValue' => $messageText],
+                                    'last_message_at' => ['timestampValue' => now()->toIso8601String()],
+                                ]
+                            ];
+                            
+                            \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                                "{$baseUrl}/rooms/room_{$room->id}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
+                                $roomUpdate
+                            );
+                        } else {
+                            \Log::error('Failed to send shower appointment message', [
+                                'room_code' => $room->code,
+                                'status' => $response->status(),
+                                'body' => $response->body()
+                            ]);
+                        }
+                        
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send shower appointment message: ' . $e->getMessage());
+                    }
+                })->afterResponse();
+            }
+
             return $this->success_response(
                 __('messages.shower_appointment_created_successfully'),
                 $showerData
