@@ -60,11 +60,32 @@ class RoomReportController extends Controller
             'family_id' => 'nullable|exists:families,id',
             'patient_id' => 'required|exists:users,id',
             'report_templates' => 'nullable|array',
-            'report_templates.*' => 'exists:report_templates,id'
+            'report_templates.*' => 'exists:report_templates,id',
+            // Initial report validation rules
+            'initial_report.template_id' => 'nullable|exists:report_templates,id',
+            'initial_report.answers' => 'required_with:initial_report.template_id|array',
+            'initial_report.answers.*.field_id' => 'required_with:initial_report.template_id|exists:report_fields,id',
+            'initial_report.answers.*.value' => 'required_with:initial_report.template_id',
+            'initial_report.medications' => 'nullable|array',
+            'initial_report.medications.*.name' => 'required|string',
+            'initial_report.medications.*.dosage' => 'nullable|string',
+            'initial_report.medications.*.quantity' => 'nullable|integer',
+            'initial_report.medications.*.notes' => 'nullable|string',
+            'initial_report.medications.*.schedules' => 'required|array|min:1',
+            'initial_report.medications.*.schedules.*.time' => 'required|date_format:H:i',
+            'initial_report.medications.*.schedules.*.frequency' => 'required|in:daily,weekly,monthly',
         ]);
 
         if ($validator->fails()) {
             return $this->error_response('Validation failed', $validator->errors());
+        }
+
+        // Verify initial report template is initial setup type if provided
+        if ($request->has('initial_report.template_id')) {
+            $initialTemplate = ReportTemplate::find($request->input('initial_report.template_id'));
+            if ($initialTemplate->report_type !== 'initial_setup') {
+                return $this->error_response('Invalid template', 'Only initial setup templates are allowed');
+            }
         }
 
         DB::beginTransaction();
@@ -89,10 +110,77 @@ class RoomReportController extends Controller
                     Report::create([
                         'room_id' => $room->id,
                         'report_template_id' => $templateId,
-                        'created_by' => Auth::id(), // Current user (doctor/nurse)
-                        'report_datetime' => now(), // Optional: set initial datetime
+                        'created_by' => Auth::id(),
+                        'report_datetime' => now(),
                     ]);
                 }
+            }
+
+            // Handle initial report submission if provided
+            $initialReport = null;
+            $medicationsCount = 0;
+            
+            if ($request->has('initial_report.template_id')) {
+                // Create the initial report
+                $initialReport = Report::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $request->input('initial_report.template_id'),
+                    'created_by' => Auth::id(),
+                ]);
+
+                // Save report answers
+                foreach ($request->input('initial_report.answers') as $index => $answer) {
+                    // Get the field to check its input type
+                    $field = \App\Models\ReportField::find($answer['field_id']);
+
+                    $value = $answer['value'];
+
+                    // Handle file uploads for photo, pdf, and signature fields
+                    if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                        // Check if file exists in the request
+                        $fileKey = "initial_report.answers.{$index}.value";
+                        if ($request->hasFile($fileKey)) {
+                            $uploadedFile = $request->file($fileKey);
+                            $value = uploadImage('assets/admin/uploads', $uploadedFile);
+                        }
+                    }
+
+                    ReportAnswer::create([
+                        'report_id' => $initialReport->id,
+                        'report_field_id' => $answer['field_id'],
+                        'value' => json_encode($value),
+                    ]);
+                }
+
+                // Get patient from room
+                $patient = $room->users()->where('role', 'patient')->first();
+
+                // Save medications if provided
+                if ($request->has('initial_report.medications') && !empty($request->input('initial_report.medications'))) {
+                    foreach ($request->input('initial_report.medications') as $medicationData) {
+                        $medication = Medication::create([
+                            'patient_id' => $patient->id,
+                            'room_id' => $room->id,
+                            'name' => $medicationData['name'],
+                            'dosage' => $medicationData['dosage'] ?? null,
+                            'quantity' => $medicationData['quantity'] ?? null,
+                            'notes' => $medicationData['notes'] ?? null,
+                        ]);
+
+                        // Create medication schedules
+                        foreach ($medicationData['schedules'] as $schedule) {
+                            MedicationSchedule::create([
+                                'medication_id' => $medication->id,
+                                'time' => $schedule['time'],
+                                'frequency' => $schedule['frequency'],
+                            ]);
+                        }
+                    }
+                    $medicationsCount = count($request->input('initial_report.medications'));
+                }
+
+                // Load the complete initial report with relationships
+                $initialReport->load(['template.sections.fields.options', 'answers']);
             }
 
             // Sync to Firestore for chat functionality
@@ -100,9 +188,16 @@ class RoomReportController extends Controller
 
             DB::commit();
 
-            return $this->success_response('Room created successfully', [
+            $responseData = [
                 'room' => $room->load('users', 'reports.reportTemplate')
-            ]);
+            ];
+
+            if ($initialReport) {
+                $responseData['initial_report'] = $initialReport;
+                $responseData['medications_count'] = $medicationsCount;
+            }
+
+            return $this->success_response('Room created successfully', $responseData);
         } catch (\Exception $e) {
             DB::rollback();
             return $this->error_response('Failed to create room', ['error' => $e->getMessage()]);
@@ -130,114 +225,7 @@ class RoomReportController extends Controller
         ]);
     }
 
-    /**
-     * Submit initial report with patient data and medications
-     */
-    public function submitInitialReport(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'room_id' => 'required|exists:rooms,id',
-            'template_id' => 'required|exists:report_templates,id',
-            'answers' => 'required|array',
-            'answers.*.field_id' => 'required|exists:report_fields,id',
-            'answers.*.value' => 'required',
-            'medications' => 'nullable|array',
-            'medications.*.name' => 'required|string',
-            'medications.*.dosage' => 'nullable|string',
-            'medications.*.quantity' => 'nullable|integer',
-            'medications.*.notes' => 'nullable|string',
-            'medications.*.schedules' => 'required|array|min:1',
-            'medications.*.schedules.*.time' => 'required|date_format:H:i',
-            'medications.*.schedules.*.frequency' => 'required|in:daily,weekly,monthly',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error_response('Validation failed', $validator->errors());
-        }
-
-        // Verify user has access to the room
-        $room = Room::find($request->room_id);
-
-
-        // Verify template is initial setup type
-        $template = ReportTemplate::find($request->template_id);
-        if ($template->report_type !== 'initial_setup') {
-            return $this->error_response('Invalid template', 'Only initial setup templates are allowed');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Create the report
-            $report = Report::create([
-                'room_id' => $request->room_id,
-                'report_template_id' => $request->template_id,
-                'created_by' => Auth::id(),
-            ]);
-
-            // Save report answers
-            foreach ($request->answers as $index => $answer) {
-                // Get the field to check its input type
-                $field = \App\Models\ReportField::find($answer['field_id']);
-
-                $value = $answer['value'];
-
-                // Handle file uploads for photo, pdf, and signature fields
-                if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
-                    // Check if file exists in the request
-                    $fileKey = "answers.{$index}.value";
-                    if ($request->hasFile($fileKey)) {
-                        $uploadedFile = $request->file($fileKey);
-                        $value = uploadImage('assets/admin/uploads', $uploadedFile);
-                    }
-                }
-
-                ReportAnswer::create([
-                    'report_id' => $report->id,
-                    'report_field_id' => $answer['field_id'],
-                    'value' => json_encode($value),
-                ]);
-            }
-
-            // Get patient from room
-            $patient = $room->users()->where('role', 'patient')->first();
-
-            // Save medications if provided
-            if ($request->has('medications') && !empty($request->medications)) {
-                foreach ($request->medications as $medicationData) {
-                    $medication = Medication::create([
-                        'patient_id' => $patient->id,
-                        'room_id' => $room->id,
-                        'name' => $medicationData['name'],
-                        'dosage' => $medicationData['dosage'] ?? null,
-                        'quantity' => $medicationData['quantity'] ?? null,
-                        'notes' => $medicationData['notes'] ?? null,
-                    ]);
-
-                    // Create medication schedules
-                    foreach ($medicationData['schedules'] as $schedule) {
-                        MedicationSchedule::create([
-                            'medication_id' => $medication->id,
-                            'time' => $schedule['time'],
-                            'frequency' => $schedule['frequency'],
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            // Load the complete report with relationships
-            $report->load(['template.sections.fields.options', 'answers']);
-
-            return $this->success_response('Initial report submitted successfully', [
-                'report' => $report,
-                'medications_count' => $request->has('medications') ? count($request->medications) : 0
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return $this->error_response('Failed to submit initial report', ['error' => $e->getMessage()]);
-        }
-    }
+    
 
     /**
      * Get available report templates for current user type
@@ -583,11 +571,10 @@ class RoomReportController extends Controller
     /**
      * Get all rooms for the authenticated nurse with completion status
      */
-    public function getNurseRooms(Request $request)
+   public function getNurseRooms(Request $request)
     {
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
-
 
         // Get all rooms where the nurse is a member
         $rooms = Room::whereHas('users', function ($query) use ($currentUser) {
@@ -598,19 +585,9 @@ class RoomReportController extends Controller
             ->get();
 
         // Add is_complete flag to each room
-        $roomsWithStatus = $rooms->map(function ($room) use ($currentUser) {
-            // Check if there are any reports created by this nurse for this room
-            $report = Report::where('room_id', $room->id)
-                ->where('created_by', $currentUser->id)
-                ->first();
-
-            $isComplete = false;
-
-            if ($report) {
-                // Check if the report has any answers
-                $hasAnswers = ReportAnswer::where('report_id', $report->id)->exists();
-                $isComplete = $hasAnswers;
-            }
+        $roomsWithStatus = $rooms->map(function ($room) {
+            // Check if there are any pledge forms for this room
+            $hasPledgeForm = \App\Models\PledgeForm::where('room_id', $room->id)->exists();
 
             return [
                 'id' => $room->id,
@@ -620,7 +597,7 @@ class RoomReportController extends Controller
                 'family_id' => $room->family_id,
                 'created_at' => $room->created_at,
                 'updated_at' => $room->updated_at,
-                'is_complete' => $isComplete,
+                'is_complete' => $hasPledgeForm,
             ];
         });
 

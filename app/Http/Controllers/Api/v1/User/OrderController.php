@@ -35,7 +35,7 @@ class OrderController extends Controller
 
 
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $request->validate([
             'address_id' => 'nullable|exists:user_addresses,id',
@@ -162,8 +162,21 @@ class OrderController extends Controller
                 }
             }
 
+            // Handle room discount
+            $roomDiscount = 0;
+            $room = null;
+
+            if ($request->code) {
+                $room = \App\Models\Room::where('code', $request->code)->first();
+                
+                if ($room && $room->discount > 0) {
+                    // Calculate room discount as percentage of total before tax
+                    $roomDiscount = ($totalBeforeTax * $room->discount) / 100;
+                }
+            }
+
             // Calculate final total
-            $totalFinal = $totalBeforeTax + $totalTax + $deliveryFee - $couponDiscount;
+            $totalFinal = $totalBeforeTax + $totalTax + $deliveryFee - $couponDiscount - $roomDiscount;
 
             // Create the order
             $order = Order::create([
@@ -212,10 +225,6 @@ class OrderController extends Controller
             // Send message to Firestore room
             // ============================================
             try {
-            if ($request->code) {
-                // Find room by code
-                $room = \App\Models\Room::where('code', $request->code)->first();
-                
                 if ($room) {
                     $firestoreMessageService = app(FirestoreMessageService::class);
                     
@@ -227,7 +236,7 @@ class OrderController extends Controller
                         'items_count' => $cartItems->sum('quantity'),
                         'payment_type' => $order->payment_type,
                         'delivery_fee' => $deliveryFee,
-                        'discount' => $totalDiscount + $couponDiscount,
+                        'discount' => $totalDiscount + $couponDiscount + $roomDiscount,
                         'status' => 'pending',
                         'sender_avatar' => $user->photo ?? '',
                     ];
@@ -239,11 +248,10 @@ class OrderController extends Controller
                         $user->name
                     );
                 }
+            } catch (\Exception $e) {
+                // Log error but don't fail the order creation
+                \Log::error('Failed to send order message to Firestore: ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            // Log error but don't fail the order creation
-            \Log::error('Failed to send order message to Firestore: ' . $e->getMessage());
-        }
             // ============================================
 
             return $this->success_response('Order created successfully', [
@@ -253,6 +261,7 @@ class OrderController extends Controller
                     'tax_total' => $totalTax,
                     'delivery_fee' => $deliveryFee,
                     'coupon_discount' => $couponDiscount,
+                    'room_discount' => $roomDiscount,
                     'product_discount' => $totalDiscount,
                     'final_total' => $totalFinal,
                     'items_count' => $cartItems->sum('quantity')
