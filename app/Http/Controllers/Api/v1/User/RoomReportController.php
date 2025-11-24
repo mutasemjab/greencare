@@ -204,24 +204,21 @@ class RoomReportController extends Controller
         }
     }
 
+
     /**
-     * Get initial setup templates for a room
+     * Get specific template with sections and fields (detail view)
      */
-    public function getInitialTemplates(Request $request, $room_id)
+    public function getTemplateDetails(Request $request, $template_id)
     {
+        $template = ReportTemplate::with(['sections.fields.options'])
+            ->find($template_id);
 
-        // Verify user has access to the room
-        $room = Room::find($room_id);
+        if (!$template) {
+            return $this->error_response('Template not found', 404);
+        }
 
-
-
-        // Get initial setup templates
-        $initialTemplates = ReportTemplate::where('report_type', 'initial_setup')
-            ->with(['sections.fields.options'])
-            ->get();
-
-        return $this->success_response('Initial templates retrieved successfully', [
-            'templates' => $initialTemplates
+        return $this->success_response('Template details retrieved successfully', [
+            'template' => $template
         ]);
     }
 

@@ -124,8 +124,8 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('rooms', [RoomReportController::class, 'createRoom']);
         Route::get('reportTemplates', [RoomReportController::class, 'getReportTemplates']);
 
-        // Get initial templates (separate function after room creation)
-        Route::get('rooms/{room_id}/initial-templates', [RoomReportController::class, 'getInitialTemplates']);
+        // Get specific template with details
+        Route::get('/reportTemplates/{template_id}', [RoomReportController::class, 'getTemplateDetails']);
 
         // Submit initial report
         Route::post('reports/initial', [RoomReportController::class, 'submitInitialReport']);
