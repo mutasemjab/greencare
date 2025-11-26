@@ -234,8 +234,6 @@ class RoomReportController extends Controller
         $room = Room::find($room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
 
-
-
         // Get user type from users table directly
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;

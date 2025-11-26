@@ -232,7 +232,7 @@ class OrderController extends Controller
                         'order_id' => $order->id,
                         'order_number' => $order->number,
                         'total' => $totalFinal,
-                        'currency' => '$', // Or get from config
+                        'currency' => 'JD', // Or get from config
                         'items_count' => $cartItems->sum('quantity'),
                         'payment_type' => $order->payment_type,
                         'delivery_fee' => $deliveryFee,
