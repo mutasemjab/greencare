@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ProviderController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportTemplateController;
 use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\SpecialMedicalFormController;
 use App\Http\Controllers\Admin\TypeController;
 use App\Http\Controllers\Admin\TypeElderlyCareController;
 use App\Http\Controllers\Admin\TypeHomeXrayController;
@@ -75,8 +76,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
 
         // Notification
-        Route::get('/notifications/create',[NotificationController::class,'create'])->name('notifications.create');
-        Route::post('/notifications/send',[NotificationController::class,'send'])->name('notifications.send');
+        Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
+        Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
 
 
         // User (Patient) management routes
@@ -100,7 +101,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('families/{family}/add-member', [FamilyController::class, 'addMember'])->name('families.add-member');
         Route::post('families/{family}/remove-member', [FamilyController::class, 'removeMember'])->name('families.remove-member');
 
- 
+
 
         Route::resource('report-templates', ReportTemplateController::class);
         Route::post('report-templates/{reportTemplate}/duplicate', [ReportTemplateController::class, 'duplicate'])->name('report-templates.duplicate');
@@ -119,8 +120,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('medications/{medication}/calendar', [MedicationController::class, 'getCalendarData'])->name('medications.calendar');
         Route::get('/medications/upcoming', [MedicationController::class, 'getUpcoming'])->name('api.medications.upcoming');
         Route::get('/medications/overdue', [MedicationController::class, 'getOverdue'])->name('api.medications.overdue');
-        
-        
+
+
         Route::resource('app-configs', AppConfigController::class);
         Route::resource('deliveries', DeliveryController::class);
         Route::resource('brands', BrandController::class);
@@ -133,15 +134,16 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         Route::get('/usedCoupons', [CouponController::class, 'displayCouponUsed'])->name('usedCoupons.index');
 
-          // Types Routes
+        // Types Routes
         Route::resource('types', TypeController::class);
-        
+
         // Provider Categories Routes
         Route::resource('provider-categories', ProviderCategoryController::class);
-        
+
         // Providers Routes
         Route::resource('providers', ProviderController::class);
-        
+        Route::get('special-medical-forms', [SpecialMedicalFormController::class, 'index'])->name('special-medical-forms.index');
+        Route::get('special-medical-forms/{specialMedicalForm}', [SpecialMedicalFormController::class, 'show'])->name('special-medical-forms.show');
         Route::resource('careers', CareerController::class);
         Route::get('careers/{career}/applications', [CareerController::class, 'applications'])->name('careers.applications');
         Route::post('career-applications/{application}/status', [CareerController::class, 'updateApplicationStatus'])->name('career-applications.update-status');
@@ -159,7 +161,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
 
         Route::resource('appointment-providers', AppointmentProviderController::class);
-    
+
         // Additional routes for appointment providers
         Route::post('/appointment-providers/{id}/update-status', [AppointmentProviderController::class, 'updateStatus'])
             ->name('appointment-providers.update-status');
