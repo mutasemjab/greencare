@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CareerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DeliveryController;
@@ -141,7 +142,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         // Providers Routes
         Route::resource('providers', ProviderController::class);
         
-        
+        Route::resource('careers', CareerController::class);
+        Route::get('careers/{career}/applications', [CareerController::class, 'applications'])->name('careers.applications');
+        Route::post('career-applications/{application}/status', [CareerController::class, 'updateApplicationStatus'])->name('career-applications.update-status');
         Route::resource('news', NewsController::class);
         Route::get('/pledge-forms', [PledgeFormController::class, 'index'])->name('pledge-forms.index');
         Route::get('/pledge-forms/{pledgeForm}', [PledgeFormController::class, 'show'])->name('pledge-forms.show');

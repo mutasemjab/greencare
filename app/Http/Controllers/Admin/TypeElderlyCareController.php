@@ -17,9 +17,14 @@ class TypeElderlyCareController extends Controller
     {
         $query = TypeElderlyCare::query();
         
-        // Filter by type if provided
+        // Filter by service type if provided
         if ($request->has('type_of_service') && !empty($request->type_of_service)) {
             $query->where('type_of_service', $request->type_of_service);
+        }
+        
+        // Filter by care type if provided
+        if ($request->has('type_of_care') && !empty($request->type_of_care)) {
+            $query->where('type_of_care', $request->type_of_care);
         }
         
         // Search functionality by price range
@@ -31,7 +36,10 @@ class TypeElderlyCareController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
         
-        $elderlyCares = $query->orderBy('type_of_service')->orderBy('price')->paginate(15);
+        $elderlyCares = $query->orderBy('type_of_care')
+                             ->orderBy('type_of_service')
+                             ->orderBy('price')
+                             ->paginate(15);
         
         return view('admin.elderly-cares.index', compact('elderlyCares'));
     }
@@ -51,6 +59,7 @@ class TypeElderlyCareController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'type_of_service' => 'required|in:hour,day,sleep,number_of_days',
+            'type_of_care' => 'required|in:elderly_care,patient_care,mom,child',
             'price' => 'required|numeric|min:0',
         ]);
 
@@ -65,8 +74,6 @@ class TypeElderlyCareController extends Controller
         return redirect()->route('elderly-cares.index')
             ->with('success', __('messages.elderly_care_created_successfully'));
     }
-
- 
 
     /**
      * Show the form for editing the specified resource.
@@ -83,6 +90,7 @@ class TypeElderlyCareController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'type_of_service' => 'required|in:hour,day,sleep,number_of_days',
+            'type_of_care' => 'required|in:elderly_care,patient_care,mom,child',
             'price' => 'required|numeric|min:0',
         ]);
 

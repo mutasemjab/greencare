@@ -20,6 +20,9 @@ return new class extends Migration
             $table->date('date_of_appointment');
             $table->time('time_of_appointment')->nullable();
             $table->text('note')->nullable();
+            $table->text('address')->nullable();
+            $table->double('lat')->nullable();
+            $table->double('lng')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('room_id')->nullable();

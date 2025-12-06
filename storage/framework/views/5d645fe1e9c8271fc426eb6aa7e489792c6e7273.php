@@ -259,6 +259,14 @@
                         <p><?php echo e(__('messages.app_configurations')); ?></p>
                     </a>
                 </li>
+          
+                <li class="nav-item">
+                    <a href="<?php echo e(route('notifications.create')); ?>"
+                        class="nav-link <?php echo e(request()->routeIs('notifications.create') ? 'active' : ''); ?>">
+                        <i class="fas fa-wrench nav-icon"></i>
+                        <p><?php echo e(__('messages.notifications')); ?></p>
+                    </a>
+                </li>
 
                 <!-- User Management -->
                 <li class="nav-header"><?php echo e(__('messages.user_management')); ?></li>

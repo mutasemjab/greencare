@@ -9,7 +9,7 @@ class TypeElderlyCare extends Model
 {
     use HasFactory;
     protected $guarded = [];
-     protected $casts = [
+    protected $casts = [
         'price' => 'double',
     ];
 
@@ -27,11 +27,32 @@ class TypeElderlyCare extends Model
     }
 
     /**
+     * Get the care types available
+     */
+    public static function getCareTypes()
+    {
+        return [
+            'elderly_care' => __('messages.elderly_care'),
+            'patient_care' => __('messages.patient_care'),
+            'mom' => __('messages.mom'),
+            'child' => __('messages.child'),
+        ];
+    }
+
+    /**
      * Get the translated service type
      */
     public function getTranslatedServiceTypeAttribute()
     {
         return __('messages.' . $this->type_of_service);
+    }
+
+    /**
+     * Get the translated care type
+     */
+    public function getTranslatedCareTypeAttribute()
+    {
+        return __('messages.' . $this->type_of_care);
     }
 
     /**
