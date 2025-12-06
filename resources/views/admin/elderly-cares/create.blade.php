@@ -31,6 +31,28 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
+                                    <label for="type_of_care" class="form-label">
+                                        {{ __('messages.care_type') }} <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="type_of_care" 
+                                            id="type_of_care" 
+                                            class="form-control @error('type_of_care') is-invalid @enderror" 
+                                            required>
+                                        <option value="">{{ __('messages.select_care_type') }}</option>
+                                        @foreach(\App\Models\TypeElderlyCare::getCareTypes() as $key => $value)
+                                            <option value="{{ $key }}" {{ old('type_of_care') == $key ? 'selected' : '' }}>
+                                                {{ $value }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('type_of_care')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
                                     <label for="type_of_service" class="form-label">
                                         {{ __('messages.service_type') }} <span class="text-danger">*</span>
                                     </label>
@@ -50,8 +72,10 @@
                                     @enderror
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="price" class="form-label">
                                         {{ __('messages.price') }} <span class="text-danger">*</span>

@@ -15,13 +15,26 @@
                 </div>
 
                 <div class="card-body">
-                   
-
                     <!-- Filters -->
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <form method="GET" action="{{ route('elderly-cares.index') }}" class="d-flex">
-                                <select name="type_of_service" class="form-control me-2" onchange="this.form.submit()">
+                                <select name="type_of_care" class="form-control" onchange="this.form.submit()">
+                                    <option value="">{{ __('messages.all_care_types') }}</option>
+                                    @foreach(\App\Models\TypeElderlyCare::getCareTypes() as $key => $value)
+                                        <option value="{{ $key }}" {{ request('type_of_care') == $key ? 'selected' : '' }}>
+                                            {{ $value }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="type_of_service" value="{{ request('type_of_service') }}">
+                                <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                                <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                            </form>
+                        </div>
+                        <div class="col-md-3">
+                            <form method="GET" action="{{ route('elderly-cares.index') }}" class="d-flex">
+                                <select name="type_of_service" class="form-control" onchange="this.form.submit()">
                                     <option value="">{{ __('messages.all_service_types') }}</option>
                                     @foreach(\App\Models\TypeElderlyCare::getServiceTypes() as $key => $value)
                                         <option value="{{ $key }}" {{ request('type_of_service') == $key ? 'selected' : '' }}>
@@ -29,11 +42,12 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                <input type="hidden" name="type_of_care" value="{{ request('type_of_care') }}">
                                 <input type="hidden" name="min_price" value="{{ request('min_price') }}">
                                 <input type="hidden" name="max_price" value="{{ request('max_price') }}">
                             </form>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <form method="GET" action="{{ route('elderly-cares.index') }}" class="d-flex">
                                 <input type="number" 
                                        name="min_price" 
@@ -52,6 +66,7 @@
                                 <button type="submit" class="btn btn-secondary me-2">{{ __('messages.filter') }}</button>
                                 <a href="{{ route('elderly-cares.index') }}" class="btn btn-outline-secondary">{{ __('messages.clear') }}</a>
                                 <input type="hidden" name="type_of_service" value="{{ request('type_of_service') }}">
+                                <input type="hidden" name="type_of_care" value="{{ request('type_of_care') }}">
                             </form>
                         </div>
                     </div>
@@ -62,6 +77,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('messages.id') }}</th>
+                                    <th>{{ __('messages.care_type') }}</th>
                                     <th>{{ __('messages.service_type') }}</th>
                                     <th>{{ __('messages.price') }}</th>
                                     <th>{{ __('messages.created_at') }}</th>
@@ -72,6 +88,11 @@
                                 @forelse($elderlyCares as $care)
                                     <tr>
                                         <td>{{ $care->id }}</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                {{ $care->translated_care_type }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <span class="badge bg-primary">
                                                 {{ $care->translated_service_type }}
@@ -104,7 +125,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">
+                                        <td colspan="6" class="text-center">
                                             {{ __('messages.no_data_found') }}
                                         </td>
                                     </tr>

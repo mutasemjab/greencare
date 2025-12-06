@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('type_elderly_cares', function (Blueprint $table) {
+        Schema::create('special_medical_form_replies', function (Blueprint $table) {
             $table->id();
-            $table->enum('type_of_service',['hour','day','sleep','number_of_days'])->default('hour');
-            $table->enum('type_of_care',['elderly_care','patient_care','mom','child'])->default('elderly_care');
-            $table->double('price')->default(0);
+            $table->foreignId('special_medical_form_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // User who replied
+            $table->text('note'); // Reply note
+            $table->string('signature_path'); // Reply signature image
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('type_elderly_cares');
+        Schema::dropIfExists('special_medical_form_replies');
     }
 };

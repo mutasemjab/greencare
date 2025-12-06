@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('type_elderly_cares', function (Blueprint $table) {
+        Schema::create('careers', function (Blueprint $table) {
             $table->id();
-            $table->enum('type_of_service',['hour','day','sleep','number_of_days'])->default('hour');
-            $table->enum('type_of_care',['elderly_care','patient_care','mom','child'])->default('elderly_care');
-            $table->double('price')->default(0);
+            $table->string('title'); // e.g., Nurse, Doctor, Caregiver
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('type_elderly_cares');
+        Schema::dropIfExists('careers');
     }
 };

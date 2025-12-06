@@ -48,7 +48,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         // image for chat
         Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'index']);
         Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'store']);
-        
+
         Route::post('updateFcmToken', [AuthController::class, 'updateFcmToken']);
 
         Route::get('/home', [HomeController::class, 'index']);
@@ -62,7 +62,9 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         //Notification
         Route::get('/notifications', [NotificationController::class, 'index']);
-
+        Route::post('notifications/send', [NotificationController::class, 'sendNotification']);
+        // Send notification to multiple users
+        Route::post('notifications/send-bulk', [NotificationController::class, 'sendBulkNotification']);
 
 
         Route::get('/delivery', [UserAddressController::class, 'getDelivery']); // Done
@@ -164,5 +166,31 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::delete('medications/{id}', [MedicationController::class, 'destroy']);
 
 
+        // Get all active careers
+        Route::get('careers', [CareerApplicationApiController::class, 'getCareers']);
+
+        // Submit career application
+        Route::post('careers/apply', [CareerApplicationApiController::class, 'submitApplication']);
+
+        // Get my applications
+        Route::get('careers/my-applications', [CareerApplicationApiController::class, 'myApplications']);
+
+        // Get all forms in a room
+        Route::get('rooms/{roomId}/special-medical-forms', [SpecialMedicalFormApiController::class, 'getRoomForms']);
+
+        // Create a new form
+        Route::post('special-medical-forms', [SpecialMedicalFormApiController::class, 'createForm']);
+
+        // Get form details with replies
+        Route::get('special-medical-forms/{formId}', [SpecialMedicalFormApiController::class, 'getFormDetails']);
+
+        // Reply to a form
+        Route::post('special-medical-forms/{formId}/reply', [SpecialMedicalFormApiController::class, 'replyToForm']);
+
+        // Update form status (open/closed)
+        Route::patch('special-medical-forms/{formId}/status', [SpecialMedicalFormApiController::class, 'updateFormStatus']);
+
+        // Delete form
+        Route::delete('special-medical-forms/{formId}', [SpecialMedicalFormApiController::class, 'deleteForm']);
     });
 });

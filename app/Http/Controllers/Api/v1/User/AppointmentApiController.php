@@ -27,18 +27,28 @@ class AppointmentApiController extends Controller
     public function getServiceTypes()
     {
         try {
-            // Get elderly care types
-            $elderlyCareTypes = TypeElderlyCare::select('id', 'type_of_service', 'price')
+            // Get elderly care types grouped by care type
+            $elderlyCareTypes = TypeElderlyCare::select('id', 'type_of_service', 'type_of_care', 'price')
+                ->orderBy('type_of_care')
                 ->orderBy('type_of_service')
                 ->get()
-                ->map(function ($item) {
+                ->groupBy('type_of_care')
+                ->map(function ($items, $careType) {
                     return [
-                        'id' => $item->id,
-                        'name' => __('messages.' . $item->type_of_service),
-                        'type_key' => $item->type_of_service,
-                        'price' => $item->price,
-                        'formatted_price' => number_format($item->price, 2) . ' ' . __('messages.currency'),
-                        'service_type' => 'elderly_care'
+                        'care_type' => $careType,
+                        'care_type_name' => __('messages.' . $careType),
+                        'services' => $items->map(function ($item) {
+                            return [
+                                'id' => $item->id,
+                                'name' => __('messages.' . $item->type_of_service),
+                                'type_key' => $item->type_of_service,
+                                'care_type' => $item->type_of_care,
+                                'care_type_name' => __('messages.' . $item->type_of_care),
+                                'price' => $item->price,
+                                'formatted_price' => number_format($item->price, 2) . ' ' . __('messages.currency'),
+                                'service_type' => 'elderly_care'
+                            ];
+                        })->values()
                     ];
                 });
 
@@ -230,7 +240,10 @@ class AppointmentApiController extends Controller
                 'date_of_appointment' => 'required|date|after_or_equal:today',
                 'time_of_appointment' => 'nullable|date_format:H:i',
                 'note' => 'nullable|string|max:1000',
-                'room_code' => 'nullable|string|exists:rooms,code', // Add room code validation
+                'room_code' => 'nullable|string|exists:rooms,code',
+                'address' => 'nullable|string|max:500',
+                'lat' => 'nullable|numeric|between:-90,90',
+                'lng' => 'nullable|numeric|between:-180,180',
             ];
 
             // Add specific type validation based on service type
@@ -282,8 +295,11 @@ class AppointmentApiController extends Controller
                 'date_of_appointment' => $request->date_of_appointment,
                 'time_of_appointment' => $request->time_of_appointment,
                 'note' => $request->note,
+                'address' => $request->address,
+                'lat' => $request->lat,
+                'lng' => $request->lng,
                 'user_id' => $userId,
-                'room_id' => $roomValidation['room']->id ?? null, // Store room_id if room code is provided
+                'room_id' => $roomValidation['room']->id ?? null,
             ];
 
             // Create appointment based on service type
@@ -327,6 +343,11 @@ class AppointmentApiController extends Controller
             // Format response data with enhanced x-ray info
             $serviceDisplayName = $serviceInfo->name ?? __('messages.' . ($serviceInfo->type_of_service ?? 'unknown'));
             
+            // For elderly care, include care type information
+            if ($request->service_type === 'elderly_care' && $serviceInfo) {
+                $serviceDisplayName = __('messages.' . $serviceInfo->type_of_service);
+            }
+            
             // For x-ray types, include hierarchy information
             if ($request->service_type === 'home_xray' && $serviceInfo) {
                 $serviceDisplayName = $serviceInfo->isSubcategory() ? $serviceInfo->full_name : $serviceInfo->name;
@@ -347,6 +368,11 @@ class AppointmentApiController extends Controller
                     'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d'),
                     'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i') : null,
                     'note' => $appointment->note,
+                    'address' => $appointment->address,
+                    'location' => [
+                        'lat' => $appointment->lat,
+                        'lng' => $appointment->lng,
+                    ],
                     'room_info' => $appointment->room ? [
                         'id' => $appointment->room->id,
                         'code' => $appointment->room->code,
@@ -363,6 +389,16 @@ class AppointmentApiController extends Controller
                 ]
             ];
 
+            // Add care type information for elderly care appointments
+            if ($request->service_type === 'elderly_care' && $serviceInfo) {
+                $responseData['appointment']['care_info'] = [
+                    'care_type' => $serviceInfo->type_of_care,
+                    'care_type_name' => __('messages.' . $serviceInfo->type_of_care),
+                    'service_type' => $serviceInfo->type_of_service,
+                    'service_type_name' => __('messages.' . $serviceInfo->type_of_service),
+                ];
+            }
+
             // Add hierarchy information for x-ray appointments
             if ($request->service_type === 'home_xray' && $serviceInfo) {
                 $responseData['appointment']['hierarchy_info'] = [
@@ -374,7 +410,7 @@ class AppointmentApiController extends Controller
                 ];
             }
 
-           if ($request->room_code && isset($roomValidation['room'])) {
+        if ($request->room_code && isset($roomValidation['room'])) {
             try {
                 $room = $roomValidation['room'];
                 
@@ -390,10 +426,18 @@ class AppointmentApiController extends Controller
                     'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d H:i:s'),
                     'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i:s') : null,
                     'note' => $appointment->note,
+                    'address' => $appointment->address,
+                    'lat' => $appointment->lat,
+                    'lng' => $appointment->lng,
                     'final_price' => $priceCalculation['final_price'],
                     'discount_percent' => $priceCalculation['discount_percent'],
                     'discount_amount' => $priceCalculation['discount_amount'],
                 ];
+                
+                // Add care type for elderly care
+                if ($request->service_type === 'elderly_care' && $serviceInfo) {
+                    $messageData['care_type'] = __('messages.' . $serviceInfo->type_of_care);
+                }
                 
                 dispatch(function () use ($messageData) {
                     try {
@@ -405,6 +449,12 @@ class AppointmentApiController extends Controller
                         
                         // Format appointment message
                         $messageText = "📅 New Appointment Booked\n\n";
+                        
+                        // Add care type if available
+                        if (isset($messageData['care_type'])) {
+                            $messageText .= "Care Type: {$messageData['care_type']}\n";
+                        }
+                        
                         $messageText .= "Service: {$messageData['service_name']}\n";
                         $messageText .= "Date: " . \Carbon\Carbon::parse($messageData['date_of_appointment'])->format('M d, Y') . "\n";
                         
@@ -412,10 +462,20 @@ class AppointmentApiController extends Controller
                             $messageText .= "Time: " . \Carbon\Carbon::parse($messageData['time_of_appointment'])->format('h:i A') . "\n";
                         }
                         
-                        $messageText .= "Price: $" . number_format($messageData['final_price'], 2) . "\n";
+                        // Add address if available
+                        if ($messageData['address']) {
+                            $messageText .= "Address: {$messageData['address']}\n";
+                        }
+                        
+                        // Add location coordinates if available
+                        if ($messageData['lat'] && $messageData['lng']) {
+                            $messageText .= "Location: {$messageData['lat']}, {$messageData['lng']}\n";
+                        }
+                        
+                        $messageText .= "Price: JD" . number_format($messageData['final_price'], 2) . "\n";
                         
                         if ($messageData['discount_percent'] > 0) {
-                            $messageText .= "Discount: " . $messageData['discount_percent'] . "% (-$" . number_format($messageData['discount_amount'], 2) . ")\n";
+                            $messageText .= "Discount: " . $messageData['discount_percent'] . "% (-JD" . number_format($messageData['discount_amount'], 2) . ")\n";
                         }
                         
                         if ($messageData['note']) {
@@ -438,6 +498,19 @@ class AppointmentApiController extends Controller
                                 'type' => ['stringValue' => 'appointment'],
                             ]
                         ];
+                        
+                        // Add location data if available
+                        if ($messageData['lat'] && $messageData['lng']) {
+                            $firestoreData['fields']['location'] = [
+                                'mapValue' => [
+                                    'fields' => [
+                                        'lat' => ['doubleValue' => (float)$messageData['lat']],
+                                        'lng' => ['doubleValue' => (float)$messageData['lng']],
+                                        'address' => ['stringValue' => $messageData['address'] ?? '']
+                                    ]
+                                ]
+                            ];
+                        }
                         
                         // Send to Firestore messages subcollection
                         $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
@@ -513,16 +586,27 @@ class AppointmentApiController extends Controller
                 case 'elderly_care':
                     $appointments = ElderlyCare::with(['typeElderlyCare'])
                         ->where('user_id', $user->id)
+                        ->orderBy('date_of_appointment', 'desc')
                         ->get()
                         ->map(function ($item) {
                             return [
                                 'id' => $item->id,
                                 'service_type' => 'elderly_care',
-                                'service_name' => $item->typeElderlyCare->name ?? null,
+                                'service_name' => __('messages.' . $item->typeElderlyCare->type_of_service),
+                                'care_type' => $item->typeElderlyCare->type_of_care,
+                                'care_type_name' => __('messages.' . $item->typeElderlyCare->type_of_care),
+                                'service_type_key' => $item->typeElderlyCare->type_of_service,
+                                'service_type_name' => __('messages.' . $item->typeElderlyCare->type_of_service),
                                 'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
                                 'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
                                 'note' => $item->note,
+                                'address' => $item->address,
+                                'location' => [
+                                    'lat' => $item->lat,
+                                    'lng' => $item->lng,
+                                ],
                                 'price' => $item->typeElderlyCare->price ?? 0,
+                                'formatted_price' => number_format($item->typeElderlyCare->price ?? 0, 2) . ' ' . __('messages.currency'),
                             ];
                         });
                     break;
@@ -530,16 +614,24 @@ class AppointmentApiController extends Controller
                 case 'request_nurse':
                     $appointments = RequestNurse::with(['typeRequestNurse'])
                         ->where('user_id', $user->id)
+                        ->orderBy('date_of_appointment', 'desc')
                         ->get()
                         ->map(function ($item) {
                             return [
                                 'id' => $item->id,
                                 'service_type' => 'request_nurse',
-                                'service_name' => $item->typeRequestNurse->name ?? null,
+                                'service_name' => __('messages.' . $item->typeRequestNurse->type_of_service),
+                                'service_type_key' => $item->typeRequestNurse->type_of_service,
                                 'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
                                 'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
                                 'note' => $item->note,
+                                'address' => $item->address,
+                                'location' => [
+                                    'lat' => $item->lat,
+                                    'lng' => $item->lng,
+                                ],
                                 'price' => $item->typeRequestNurse->price ?? 0,
+                                'formatted_price' => number_format($item->typeRequestNurse->price ?? 0, 2) . ' ' . __('messages.currency'),
                             ];
                         });
                     break;
@@ -547,6 +639,7 @@ class AppointmentApiController extends Controller
                 case 'home_xray':
                     $appointments = HomeXray::with(['typeHomeXray.parent'])
                         ->where('user_id', $user->id)
+                        ->orderBy('date_of_appointment', 'desc')
                         ->get()
                         ->map(function ($item) {
                             $type = $item->typeHomeXray;
@@ -557,8 +650,15 @@ class AppointmentApiController extends Controller
                                 'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
                                 'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
                                 'note' => $item->note,
+                                'address' => $item->address,
+                                'location' => [
+                                    'lat' => $item->lat,
+                                    'lng' => $item->lng,
+                                ],
                                 'price' => $type->price ?? 0,
+                                'formatted_price' => number_format($type->price ?? 0, 2) . ' ' . __('messages.currency'),
                                 'parent_name' => $type->parent->name ?? null,
+                                'is_subcategory' => $type ? $type->isSubcategory() : false,
                             ];
                         });
                     break;
@@ -566,6 +666,7 @@ class AppointmentApiController extends Controller
                 case 'medical_test':
                     $appointments = MedicalTest::with(['typeMedicalTest'])
                         ->where('user_id', $user->id)
+                        ->orderBy('date_of_appointment', 'desc')
                         ->get()
                         ->map(function ($item) {
                             return [
@@ -575,7 +676,13 @@ class AppointmentApiController extends Controller
                                 'date_of_appointment' => $item->date_of_appointment->format('Y-m-d'),
                                 'time_of_appointment' => $item->time_of_appointment ? $item->time_of_appointment->format('H:i') : null,
                                 'note' => $item->note,
+                                'address' => $item->address,
+                                'location' => [
+                                    'lat' => $item->lat,
+                                    'lng' => $item->lng,
+                                ],
                                 'price' => $item->typeMedicalTest->price ?? 0,
+                                'formatted_price' => number_format($item->typeMedicalTest->price ?? 0, 2) . ' ' . __('messages.currency'),
                             ];
                         });
                     break;

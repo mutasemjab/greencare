@@ -258,10 +258,25 @@
                 </li>
           
                 <li class="nav-item">
+                    <a href="{{ route('special-medical-forms.index') }}" class="nav-link {{ request()->routeIs('special-medical-forms.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-file-medical"></i>
+                        <p>{{ __('messages.special_medical_forms') }}</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('notifications.create') }}"
                         class="nav-link {{ request()->routeIs('notifications.create') ? 'active' : '' }}">
                         <i class="fas fa-wrench nav-icon"></i>
                         <p>{{ __('messages.notifications') }}</p>
+                    </a>
+                </li>
+             
+                <li class="nav-item">
+                    <a href="{{ route('careers.index') }}"
+                        class="nav-link {{ request()->routeIs('careers.index') ? 'active' : '' }}">
+                        <i class="fas fa-wrench nav-icon"></i>
+                        <p>{{ __('messages.careers') }}</p>
                     </a>
                 </li>
 
