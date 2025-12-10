@@ -86,7 +86,8 @@
                 </li>
 
                 <!-- Service Types Management -->
-                <li class="nav-item <?php echo e(request()->is('elderly-cares*') || request()->is('request-nurses*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : ''); ?>">
+                <li
+                    class="nav-item <?php echo e(request()->is('elderly-cares*') || request()->is('request-nurses*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : ''); ?>">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <p>
@@ -129,21 +130,24 @@
 
                 <!-- Appointments Management -->
                 <li class="nav-item">
-                    <a href="<?php echo e(route('appointments.index')); ?>" class="nav-link <?php echo e(request()->routeIs('appointments.*') ? 'active' : ''); ?>">
+                    <a href="<?php echo e(route('appointments.index')); ?>"
+                        class="nav-link <?php echo e(request()->routeIs('appointments.*') ? 'active' : ''); ?>">
                         <i class="fas fa-calendar-check nav-icon"></i>
                         <p> <?php echo e(__('messages.all_appointments')); ?> </p>
                     </a>
                 </li>
-              
+
                 <li class="nav-item">
-                    <a href="<?php echo e(route('appointment-providers.index')); ?>" class="nav-link <?php echo e(request()->routeIs('appointment-providers.*') ? 'active' : ''); ?>">
+                    <a href="<?php echo e(route('appointment-providers.index')); ?>"
+                        class="nav-link <?php echo e(request()->routeIs('appointment-providers.*') ? 'active' : ''); ?>">
                         <i class="fas fa-calendar-check nav-icon"></i>
                         <p> <?php echo e(__('messages.appointment_providers')); ?> </p>
                     </a>
                 </li>
 
                 <!-- Catalog Management (Existing Section) -->
-                <li class="nav-item <?php echo e(request()->is('deliveries*') || request()->is('categories*') || request()->is('products*') ? 'menu-open' : ''); ?>">
+                <li
+                    class="nav-item <?php echo e(request()->is('deliveries*') || request()->is('categories*') || request()->is('products*') ? 'menu-open' : ''); ?>">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -185,7 +189,8 @@
                 </li>
 
                 <!-- Provider Management (Existing Section) -->
-                <li class="nav-item <?php echo e(request()->is('types*') || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : ''); ?>">
+                <li
+                    class="nav-item <?php echo e(request()->is('types*') || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : ''); ?>">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -259,7 +264,15 @@
                         <p><?php echo e(__('messages.app_configurations')); ?></p>
                     </a>
                 </li>
-          
+
+                <li class="nav-item">
+                    <a href="<?php echo e(route('special-medical-forms.index')); ?>"
+                        class="nav-link <?php echo e(request()->routeIs('special-medical-forms.*') ? 'active' : ''); ?>">
+                        <i class="nav-icon fas fa-file-medical"></i>
+                        <p><?php echo e(__('messages.special_medical_forms')); ?></p>
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a href="<?php echo e(route('notifications.create')); ?>"
                         class="nav-link <?php echo e(request()->routeIs('notifications.create') ? 'active' : ''); ?>">
@@ -267,6 +280,34 @@
                         <p><?php echo e(__('messages.notifications')); ?></p>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="<?php echo e(route('careers.index')); ?>"
+                        class="nav-link <?php echo e(request()->routeIs('careers.index') ? 'active' : ''); ?>">
+                        <i class="fas fa-wrench nav-icon"></i>
+                        <p><?php echo e(__('messages.careers')); ?></p>
+                    </a>
+                </li>
+
+                <?php if($user->can('pos-table') || $user->can('pos-add') || $user->can('pos-edit') || $user->can('pos-delete')): ?>
+                    <li class="nav-item">
+                        <a href="<?php echo e(route('pos.index')); ?>"
+                            class="nav-link <?php echo e(request()->routeIs('pos.*') ? 'active' : ''); ?>">
+                            <i class="far fa-cash-register nav-icon"></i>
+                            <p><?php echo e(__('messages.pos_list')); ?></p>
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if($user->can('card-table') || $user->can('card-add') || $user->can('card-edit') || $user->can('card-delete')): ?>
+                    <li class="nav-item">
+                        <a href="<?php echo e(route('cards.index')); ?>"
+                            class="nav-link <?php echo e(request()->routeIs('cards.*') ? 'active' : ''); ?>">
+                            <i class="far fa-credit-card nav-icon"></i>
+                            <p><?php echo e(__('messages.cards_list')); ?></p>
+                        </a>
+                    </li>
+                <?php endif; ?>
 
                 <!-- User Management -->
                 <li class="nav-header"><?php echo e(__('messages.user_management')); ?></li>
@@ -305,4 +346,5 @@
         <!-- /.sidebar-menu -->
     </div>
     <!-- /.sidebar -->
-</aside><?php /**PATH C:\xampp\htdocs\greencare\resources\views/admin/includes/sidebar.blade.php ENDPATH**/ ?>
+</aside>
+<?php /**PATH C:\xampp\htdocs\greencare\resources\views/admin/includes/sidebar.blade.php ENDPATH**/ ?>

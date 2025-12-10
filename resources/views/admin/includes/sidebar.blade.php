@@ -86,7 +86,8 @@
                 </li>
 
                 <!-- Service Types Management -->
-                <li class="nav-item {{ request()->is('elderly-cares*') || request()->is('request-nurses*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : '' }}">
+                <li
+                    class="nav-item {{ request()->is('elderly-cares*') || request()->is('request-nurses*') || request()->is('home-xrays*') || request()->is('medical-tests*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <p>
@@ -128,21 +129,24 @@
 
                 <!-- Appointments Management -->
                 <li class="nav-item">
-                    <a href="{{ route('appointments.index') }}" class="nav-link {{ request()->routeIs('appointments.*') ? 'active' : '' }}">
+                    <a href="{{ route('appointments.index') }}"
+                        class="nav-link {{ request()->routeIs('appointments.*') ? 'active' : '' }}">
                         <i class="fas fa-calendar-check nav-icon"></i>
                         <p> {{ __('messages.all_appointments') }} </p>
                     </a>
                 </li>
-              
+
                 <li class="nav-item">
-                    <a href="{{ route('appointment-providers.index') }}" class="nav-link {{ request()->routeIs('appointment-providers.*') ? 'active' : '' }}">
+                    <a href="{{ route('appointment-providers.index') }}"
+                        class="nav-link {{ request()->routeIs('appointment-providers.*') ? 'active' : '' }}">
                         <i class="fas fa-calendar-check nav-icon"></i>
                         <p> {{ __('messages.appointment_providers') }} </p>
                     </a>
                 </li>
 
                 <!-- Catalog Management (Existing Section) -->
-                <li class="nav-item {{ request()->is('deliveries*') || request()->is('categories*') || request()->is('products*') ? 'menu-open' : '' }}">
+                <li
+                    class="nav-item {{ request()->is('deliveries*') || request()->is('categories*') || request()->is('products*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -183,7 +187,8 @@
                 </li>
 
                 <!-- Provider Management (Existing Section) -->
-                <li class="nav-item {{ request()->is('types*') || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : '' }}">
+                <li
+                    class="nav-item {{ request()->is('types*') || request()->is('provider-categories*') || request()->is('providers*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-tags"></i>
                         <p>
@@ -256,9 +261,10 @@
                         <p>{{ __('messages.app_configurations') }}</p>
                     </a>
                 </li>
-          
+
                 <li class="nav-item">
-                    <a href="{{ route('special-medical-forms.index') }}" class="nav-link {{ request()->routeIs('special-medical-forms.*') ? 'active' : '' }}">
+                    <a href="{{ route('special-medical-forms.index') }}"
+                        class="nav-link {{ request()->routeIs('special-medical-forms.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-medical"></i>
                         <p>{{ __('messages.special_medical_forms') }}</p>
                     </a>
@@ -271,7 +277,7 @@
                         <p>{{ __('messages.notifications') }}</p>
                     </a>
                 </li>
-             
+
                 <li class="nav-item">
                     <a href="{{ route('careers.index') }}"
                         class="nav-link {{ request()->routeIs('careers.index') ? 'active' : '' }}">
@@ -279,6 +285,26 @@
                         <p>{{ __('messages.careers') }}</p>
                     </a>
                 </li>
+
+                @if ($user->can('pos-table') || $user->can('pos-add') || $user->can('pos-edit') || $user->can('pos-delete'))
+                    <li class="nav-item">
+                        <a href="{{ route('pos.index') }}"
+                            class="nav-link {{ request()->routeIs('pos.*') ? 'active' : '' }}">
+                            <i class="far fa-cash-register nav-icon"></i>
+                            <p>{{ __('messages.pos_list') }}</p>
+                        </a>
+                    </li>
+                @endif
+
+                @if ($user->can('card-table') || $user->can('card-add') || $user->can('card-edit') || $user->can('card-delete'))
+                    <li class="nav-item">
+                        <a href="{{ route('cards.index') }}"
+                            class="nav-link {{ request()->routeIs('cards.*') ? 'active' : '' }}">
+                            <i class="far fa-credit-card nav-icon"></i>
+                            <p>{{ __('messages.cards_list') }}</p>
+                        </a>
+                    </li>
+                @endif
 
                 <!-- User Management -->
                 <li class="nav-header">{{ __('messages.user_management') }}</li>

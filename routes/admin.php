@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CardController;
+use App\Http\Controllers\Admin\CardNumberController;
 use App\Http\Controllers\Admin\CareerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PledgeFormController;
+use App\Http\Controllers\Admin\POSController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProviderCategoryController;
 use App\Http\Controllers\Admin\ProviderController;
@@ -172,6 +175,30 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/doctor/search', [UserController::class, 'searchDoctors'])->name('api.doctors.search');
         Route::get('/families/search', [UserController::class, 'searchFamilies'])->name('api.families.search');
         Route::get('/reportTemplates/search', [ReportTemplateController::class, 'searchTemplates'])->name('api.report-templates.search');
+
+
+        Route::resource('pos', POSController::class);
+        Route::resource('cards', CardController::class);
+
+        // Additional Cards Routes
+        Route::post('cards/{card}/regenerate-numbers', [CardController::class, 'regenerateNumbers'])->name('cards.regenerate-numbers');
+        Route::get('cards/{card}/card-numbers', [CardController::class, 'showNumbers'])->name('cards.card-numbers');
+
+        // Card Numbers Routes
+        Route::prefix('card-numbers')->group(function () {
+            Route::patch('/{cardNumber}/toggle-status', [CardNumberController::class, 'toggleStatus'])->name('card-numbers.toggle-status');
+            Route::patch('/{cardNumber}/toggle-activate', [CardNumberController::class, 'toggleActivate'])->name('card-numbers.toggle-activate');
+            Route::patch('/{cardNumber}/toggle-sell', [CardNumberController::class, 'toggleSell'])->name('card-numbers.toggle-sell');
+
+            // New routes for user assignment
+            Route::get('/{cardNumber}/assign', [CardNumberController::class, 'showAssignForm'])->name('card-numbers.assign-form');
+            Route::patch('/{cardNumber}/assign', [CardNumberController::class, 'assignToUser'])->name('card-numbers.assign');
+            Route::patch('/{cardNumber}/mark-used', [CardNumberController::class, 'markAsUsed'])->name('card-numbers.mark-used');
+            Route::patch('/{cardNumber}/remove-assignment', [CardNumberController::class, 'removeAssignment'])->name('card-numbers.remove-assignment');
+
+            // Bulk operations
+            Route::post('/bulk-assign', [CardNumberController::class, 'bulkAssign'])->name('card-numbers.bulk-assign');
+        });
     });
 });
 

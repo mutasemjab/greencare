@@ -13,17 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('showers', function (Blueprint $table) {
+        Schema::create('card_usages', function (Blueprint $table) {
             $table->id();
-            $table->string('code_patient')->nullable();
-            $table->date('date_of_shower');
-            $table->time('time_of_shower')->nullable();
-            $table->text('note')->nullable();
-            $table->double('price')->default(0);
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('card_number_id')->nullable();
             $table->foreign('card_number_id')->references('id')->on('card_numbers')->onDelete('cascade');
+            $table->dateTime('used_at')->nullable();
             $table->timestamps();
         });
     }
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('showers');
+        Schema::dropIfExists('card_usages');
     }
 };
