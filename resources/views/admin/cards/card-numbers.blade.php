@@ -152,11 +152,7 @@
                                                             </form>
                                                             
                                                         @elseif($cardNumber->isSoldNotAssigned())
-                                                            <!-- Assign to User Button -->
-                                                            <button type="button" class="btn btn-primary btn-sm mb-1" 
-                                                                    onclick="showAssignModal({{ $cardNumber->id }}, '{{ $cardNumber->number }}')">
-                                                                {{ __('messages.assign_to_user') }}
-                                                            </button>
+                                                         
                                                             <!-- Mark as Not Sold Button -->
                                                             <form action="{{ route('card-numbers.toggle-sell', $cardNumber) }}" 
                                                                 method="POST" 

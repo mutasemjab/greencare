@@ -1305,7 +1305,7 @@ return [
     'updated_successfully' => 'Updated successfully',
 
     // Setting keys translation
-    'amount_of_shower_patient' => 'Amount of Shower per Patient',
+    'amount_of_shower_patient' => 'Amount of Shower for Patient',
     'care_type' => 'Care Type',
     'all_care_types' => 'All Care Types',
     'select_care_type' => 'Select Care Type',

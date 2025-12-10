@@ -1252,7 +1252,7 @@ return [
   'updated_successfully' => 'تم التحديث بنجاح',
 
   // Setting keys translation
-  'amount_of_shower_patient' => 'عدد مرات الاستحمام لكل مريض',
+  'amount_of_shower_patient' => 'سعر الاستحمام للمريض',
   'notifications' => 'الإشعارات',
 
   'care_type' => 'نوع الرعاية',
