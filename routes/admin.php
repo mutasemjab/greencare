@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\TypeElderlyCareController;
 use App\Http\Controllers\Admin\TypeHomeXrayController;
 use App\Http\Controllers\Admin\TypeMedicalTestController;
 use App\Http\Controllers\Admin\TypeRequestNurseController;
+use App\Http\Controllers\Admin\ShowerController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -199,6 +200,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
             // Bulk operations
             Route::post('/bulk-assign', [CardNumberController::class, 'bulkAssign'])->name('card-numbers.bulk-assign');
         });
+
+
+         Route::resource('showers', ShowerController::class);
+         Route::get('showers/card-price/{id}', [ShowerController::class, 'getCardPrice'])->name('showers.card-price');
+
     });
 });
 

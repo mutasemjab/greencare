@@ -1527,6 +1527,138 @@ return [
     'search_user' => 'Search User',
     'type_to_search_users' => 'Type to search users',
     'selected_user' => 'Selected User',
+     // Shower Appointments
+    'shower_appointments' => 'Shower Appointments',
+    'shower_appointment' => 'Shower Appointment',
+    'new_appointment' => 'New Appointment',
+    'add_new_appointment' => 'Add New Shower Appointment',
+    'edit_appointment' => 'Edit Shower Appointment',
+    'view_appointment' => 'View Appointment',
+    'appointment_details' => 'Appointment Details',
+    
+    // Statistics
+    'total_appointments' => 'Total Appointments',
+    'today_appointments' => 'Today\'s Appointments',
+    'this_month_appointments' => 'This Month',
+    'total_revenue' => 'Total Revenue',
+    'card_payments' => 'Card Payments',
+    'cash_payments' => 'Cash Payments',
+    
+    // Form Fields
+    'id' => 'ID',
+    'user' => 'User',
+    'select_user' => 'Select User',
+    'patient_code' => 'Patient Code',
+    'select_room' => 'Select Room',
+    'date_of_shower' => 'Shower Date',
+    'time_of_shower' => 'Shower Time',
+    'payment_method' => 'Payment Method',
+    'price' => 'Price',
+    'note' => 'Note',
+    'notes' => 'Notes',
+    'card_number' => 'Card Number',
+    'select_card' => 'Select Card',
+    'discount' => 'Discount',
+    
+    // Payment Methods
+    'cash' => 'Cash',
+    'card' => 'Card',
+    'pay_with_cash' => 'Pay with Cash',
+    'pay_with_card' => 'Pay with Card',
+    
+    // Filters
+    'filters' => 'Filters',
+    'from_date' => 'From Date',
+    'to_date' => 'To Date',
+    'all' => 'All',
+    'search' => 'Search',
+    'reset' => 'Reset',
+    'search_by_patient_code' => 'Search by Patient Code',
+    
+    // Actions
+    'actions' => 'Actions',
+    'view' => 'View',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+    'back' => 'Back',
+    'save_appointment' => 'Save Appointment',
+    'update_appointment' => 'Update Appointment',
+    
+    // Messages
+    'no_appointments' => 'No shower appointments found',
+    'confirm_delete' => 'Are you sure you want to delete this appointment?',
+    'shower_appointment_created_successfully' => 'Shower appointment created successfully',
+    'shower_appointment_updated_successfully' => 'Shower appointment updated successfully',
+    'shower_appointment_deleted_successfully' => 'Shower appointment deleted successfully',
+    'error_creating_shower_appointment' => 'Error creating shower appointment',
+    'error_updating_shower_appointment' => 'Error updating shower appointment',
+    'error_deleting_shower_appointment' => 'Error deleting shower appointment',
+    
+    // Validation
+    'required' => 'Required',
+    'optional' => 'Optional',
+    'validation_error' => 'Validation Error',
+    'user_required' => 'User is required',
+    'user_not_found' => 'User not found',
+    
+    // Card Messages
+    'card_not_found' => 'Card not found',
+    'card_not_active' => 'Card is not active',
+    'card_already_used' => 'Card has already been used',
+    'card_not_sold_yet' => 'Card has not been sold yet',
+    'card_not_assigned_to_user' => 'Card is not assigned to this user',
+    'card_price_mismatch' => 'Card price does not match shower price',
+    'card_info' => 'Card Info',
+    'card_price' => 'Card Price',
+    'shower_price' => 'Shower Price',
+    'available_cards' => 'Available Cards',
+    
+    // Discount Info
+    'discount_info' => 'Discount Info',
+    'room_title' => 'Room',
+    'discount_percentage' => 'Discount Percentage',
+    'discount_amount' => 'Discount Amount',
+    'original_price' => 'Original Price',
+    'discounted_price' => 'Discounted Price',
+    'final_price' => 'Final Price',
+    'discount_will_be_applied' => 'Discount of :percent% will be applied (:amount). Final price: :final',
+    'default_price' => 'Default Price',
+    'if_patient_in_room' => 'Optional - Discount will be applied if user is a patient in this room',
+    
+    // Date & Time
+    'date' => 'Date',
+    'time' => 'Time',
+    'date_and_time' => 'Date & Time',
+    'created_at' => 'Created At',
+    'updated_at' => 'Updated At',
+    'used_at' => 'Used At',
+    
+    // Other
+    'email' => 'Email',
+    'name' => 'Name',
+    'status' => 'Status',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'used' => 'Used',
+    'not_used' => 'Not Used',
+    'currency' => 'JOD',
+    'add_notes' => 'Add any additional notes...',
+    // Sidebar Headers
+'dashboard' => 'Dashboard',
+'users_management' => 'Users Management',
+'medical_services' => 'Medical Services',
+'ecommerce' => 'E-Commerce',
+'financial_management' => 'Financial Management',
+'content_management' => 'Content Management',
+'system_settings' => 'System Settings',
+'admin_management' => 'Admin Management',
+
+// New Sections
+'appointments_reservations' => 'Appointments & Reservations',
+'medical_resources' => 'Medical Resources',
+'medical_forms' => 'Medical Forms',
     "" => "",
 
 ];

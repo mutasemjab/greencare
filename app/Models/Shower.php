@@ -25,6 +25,27 @@ class Shower extends Model
         return $this->belongsTo(User::class);
     }
 
+      public function cardNumber()
+    {
+        return $this->belongsTo(CardNumber::class);
+    }
+
+    /**
+     * Check if payment was made with card
+     */
+    public function isPaidWithCard()
+    {
+        return !is_null($this->card_number_id);
+    }
+
+    /**
+     * Get payment method
+     */
+    public function getPaymentMethodAttribute()
+    {
+        return $this->isPaidWithCard() ? 'card' : 'cash';
+    }
+
     /**
      * Get formatted shower datetime
      */

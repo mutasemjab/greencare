@@ -1476,7 +1476,137 @@ return [
   'search_user' => 'البحث عن مستخدم',
   'type_to_search_users' => 'اكتب للبحث عن المستخدمين',
   'selected_user' => 'المستخدم المحدد',
+ // Shower Appointments
+    'shower_appointments' => 'مواعيد الاستحمام',
+    'shower_appointment' => 'موعد استحمام',
+    'new_appointment' => 'موعد جديد',
+    'add_new_appointment' => 'إضافة موعد استحمام جديد',
+    'edit_appointment' => 'تعديل موعد الاستحمام',
+    'view_appointment' => 'عرض الموعد',
+    'appointment_details' => 'تفاصيل الموعد',
+    
+    // Statistics
+    'total_appointments' => 'إجمالي المواعيد',
+    'today_appointments' => 'مواعيد اليوم',
+    'this_month_appointments' => 'هذا الشهر',
+    'total_revenue' => 'إجمالي الإيرادات',
+    'card_payments' => 'الدفع ببطاقة',
+    'cash_payments' => 'الدفع نقداً',
+    
+    // Form Fields
+    'id' => 'الرقم',
+    'user' => 'المستخدم',
+    'select_user' => 'اختر المستخدم',
+    'patient_code' => 'كود المريض',
+    'select_room' => 'اختر الغرفة',
+    'date_of_shower' => 'تاريخ الاستحمام',
+    'time_of_shower' => 'وقت الاستحمام',
+    'payment_method' => 'طريقة الدفع',
+    'price' => 'السعر',
+    'note' => 'ملاحظة',
+    'notes' => 'ملاحظات',
+    'card_number' => 'رقم البطاقة',
+    'select_card' => 'اختر البطاقة',
+    'discount' => 'الخصم',
+    
+    // Payment Methods
+    'cash' => 'نقداً',
+    'card' => 'بطاقة',
+    'pay_with_cash' => 'الدفع نقداً',
+    'pay_with_card' => 'الدفع ببطاقة',
+    
+    // Filters
+    'filters' => 'الفلاتر',
+    'from_date' => 'من تاريخ',
+    'to_date' => 'إلى تاريخ',
+    'all' => 'الكل',
+    'search' => 'بحث',
+    'reset' => 'إعادة تعيين',
+    'search_by_patient_code' => 'ابحث بكود المريض',
+    
+    // Actions
+    'actions' => 'الإجراءات',
+    'view' => 'عرض',
+    'edit' => 'تعديل',
+    'delete' => 'حذف',
+    'save' => 'حفظ',
+    'cancel' => 'إلغاء',
+    'back' => 'رجوع',
+    'save_appointment' => 'حفظ الموعد',
+    'update_appointment' => 'تحديث الموعد',
+    
+    // Messages
+    'no_appointments' => 'لا توجد مواعيد استحمام',
+    'confirm_delete' => 'هل أنت متأكد من حذف هذا الموعد؟',
+    'shower_appointment_created_successfully' => 'تم إنشاء موعد الاستحمام بنجاح',
+    'shower_appointment_updated_successfully' => 'تم تحديث موعد الاستحمام بنجاح',
+    'shower_appointment_deleted_successfully' => 'تم حذف موعد الاستحمام بنجاح',
+    'error_creating_shower_appointment' => 'حدث خطأ أثناء إنشاء موعد الاستحمام',
+    'error_updating_shower_appointment' => 'حدث خطأ أثناء تحديث موعد الاستحمام',
+    'error_deleting_shower_appointment' => 'حدث خطأ أثناء حذف موعد الاستحمام',
+    
+    // Validation
+    'required' => 'مطلوب',
+    'optional' => 'اختياري',
+    'validation_error' => 'خطأ في التحقق',
+    'user_required' => 'المستخدم مطلوب',
+    'user_not_found' => 'المستخدم غير موجود',
+    
+    // Card Messages
+    'card_not_found' => 'البطاقة غير موجودة',
+    'card_not_active' => 'البطاقة غير نشطة',
+    'card_already_used' => 'البطاقة مستخدمة من قبل',
+    'card_not_sold_yet' => 'البطاقة لم يتم بيعها بعد',
+    'card_not_assigned_to_user' => 'البطاقة غير مخصصة لهذا المستخدم',
+    'card_price_mismatch' => 'سعر البطاقة لا يتطابق مع سعر الاستحمام',
+    'card_info' => 'معلومات البطاقة',
+    'card_price' => 'سعر البطاقة',
+    'shower_price' => 'سعر الاستحمام',
+    'available_cards' => 'البطاقات المتاحة',
+    
+    // Discount Info
+    'discount_info' => 'معلومات الخصم',
+    'room_title' => 'الغرفة',
+    'discount_percentage' => 'نسبة الخصم',
+    'discount_amount' => 'قيمة الخصم',
+    'original_price' => 'السعر الأصلي',
+    'discounted_price' => 'السعر بعد الخصم',
+    'final_price' => 'السعر النهائي',
+    'discount_will_be_applied' => 'سيتم تطبيق خصم :percent% (:amount دينار). السعر النهائي: :final دينار',
+    'default_price' => 'السعر الافتراضي',
+    'if_patient_in_room' => 'اختياري - سيتم تطبيق الخصم إذا كان المستخدم مريض في هذه الغرفة',
+    
+    // Date & Time
+    'date' => 'التاريخ',
+    'time' => 'الوقت',
+    'date_and_time' => 'التاريخ والوقت',
+    'created_at' => 'تاريخ الإنشاء',
+    'updated_at' => 'تاريخ التحديث',
+    'used_at' => 'تاريخ الاستخدام',
+    
+    // Other
+    'email' => 'البريد الإلكتروني',
+    'name' => 'الاسم',
+    'status' => 'الحالة',
+    'active' => 'نشط',
+    'inactive' => 'غير نشط',
+    'used' => 'مستخدم',
+    'not_used' => 'غير مستخدم',
+    'currency' => 'دينار',
+    'add_notes' => 'أضف أي ملاحظات إضافية...',
+    'dashboard' => 'لوحة التحكم',
+'users_management' => 'إدارة المستخدمين',
+'medical_services' => 'الخدمات الطبية',
+'ecommerce' => 'التجارة الإلكترونية',
+'financial_management' => 'الإدارة المالية',
+'content_management' => 'إدارة المحتوى',
+'system_settings' => 'إعدادات النظام',
+'admin_management' => 'إدارة المسؤولين',
 
+// New Sections
+'appointments_reservations' => 'المواعيد والحجوزات',
+'medical_resources' => 'الموارد الطبية',
+'medical_forms' => 'النماذج الطبية',
   "" => "",
   "" => "",
 
