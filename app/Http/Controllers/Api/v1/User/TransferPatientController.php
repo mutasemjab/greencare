@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1\User;
 use App\Http\Controllers\Controller;
 use App\Models\TransferPatient;
 use App\Models\User;
+use App\Traits\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class TransferPatientController extends Controller
 {
+    use Responses;
     /**
      * Store a newly created transfer request
      */
