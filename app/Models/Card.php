@@ -8,23 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Card extends Model
 {
     use HasFactory;
-     protected $guarded = [];
+    protected $guarded = [];
     
     protected $casts = [
-        'price' => 'decimal:2',
+        'number_of_use_for_one_card' => 'integer',
         'selling_price' => 'decimal:2',
         'number_of_cards' => 'integer',
     ];
 
-
-     public function getPhotoUrlAttribute()
+    public function getPhotoUrlAttribute()
     {
         return $this->photo ? asset('assets/admin/uploads/' . $this->photo) : null;
     }
     
-    /**
-     * Get the POS that owns the card
-     */
     public function pos()
     {
         return $this->belongsTo(POS::class);
@@ -35,57 +31,42 @@ class Card extends Model
         return $this->belongsTo(Category::class);
     }
 
-
-    /**
-     * Get the card numbers for the card
-     */
     public function cardNumbers()
     {
         return $this->hasMany(CardNumber::class);
     }
 
-    /**
-     * Generate unique card numbers and create card_numbers records
-     */
     public function generateCardNumbers()
     {
-        // Delete existing card numbers for this card
         $this->cardNumbers()->delete();
 
         $generatedNumbers = [];
         $attempts = 0;
-        $maxAttempts = $this->number_of_cards * 10; // Prevent infinite loop
+        $maxAttempts = $this->number_of_cards * 10;
 
         while (count($generatedNumbers) < $this->number_of_cards && $attempts < $maxAttempts) {
             $attempts++;
             
-            // Generate a random 16-digit number (like credit card)
             $number = $this->generateUniqueNumber();
             
-            // Check if this number already exists in database
             if (!CardNumber::where('number', $number)->exists() && !in_array($number, $generatedNumbers)) {
                 $generatedNumbers[] = $number;
             }
         }
 
-        // Create card_numbers records
         foreach ($generatedNumbers as $number) {
             $this->cardNumbers()->create([
                 'number' => $number,
-                'activate' => 1, // active
-                'status' => 2,   // not used
+                'activate' => 1,
+                'status' => 2,
             ]);
         }
 
         return $generatedNumbers;
     }
 
-    /**
-     * Generate a unique 16-digit number
-     */
     private function generateUniqueNumber()
     {
-        // Generate 4 groups of 4 digits
         $groups = [];
         for ($i = 0; $i < 4; $i++) {
             $groups[] = str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
@@ -94,13 +75,12 @@ class Card extends Model
         return implode('', $groups);
     }
 
-     public function cardUsages()
+    public function cardUsages()
     {
         return $this->hasManyThrough(CardUsage::class, CardNumber::class);
     }
 
-    // Accessor for available card numbers count
-  public function getAvailableForSaleCountAttribute()
+    public function getAvailableForSaleCountAttribute()
     {
         return $this->cardNumbers()
                    ->where('sell', CardNumber::SELL_NOT_SOLD)
@@ -110,7 +90,6 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for sold but not assigned card numbers count
     public function getSoldNotAssignedCountAttribute()
     {
         return $this->cardNumbers()
@@ -119,7 +98,6 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for sold and assigned card numbers count
     public function getSoldAndAssignedCountAttribute()
     {
         return $this->cardNumbers()
@@ -129,19 +107,16 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for available card numbers count (updated for backward compatibility)
     public function getAvailableCardNumbersCountAttribute()
     {
         return $this->available_for_sale_count;
     }
 
-    // Accessor for assigned but not used card numbers count (updated)
     public function getAssignedNotUsedCardNumbersCountAttribute()
     {
         return $this->sold_and_assigned_count;
     }
 
-    // Accessor for used card numbers count
     public function getUsedCardNumbersCountAttribute()
     {
         return $this->cardNumbers()
@@ -149,7 +124,6 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for inactive card numbers count
     public function getInactiveCardNumbersCountAttribute()
     {
         return $this->cardNumbers()
@@ -157,7 +131,6 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for active card numbers count (for backward compatibility)
     public function getActiveCardNumbersCountAttribute()
     {
         return $this->cardNumbers()
@@ -165,7 +138,6 @@ class Card extends Model
                    ->count();
     }
 
-    // Accessor for unused card numbers count (for backward compatibility)
     public function getUnusedCardNumbersCountAttribute()
     {
         return $this->cardNumbers()

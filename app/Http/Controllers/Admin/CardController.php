@@ -45,7 +45,7 @@ class CardController extends Controller
         $validated = $request->validate([
             'pos_id' => 'nullable|exists:p_o_s,id',
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
+            'number_of_use_for_one_card' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'number_of_cards' => 'required|integer|min:1|max:10000',
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -103,7 +103,7 @@ class CardController extends Controller
         $validated = $request->validate([
             'pos_id' => 'nullable|exists:p_o_s,id',
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
+            'number_of_use_for_one_card' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'number_of_cards' => 'required|integer|min:1|max:10000',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -191,28 +191,37 @@ class CardController extends Controller
      */
     public function showNumbers(Request $request, Card $card)
     {
-        $query = $card->cardNumbers()->with(['assignedUser']);
+        $query = $card->cardNumbers()
+            ->with(['assignedUser', 'usages' => function($query) {
+                $query->latest();
+            }])
+            ->withCount('usages'); // Add usage count
 
         // Filter by status
         if ($request->filled('status')) {
             switch ($request->status) {
                 case 'available':
                     $query->where('sell', CardNumber::SELL_NOT_SOLD)
-                          ->whereNull('assigned_user_id')
-                          ->where('status', CardNumber::STATUS_NOT_USED)
-                          ->where('activate', CardNumber::ACTIVATE_ACTIVE);
+                        ->whereNull('assigned_user_id')
+                        ->where('status', CardNumber::STATUS_NOT_USED)
+                        ->where('activate', CardNumber::ACTIVATE_ACTIVE);
                     break;
                 case 'sold_not_assigned':
                     $query->where('sell', CardNumber::SELL_SOLD)
-                          ->whereNull('assigned_user_id');
+                        ->whereNull('assigned_user_id');
                     break;
                 case 'sold_assigned':
                     $query->where('sell', CardNumber::SELL_SOLD)
-                          ->whereNotNull('assigned_user_id')
-                          ->where('status', CardNumber::STATUS_NOT_USED);
+                        ->whereNotNull('assigned_user_id')
+                        ->where('status', CardNumber::STATUS_NOT_USED);
                     break;
                 case 'used':
                     $query->where('status', CardNumber::STATUS_USED);
+                    break;
+                case 'partially_used':
+                    // Cards that have been used but still have remaining uses
+                    $query->whereHas('usages')
+                        ->where('status', '!=', CardNumber::STATUS_USED);
                     break;
             }
         }
@@ -227,16 +236,31 @@ class CardController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'LIKE', "%{$search}%")
-                  ->orWhereHas('assignedUser', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', "%{$search}%")
-                               ->orWhere('email', 'LIKE', "%{$search}%")
-                               ->orWhere('phone', 'LIKE', "%{$search}%");
-                  });
+                ->orWhereHas('assignedUser', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('email', 'LIKE', "%{$search}%")
+                            ->orWhere('phone', 'LIKE', "%{$search}%");
+                });
             });
         }
 
         $cardNumbers = $query->latest()->paginate(20);
 
         return view('admin.cards.card-numbers', compact('card', 'cardNumbers'));
+    }
+
+    /**
+     * Show usage history for a specific card number
+     */
+    public function showUsageHistory(CardNumber $cardNumber)
+    {
+        $cardNumber->load(['card', 'assignedUser', 'usages.user']);
+        
+        $usages = $cardNumber->usages()
+            ->with('user')
+            ->latest()
+            ->paginate(20);
+        
+        return view('admin.cards.usage-history', compact('cardNumber', 'usages'));
     }
 }

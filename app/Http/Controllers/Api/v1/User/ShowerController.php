@@ -17,7 +17,7 @@ class ShowerController extends Controller
     /**
      * Store a new shower appointment.
      */
-    public function store(Request $request)
+   public function store(Request $request)
     {
         try {
             // Validation rules
@@ -26,9 +26,12 @@ class ShowerController extends Controller
                 'date_of_shower' => 'required|date|after_or_equal:today',
                 'time_of_shower' => 'nullable|date_format:H:i',
                 'note' => 'nullable|string|max:1000',
+                'address' => 'nullable',
+                'lat' => 'nullable',
+                'lng' => 'nullable',
                 'price' => 'nullable|numeric|min:0',
                 'user_id' => 'nullable|integer|exists:users,id',
-                'card_number' => 'nullable|string|exists:card_numbers,number' // إضافة validation للبطاقة
+                'card_number' => 'nullable|string|exists:card_numbers,number'
             ]);
 
             if ($validator->fails()) {
@@ -62,7 +65,7 @@ class ShowerController extends Controller
             $discountInfo = null;
             $appliedDiscount = 0;
             $cardNumberId = null;
-            $paymentMethod = 'cash'; // طريقة الدفع الافتراضية
+            $paymentMethod = 'cash';
 
             // If price is not provided, get from settings
             if (!$request->has('price')) {
@@ -104,9 +107,10 @@ class ShowerController extends Controller
                 }
             }
 
-            // التحقق من البطاقة إذا تم إرسالها
+            // Check card if provided
+            $cardInfo = null;
             if ($request->card_number) {
-                // جلب معلومات البطاقة
+                // Get card information
                 $cardNumber = DB::table('card_numbers')
                     ->join('cards', 'card_numbers.card_id', '=', 'cards.id')
                     ->where('card_numbers.number', $request->card_number)
@@ -116,7 +120,8 @@ class ShowerController extends Controller
                         'card_numbers.status',
                         'card_numbers.sell',
                         'card_numbers.assigned_user_id',
-                        'cards.price as card_price',
+                        'card_numbers.card_id',
+                        'cards.number_of_use_for_one_card',
                         'cards.name as card_name'
                     )
                     ->first();
@@ -128,7 +133,7 @@ class ShowerController extends Controller
                     );
                 }
 
-                // التحقق من أن البطاقة نشطة
+                // Check if card is active
                 if ($cardNumber->activate != 1) {
                     return $this->error_response(
                         __('messages.card_not_active'),
@@ -136,15 +141,7 @@ class ShowerController extends Controller
                     );
                 }
 
-                // التحقق من أن البطاقة لم تُستخدم بعد
-                if ($cardNumber->status == 1) {
-                    return $this->error_response(
-                        __('messages.card_already_used'),
-                        []
-                    );
-                }
-
-                // التحقق من أن البطاقة تم بيعها
+                // Check if card is sold
                 if ($cardNumber->sell != 1) {
                     return $this->error_response(
                         __('messages.card_not_sold_yet'),
@@ -152,22 +149,35 @@ class ShowerController extends Controller
                     );
                 }
 
+                // Count how many times this card has been used
+                $usageCount = DB::table('card_usages')
+                    ->where('card_number_id', $cardNumber->card_number_id)
+                    ->count();
 
-                // الشرط الأساسي: التحقق من أن سعر البطاقة يساوي سعر الاستحمام
-                if (round($cardNumber->card_price, 2) != round($finalPrice, 2)) {
+                // Check if card has remaining uses
+                if ($usageCount >= $cardNumber->number_of_use_for_one_card) {
                     return $this->error_response(
-                        __('messages.card_price_mismatch'),
+                        __('messages.card_fully_used'),
                         [
-                            'card_price' => round($cardNumber->card_price, 2),
-                            'shower_price' => round($finalPrice, 2),
-                            'message' => 'سعر البطاقة (' . round($cardNumber->card_price, 2) . ') لا يساوي سعر الاستحمام (' . round($finalPrice, 2) . ')'
+                            'uses_allowed' => $cardNumber->number_of_use_for_one_card,
+                            'uses_consumed' => $usageCount,
+                            'remaining_uses' => 0,
+                            'message' => 'هذه البطاقة استُخدمت بالكامل (' . $usageCount . '/' . $cardNumber->number_of_use_for_one_card . ')'
                         ]
                     );
                 }
 
-                // إذا كانت جميع الشروط صحيحة، استخدم البطاقة
+                // Card is valid and has remaining uses
                 $cardNumberId = $cardNumber->card_number_id;
                 $paymentMethod = 'card';
+                $remainingUses = $cardNumber->number_of_use_for_one_card - $usageCount;
+                
+                $cardInfo = [
+                    'card_name' => $cardNumber->card_name,
+                    'uses_consumed' => $usageCount + 1,
+                    'total_uses_allowed' => $cardNumber->number_of_use_for_one_card,
+                    'remaining_uses' => $remainingUses - 1
+                ];
             }
 
             // Create the shower appointment
@@ -176,22 +186,17 @@ class ShowerController extends Controller
                 'date_of_shower' => $request->date_of_shower,
                 'time_of_shower' => $request->time_of_shower,
                 'note' => $request->note,
+                'address' => $request->address,
+                'lat' => $request->lat,
+                'lng' => $request->lng,
                 'price' => round($finalPrice, 2),
                 'user_id' => $userId,
-                'card_number_id' => $cardNumberId // حفظ معرف البطاقة
+                'card_number_id' => $cardNumberId
             ]);
 
-            // إذا تم استخدام بطاقة، قم بتحديث حالتها
+            // If card was used, update its status and log usage
             if ($cardNumberId) {
-                // تحديث حالة البطاقة إلى "مستخدمة"
-                DB::table('card_numbers')
-                    ->where('id', $cardNumberId)
-                    ->update([
-                        'status' => 1, // used
-                        'updated_at' => now()
-                    ]);
-
-                // تسجيل استخدام البطاقة في جدول card_usages
+                // Log the usage
                 DB::table('card_usages')->insert([
                     'user_id' => $userId,
                     'card_number_id' => $cardNumberId,
@@ -199,6 +204,21 @@ class ShowerController extends Controller
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
+
+                // Get new usage count
+                $newUsageCount = DB::table('card_usages')
+                    ->where('card_number_id', $cardNumberId)
+                    ->count();
+
+                // If card is now fully used, update status
+                if ($newUsageCount >= $cardNumber->number_of_use_for_one_card) {
+                    DB::table('card_numbers')
+                        ->where('id', $cardNumberId)
+                        ->update([
+                            'status' => 1, // Fully used
+                            'updated_at' => now()
+                        ]);
+                }
             }
 
             // Load user relationship for response
@@ -217,6 +237,7 @@ class ShowerController extends Controller
                 'discount_applied' => $appliedDiscount > 0,
                 'discount_info' => $discountInfo,
                 'card_used' => $cardNumberId ? true : false,
+                'card_info' => $cardInfo,
                 'user' => [
                     'id' => $shower->user->id,
                     'name' => $shower->user->name,
@@ -238,7 +259,6 @@ class ShowerController extends Controller
             );
         }
     }
-
     
 
     

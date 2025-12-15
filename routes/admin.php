@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\TypeHomeXrayController;
 use App\Http\Controllers\Admin\TypeMedicalTestController;
 use App\Http\Controllers\Admin\TypeRequestNurseController;
 use App\Http\Controllers\Admin\ShowerController;
+use App\Http\Controllers\Admin\TransferPatientController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -199,7 +200,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
             // Bulk operations
             Route::post('/bulk-assign', [CardNumberController::class, 'bulkAssign'])->name('card-numbers.bulk-assign');
+            Route::get('/card-numbers/{cardNumber}/usage-history', [CardController::class, 'showUsageHistory'])
+                ->name('card-numbers.usage-history');
         });
+
+        Route::resource('transfer-patients', TransferPatientController::class);
+
 
 
          Route::resource('showers', ShowerController::class);

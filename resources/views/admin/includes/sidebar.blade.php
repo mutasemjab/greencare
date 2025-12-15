@@ -98,6 +98,12 @@
                                 <p>{{ __('messages.shower_appointments') }}</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('transfer-patients.index') }}" class="nav-link {{ request()->routeIs('transfer-patients.*') ? 'active' : '' }}">
+                                <i class="fas fa-hospital-user nav-icon"></i>
+                                <p>{{ __('messages.transfer_patients_list') }}</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 

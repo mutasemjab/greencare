@@ -28,9 +28,9 @@
                                             <h6>{{ __('messages.card_name') }}</h6>
                                             <strong>{{ $card->name }}</strong>
                                         </div>
-                                        <div class="col-md-1">
-                                            <h6>{{ __('messages.price') }}</h6>
-                                            <span class="badge bg-success">{{ number_format($card->price, 2) }}</span>
+                                        <div class="col-md-2">
+                                            <h6>{{ __('messages.uses_per_card') }}</h6>
+                                            <span class="badge bg-info">{{ $card->number_of_use_for_one_card }}</span>
                                         </div>
                                         <div class="col-md-1">
                                             <h6>{{ __('messages.total_numbers') }}</h6>
@@ -40,7 +40,7 @@
                                             <h6>{{ __('messages.available_for_sale') }}</h6>
                                             <span class="badge bg-success">{{ $card->available_for_sale_count }}</span>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-1">
                                             <h6>{{ __('messages.sold_not_assigned') }}</h6>
                                             <span class="badge bg-info">{{ $card->sold_not_assigned_count }}</span>
                                         </div>
@@ -49,7 +49,7 @@
                                             <span class="badge bg-warning">{{ $card->sold_and_assigned_count }}</span>
                                         </div>
                                         <div class="col-md-2">
-                                            <h6>{{ __('messages.used_numbers') }}</h6>
+                                            <h6>{{ __('messages.fully_used') }}</h6>
                                             <span class="badge bg-danger">{{ $card->used_card_numbers_count }}</span>
                                         </div>
                                     </div>
@@ -67,7 +67,8 @@
                                     <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>{{ __('messages.available_for_sale') }}</option>
                                     <option value="sold_not_assigned" {{ request('status') == 'sold_not_assigned' ? 'selected' : '' }}>{{ __('messages.sold_not_assigned') }}</option>
                                     <option value="sold_assigned" {{ request('status') == 'sold_assigned' ? 'selected' : '' }}>{{ __('messages.sold_assigned') }}</option>
-                                    <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>{{ __('messages.used') }}</option>
+                                    <option value="partially_used" {{ request('status') == 'partially_used' ? 'selected' : '' }}>{{ __('messages.partially_used') }}</option>
+                                    <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>{{ __('messages.fully_used') }}</option>
                                 </select>
                                 <select name="activate" class="form-select me-2" onchange="this.form.submit()">
                                     <option value="">{{ __('messages.all_activate') }}</option>
@@ -100,6 +101,7 @@
                                     <tr>
                                         <th>{{ __('messages.id') }}</th>
                                         <th>{{ __('messages.card_number') }}</th>
+                                        <th>{{ __('messages.usage_status') }}</th>
                                         <th>{{ __('messages.status') }}</th>
                                         <th>{{ __('messages.sell_status') }}</th>
                                         <th>{{ __('messages.activate_status') }}</th>
@@ -114,7 +116,33 @@
                                             <td>
                                                 <strong>{{ $cardNumber->number }}</strong>
                                             </td>
-                                           
+                                            <td>
+                                                <!-- Usage Progress Bar -->
+                                                <div class="mb-1">
+                                                    <small>{{ __('messages.used') }}: <strong>{{ $cardNumber->usages_count }}</strong> / {{ $card->number_of_use_for_one_card }}</small>
+                                                </div>
+                                                <div class="progress" style="height: 20px;">
+                                                    @php
+                                                        $percentage = $card->number_of_use_for_one_card > 0 
+                                                            ? ($cardNumber->usages_count / $card->number_of_use_for_one_card) * 100 
+                                                            : 0;
+                                                        $barClass = $percentage >= 100 ? 'bg-danger' : ($percentage >= 50 ? 'bg-warning' : 'bg-success');
+                                                    @endphp
+                                                    <div class="progress-bar {{ $barClass }}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ min($percentage, 100) }}%"
+                                                         aria-valuenow="{{ $cardNumber->usages_count }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="{{ $card->number_of_use_for_one_card }}">
+                                                        {{ round($percentage, 1) }}%
+                                                    </div>
+                                                </div>
+                                                @if($cardNumber->usages_count > 0)
+                                                    <small class="text-muted">
+                                                        {{ __('messages.remaining') }}: {{ max(0, $card->number_of_use_for_one_card - $cardNumber->usages_count) }}
+                                                    </small>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <span class="badge {{ $cardNumber->getStatusBadgeClass() }}">
                                                     {{ $cardNumber->getStatusText() }}
@@ -137,6 +165,14 @@
                                             <td>{{ $cardNumber->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
                                                 <div class="btn-group-vertical" role="group">
+                                                    <!-- View Usage History Button -->
+                                                    @if($cardNumber->usages_count > 0)
+                                                        <a href="{{ route('card-numbers.usage-history', $cardNumber) }}" 
+                                                           class="btn btn-primary btn-sm mb-1">
+                                                            <i class="fas fa-history"></i> {{ __('messages.view_usage') }} ({{ $cardNumber->usages_count }})
+                                                        </a>
+                                                    @endif
+                                                    
                                                     @can('cardnumbers-edit')
                                                         @if($cardNumber->isAvailableForSale())
                                                             <!-- Mark as Sold Button -->
@@ -152,7 +188,6 @@
                                                             </form>
                                                             
                                                         @elseif($cardNumber->isSoldNotAssigned())
-                                                         
                                                             <!-- Mark as Not Sold Button -->
                                                             <form action="{{ route('card-numbers.toggle-sell', $cardNumber) }}" 
                                                                 method="POST" 
@@ -177,7 +212,6 @@
                                                                     {{ __('messages.mark_as_used') }}
                                                                 </button>
                                                             </form>
-                                                        
                                                             
                                                         @elseif($cardNumber->isUsed())
                                                             <!-- Mark as Not Used Button -->
@@ -221,7 +255,6 @@
                         </div>
                         @endcan
 
-
                         <div class="d-flex justify-content-center">
                             {{ $cardNumbers->appends(request()->query())->links() }}
                         </div>
@@ -245,7 +278,4 @@
         </div>
     </div>
 </div>
-
-
-
 @endsection

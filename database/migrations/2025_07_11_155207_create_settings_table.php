@@ -23,6 +23,8 @@ return new class extends Migration
 
          DB::table('settings')->insert([
             ['key' => "amount_of_shower_patient", 'value' => 10],
+            ['key' => "amount_of_transfer_patient_inside_amman", 'value' => 2],
+            ['key' => "amount_of_transfer_patient_outside_amman", 'value' => 3],
         ]);
     }
 

@@ -61,17 +61,17 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="price" class="form-label">{{ __('messages.price') }} <span class="text-danger">*</span></label>
+                            <label for="number_of_use_for_one_card" class="form-label">{{ __('messages.number_of_use_for_one_card') }} <span class="text-danger">*</span></label>
                             <input type="number"
-                                   class="form-control @error('price') is-invalid @enderror"
-                                   id="price"
-                                   name="price"
-                                   value="{{ old('price') }}"
-                                   placeholder="{{ __('messages.enter_price') }}"
+                                   class="form-control @error('number_of_use_for_one_card') is-invalid @enderror"
+                                   id="number_of_use_for_one_card"
+                                   name="number_of_use_for_one_card"
+                                   value="{{ old('number_of_use_for_one_card') }}"
+                                   placeholder="{{ __('messages.enter_number_of_use_for_one_card') }}"
                                    step="any"
                                    min="0"
                                    required>
-                            @error('price')
+                            @error('number_of_use_for_one_card')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

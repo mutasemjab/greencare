@@ -45,8 +45,8 @@
                                         <td>{{ $card->name }}</td>
                                     </tr>
                                     <tr>
-                                        <th>{{ __('messages.price') }}</th>
-                                        <td><strong>{{ number_format($card->price, 2) }}</strong></td>
+                                        <th>{{ __('messages.number_of_use_for_one_card') }}</th>
+                                        <td><strong>{{ number_format($card->number_of_use_for_one_card, 2) }}</strong></td>
                                     </tr>
                                     <tr>
                                         <th>{{ __('messages.number_of_cards') }}</th>

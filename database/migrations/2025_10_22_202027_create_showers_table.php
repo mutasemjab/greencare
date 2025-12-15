@@ -20,6 +20,9 @@ return new class extends Migration
             $table->time('time_of_shower')->nullable();
             $table->text('note')->nullable();
             $table->double('price')->default(0);
+            $table->string('address')->nullable();
+            $table->double('lat')->nullable();
+            $table->double('lng')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('card_number_id')->nullable();

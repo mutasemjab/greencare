@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\ClassTeacher;
 use App\Models\Teacher;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use App\Traits\Responses;
 use Auth;
@@ -16,6 +17,75 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     use Responses;
+
+    protected $otpService;
+
+    public function __construct(OtpService $otpService)
+    {
+        $this->otpService = $otpService;
+    }
+
+      /**
+     * Send OTP to phone number
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|string',
+        ]);
+
+        $fullPhone =  $request->phone_number;
+        $otpResult = $this->otpService->sendOTP($fullPhone);
+
+        if ($otpResult['success']) {
+            return $this->success_response('OTP sent successfully', [
+                'debug_otp' => $otpResult['otp'] ?? null,
+            ]);
+        }
+
+        return $this->error_response($otpResult['message'], $otpResult['error'] ?? null);
+    }
+
+    /**
+     * Verify OTP
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|string',
+            'otp' => 'required|string',
+        ]);
+
+        $fullPhone =  $request->phone_number;
+        $otpResult = $this->otpService->verifyOTPWithTestCase($fullPhone, $request->otp);
+
+        if ($otpResult['success']) {
+            return $this->success_response('OTP verified successfully', []);
+        }
+
+        return $this->error_response($otpResult['message'], $otpResult['error_code'] ?? null);
+    }
+
+    /**
+     * Resend OTP
+     */
+    public function resendOtp(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|string',
+        ]);
+
+        $fullPhone = $request->phone_number;
+        $otpResult = $this->otpService->sendOTP($fullPhone);
+
+        if ($otpResult['success']) {
+            return $this->success_response('OTP resent successfully', [
+                'debug_otp' => $otpResult['otp'] ?? null,
+            ]);
+        }
+
+        return $this->error_response($otpResult['message'], $otpResult['error'] ?? null);
+    }
 
        public function updateFcmToken(Request $request)
     {

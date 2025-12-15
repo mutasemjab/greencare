@@ -28,9 +28,9 @@
                                             <h6><?php echo e(__('messages.card_name')); ?></h6>
                                             <strong><?php echo e($card->name); ?></strong>
                                         </div>
-                                        <div class="col-md-1">
-                                            <h6><?php echo e(__('messages.price')); ?></h6>
-                                            <span class="badge bg-success"><?php echo e(number_format($card->price, 2)); ?></span>
+                                        <div class="col-md-2">
+                                            <h6><?php echo e(__('messages.uses_per_card')); ?></h6>
+                                            <span class="badge bg-info"><?php echo e($card->number_of_use_for_one_card); ?></span>
                                         </div>
                                         <div class="col-md-1">
                                             <h6><?php echo e(__('messages.total_numbers')); ?></h6>
@@ -40,7 +40,7 @@
                                             <h6><?php echo e(__('messages.available_for_sale')); ?></h6>
                                             <span class="badge bg-success"><?php echo e($card->available_for_sale_count); ?></span>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-1">
                                             <h6><?php echo e(__('messages.sold_not_assigned')); ?></h6>
                                             <span class="badge bg-info"><?php echo e($card->sold_not_assigned_count); ?></span>
                                         </div>
@@ -49,7 +49,7 @@
                                             <span class="badge bg-warning"><?php echo e($card->sold_and_assigned_count); ?></span>
                                         </div>
                                         <div class="col-md-2">
-                                            <h6><?php echo e(__('messages.used_numbers')); ?></h6>
+                                            <h6><?php echo e(__('messages.fully_used')); ?></h6>
                                             <span class="badge bg-danger"><?php echo e($card->used_card_numbers_count); ?></span>
                                         </div>
                                     </div>
@@ -67,7 +67,8 @@
                                     <option value="available" <?php echo e(request('status') == 'available' ? 'selected' : ''); ?>><?php echo e(__('messages.available_for_sale')); ?></option>
                                     <option value="sold_not_assigned" <?php echo e(request('status') == 'sold_not_assigned' ? 'selected' : ''); ?>><?php echo e(__('messages.sold_not_assigned')); ?></option>
                                     <option value="sold_assigned" <?php echo e(request('status') == 'sold_assigned' ? 'selected' : ''); ?>><?php echo e(__('messages.sold_assigned')); ?></option>
-                                    <option value="used" <?php echo e(request('status') == 'used' ? 'selected' : ''); ?>><?php echo e(__('messages.used')); ?></option>
+                                    <option value="partially_used" <?php echo e(request('status') == 'partially_used' ? 'selected' : ''); ?>><?php echo e(__('messages.partially_used')); ?></option>
+                                    <option value="used" <?php echo e(request('status') == 'used' ? 'selected' : ''); ?>><?php echo e(__('messages.fully_used')); ?></option>
                                 </select>
                                 <select name="activate" class="form-select me-2" onchange="this.form.submit()">
                                     <option value=""><?php echo e(__('messages.all_activate')); ?></option>
@@ -101,6 +102,7 @@
                                     <tr>
                                         <th><?php echo e(__('messages.id')); ?></th>
                                         <th><?php echo e(__('messages.card_number')); ?></th>
+                                        <th><?php echo e(__('messages.usage_status')); ?></th>
                                         <th><?php echo e(__('messages.status')); ?></th>
                                         <th><?php echo e(__('messages.sell_status')); ?></th>
                                         <th><?php echo e(__('messages.activate_status')); ?></th>
@@ -115,7 +117,34 @@
                                             <td>
                                                 <strong><?php echo e($cardNumber->number); ?></strong>
                                             </td>
-                                           
+                                            <td>
+                                                <!-- Usage Progress Bar -->
+                                                <div class="mb-1">
+                                                    <small><?php echo e(__('messages.used')); ?>: <strong><?php echo e($cardNumber->usages_count); ?></strong> / <?php echo e($card->number_of_use_for_one_card); ?></small>
+                                                </div>
+                                                <div class="progress" style="height: 20px;">
+                                                    <?php
+                                                        $percentage = $card->number_of_use_for_one_card > 0 
+                                                            ? ($cardNumber->usages_count / $card->number_of_use_for_one_card) * 100 
+                                                            : 0;
+                                                        $barClass = $percentage >= 100 ? 'bg-danger' : ($percentage >= 50 ? 'bg-warning' : 'bg-success');
+                                                    ?>
+                                                    <div class="progress-bar <?php echo e($barClass); ?>" 
+                                                         role="progressbar" 
+                                                         style="width: <?php echo e(min($percentage, 100)); ?>%"
+                                                         aria-valuenow="<?php echo e($cardNumber->usages_count); ?>" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="<?php echo e($card->number_of_use_for_one_card); ?>">
+                                                        <?php echo e(round($percentage, 1)); ?>%
+                                                    </div>
+                                                </div>
+                                                <?php if($cardNumber->usages_count > 0): ?>
+                                                    <small class="text-muted">
+                                                        <?php echo e(__('messages.remaining')); ?>: <?php echo e(max(0, $card->number_of_use_for_one_card - $cardNumber->usages_count)); ?>
+
+                                                    </small>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>
                                                 <span class="badge <?php echo e($cardNumber->getStatusBadgeClass()); ?>">
                                                     <?php echo e($cardNumber->getStatusText()); ?>
@@ -139,6 +168,14 @@
                                             <td><?php echo e($cardNumber->created_at->format('Y-m-d H:i')); ?></td>
                                             <td>
                                                 <div class="btn-group-vertical" role="group">
+                                                    <!-- View Usage History Button -->
+                                                    <?php if($cardNumber->usages_count > 0): ?>
+                                                        <a href="<?php echo e(route('card-numbers.usage-history', $cardNumber)); ?>" 
+                                                           class="btn btn-primary btn-sm mb-1">
+                                                            <i class="fas fa-history"></i> <?php echo e(__('messages.view_usage')); ?> (<?php echo e($cardNumber->usages_count); ?>)
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    
                                                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('cardnumbers-edit')): ?>
                                                         <?php if($cardNumber->isAvailableForSale()): ?>
                                                             <!-- Mark as Sold Button -->
@@ -155,12 +192,6 @@
                                                             </form>
                                                             
                                                         <?php elseif($cardNumber->isSoldNotAssigned()): ?>
-                                                            <!-- Assign to User Button -->
-                                                            <button type="button" class="btn btn-primary btn-sm mb-1" 
-                                                                    onclick="showAssignModal(<?php echo e($cardNumber->id); ?>, '<?php echo e($cardNumber->number); ?>')">
-                                                                <?php echo e(__('messages.assign_to_user')); ?>
-
-                                                            </button>
                                                             <!-- Mark as Not Sold Button -->
                                                             <form action="<?php echo e(route('card-numbers.toggle-sell', $cardNumber)); ?>" 
                                                                 method="POST" 
@@ -187,7 +218,6 @@
 
                                                                 </button>
                                                             </form>
-                                                        
                                                             
                                                         <?php elseif($cardNumber->isUsed()): ?>
                                                             <!-- Mark as Not Used Button -->
@@ -234,7 +264,6 @@
                         </div>
                         <?php endif; ?>
 
-
                         <div class="d-flex justify-content-center">
                             <?php echo e($cardNumbers->appends(request()->query())->links()); ?>
 
@@ -260,8 +289,5 @@
         </div>
     </div>
 </div>
-
-
-
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\greencare\resources\views/admin/cards/card-numbers.blade.php ENDPATH**/ ?>

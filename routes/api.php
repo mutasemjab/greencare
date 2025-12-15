@@ -36,6 +36,9 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::get('/bannersForShop', [BannerController::class, 'getBannersForShop']); // Done
 
     //---------------- Auth --------------------//
+    Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/settings', [SettingController::class, 'index']);
@@ -165,7 +168,8 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::put('medications/{id}', [MedicationController::class, 'update']);
         Route::delete('medications/{id}', [MedicationController::class, 'destroy']);
 
-
+        Route::post('/transfer-patients', [TransferPatientController::class, 'store']);
+        Route::get('/transfer-patients', [TransferPatientController::class, 'index']);
         // Get all active careers
         Route::get('careers', [CareerApplicationApiController::class, 'getCareers']);
 

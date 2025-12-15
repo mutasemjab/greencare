@@ -24,7 +24,7 @@
                                         <th><?php echo e(__('messages.id')); ?></th>
                                         <th><?php echo e(__('messages.pos')); ?></th>
                                         <th><?php echo e(__('messages.name')); ?></th>
-                                        <th><?php echo e(__('messages.price')); ?></th>
+                                        <th><?php echo e(__('messages.number_of_use_for_one_card')); ?></th>
                                         <th><?php echo e(__('messages.number_of_cards')); ?></th>
                                         <th><?php echo e(__('messages.generated_numbers')); ?></th>
                                         <th><?php echo e(__('messages.active_inactive')); ?></th>
@@ -45,7 +45,7 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo e($card->name); ?></td>
-                                            <td><?php echo e(number_format($card->price, 2)); ?></td>
+                                            <td><?php echo e(number_format($card->number_of_use_for_one_card, 2)); ?></td>
                                             
                                             <td>
                                                 <span class="badge bg-primary"><?php echo e(number_format($card->number_of_cards)); ?></span>

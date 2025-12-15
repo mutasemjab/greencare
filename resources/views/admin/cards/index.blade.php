@@ -25,7 +25,7 @@
                                         <th>{{ __('messages.id') }}</th>
                                         <th>{{ __('messages.pos') }}</th>
                                         <th>{{ __('messages.name') }}</th>
-                                        <th>{{ __('messages.price') }}</th>
+                                        <th>{{ __('messages.number_of_use_for_one_card') }}</th>
                                         <th>{{ __('messages.number_of_cards') }}</th>
                                         <th>{{ __('messages.generated_numbers') }}</th>
                                         <th>{{ __('messages.active_inactive') }}</th>
@@ -46,7 +46,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $card->name }}</td>
-                                            <td>{{ number_format($card->price, 2) }}</td>
+                                            <td>{{ number_format($card->number_of_use_for_one_card, 2) }}</td>
                                             
                                             <td>
                                                 <span class="badge bg-primary">{{ number_format($card->number_of_cards) }}</span>

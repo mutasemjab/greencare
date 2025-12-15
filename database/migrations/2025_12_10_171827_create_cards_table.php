@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('pos_id')->nullable();
             $table->foreign('pos_id')->references('id')->on('p_o_s')->onDelete('cascade');
             $table->string('name');
-            $table->double('price');
+            $table->integer('number_of_use_for_one_card');
             $table->double('selling_price');
             $table->double('number_of_cards');
             $table->string('photo');
