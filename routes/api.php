@@ -192,7 +192,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('special-medical-forms/{formId}/reply', [SpecialMedicalFormApiController::class, 'replyToForm']);
 
         // Update form status (open/closed)
-        Route::patch('special-medical-forms/{formId}/status', [SpecialMedicalFormApiController::class, 'updateFormStatus']);
+        Route::post('special-medical-forms/{formId}/status', [SpecialMedicalFormApiController::class, 'updateFormStatus']);
 
         // Delete form
         Route::delete('special-medical-forms/{formId}', [SpecialMedicalFormApiController::class, 'deleteForm']);

@@ -35,7 +35,15 @@ class SpecialMedicalFormApiController extends Controller
                 );
             }
 
-            $forms = SpecialMedicalForm::with(['creator', 'replies.user'])
+            $forms = SpecialMedicalForm::with([
+                'creator',
+                'replies' => function ($query) {
+                    $query->whereHas('user', function ($q) {
+                        $q->where('user_type', 'nurse'); // Filter only nurse replies
+                    });
+                },
+                'replies.user'
+            ])
                 ->where('room_id', $roomId)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -64,7 +72,6 @@ class SpecialMedicalFormApiController extends Controller
                 __('messages.forms_retrieved_successfully'),
                 ['forms' => $forms]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_occurred'),
@@ -152,7 +159,6 @@ class SpecialMedicalFormApiController extends Controller
                     ]
                 ]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_creating_form'),
@@ -227,7 +233,6 @@ class SpecialMedicalFormApiController extends Controller
                 __('messages.form_details_retrieved_successfully'),
                 ['form' => $formData]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_occurred'),
@@ -324,7 +329,6 @@ class SpecialMedicalFormApiController extends Controller
                     ]
                 ]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_adding_reply'),
@@ -381,7 +385,6 @@ class SpecialMedicalFormApiController extends Controller
                     ]
                 ]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_occurred'),
@@ -437,7 +440,6 @@ class SpecialMedicalFormApiController extends Controller
                 __('messages.form_deleted_successfully'),
                 []
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_occurred'),
