@@ -546,11 +546,26 @@ class RoomController extends Controller
     /**
      * View template history
      */
-    public function templateHistory(Room $room)
+   public function templateHistory(Room $room)
     {
         $history = $room->templateHistory()
-            ->with(['template', 'assignedBy', 'reports'])
-            ->get();
+            ->with(['template', 'assignedBy'])
+            ->orderBy('assigned_at', 'desc')
+            ->get()
+            ->map(function ($entry) {
+                // Manually load reports for each entry
+                $query = Report::where('room_id', $entry->room_id)
+                    ->where('report_template_id', $entry->report_template_id);
+
+                if ($entry->replaced_at) {
+                    $query->whereBetween('created_at', [$entry->assigned_at, $entry->replaced_at]);
+                } else {
+                    $query->where('created_at', '>=', $entry->assigned_at);
+                }
+
+                $entry->period_reports = $query->get();
+                return $entry;
+            });
 
         return view('admin.rooms.template-history', compact('room', 'history'));
     }

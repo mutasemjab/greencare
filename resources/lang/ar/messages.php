@@ -1678,6 +1678,8 @@ return [
 'notes' => 'ملاحظات',
 'reports_created' => 'التقارير المنشأة',
 'report' => 'تقرير',
+'no_reports_during_period' => 'لم يتم إنشاء تقارير خلال هذه الفترة',
+'no_templates_assigned_yet' => 'لم يتم تعيين قوالب لهذه الغرفة بعد',
   "" => "",
   "" => "",
 

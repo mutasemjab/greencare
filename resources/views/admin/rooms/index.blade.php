@@ -68,7 +68,7 @@
                             <tbody>
                                 @forelse($rooms as $room)
                                     <tr>
-                                        <td>{{ $loop->iteration + ($rooms->currentPage() - 1) * $rooms->perPage() }}</td>
+                                        <td>{{ $room->id }}</td>
                                         <td>
                                             <strong>{{ $room->title }}</strong>
                                             @if($room->description)

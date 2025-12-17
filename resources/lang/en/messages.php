@@ -1731,6 +1731,8 @@ return [
 'notes' => 'Notes',
 'reports_created' => 'Reports Created',
 'report' => 'Report',
+'no_reports_during_period' => 'No reports created during this period',
+'no_templates_assigned_yet' => 'No templates have been assigned to this room yet',
   "" => "",
 
 ];
