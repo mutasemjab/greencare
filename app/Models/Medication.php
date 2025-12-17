@@ -31,7 +31,7 @@ class Medication extends Model
 
      public function diagnosis()
     {
-        return $this->belongsTo(PatientDiagnosis::class, 'diagnosis_id');
+        return $this->belongsTo(PatientDiagnose::class, 'diagnosis_id');
     }
 
 
