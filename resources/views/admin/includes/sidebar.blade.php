@@ -70,7 +70,7 @@
                 <li class="nav-item">
                     <a href="{{ route('super-nurses.index') }}" class="nav-link {{ request()->routeIs('super-nurses.*') ? 'active' : '' }}">
                         <i class="fas fa-user-nurse nav-icon"></i>
-                        <p>{{ __('messages.super-nurses') }}</p>
+                        <p>{{ __('messages.super_nurses') }}</p>
                     </a>
                 </li>
 
