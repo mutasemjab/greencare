@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RoomController extends Controller
 {
-     protected $firestoreService;
+    protected $firestoreService;
 
     public function __construct(FirestoreRoomService $firestoreService)
     {
@@ -29,7 +29,7 @@ class RoomController extends Controller
         $this->middleware('permission:room-edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:room-delete', ['only' => ['destroy']]);
 
-         $this->firestoreService = $firestoreService;
+        $this->firestoreService = $firestoreService;
     }
 
     /**
@@ -42,12 +42,12 @@ class RoomController extends Controller
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('family', function($fq) use ($search) {
-                      $fq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('family', function ($fq) use ($search) {
+                        $fq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -71,7 +71,7 @@ class RoomController extends Controller
         return view('admin.rooms.create', compact('families'));
     }
 
-   
+
     /**
      * Store a newly created room
      */
@@ -107,91 +107,91 @@ class RoomController extends Controller
         }
 
         DB::beginTransaction();
-       // try {
-            // Create room
-            $room = Room::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'discount' => $request->discount,
-                'family_id' => $request->family_id,
-            ]);
+        // try {
+        // Create room
+        $room = Room::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'discount' => $request->discount,
+            'family_id' => $request->family_id,
+        ]);
 
-            // Add patients
-            foreach ($request->patients as $patientId) {
+        // Add patients
+        foreach ($request->patients as $patientId) {
+            RoomUser::create([
+                'room_id' => $room->id,
+                'user_id' => $patientId,
+                'role' => 'patient'
+            ]);
+        }
+
+        // Add doctors
+        if ($request->has('doctors')) {
+            foreach ($request->doctors as $doctorId) {
                 RoomUser::create([
                     'room_id' => $room->id,
-                    'user_id' => $patientId,
-                    'role' => 'patient'
+                    'user_id' => $doctorId,
+                    'role' => 'doctor'
                 ]);
             }
+        }
 
-            // Add doctors
-            if ($request->has('doctors')) {
-                foreach ($request->doctors as $doctorId) {
-                    RoomUser::create([
+        // Add nurses
+        if ($request->has('nurses')) {
+            foreach ($request->nurses as $nurseId) {
+                RoomUser::create([
+                    'room_id' => $room->id,
+                    'user_id' => $nurseId,
+                    'role' => 'nurse'
+                ]);
+            }
+        }
+
+        // Create reports from selected templates
+        if ($request->has('report_templates')) {
+            foreach ($request->report_templates as $templateId) {
+                // Create history entry
+                RoomReportTemplateHistory::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $templateId,
+                    'assigned_at' => now(),
+                    'assigned_by' => auth()->id(),
+                    'is_active' => true,
+                ]);
+
+                // Create report
+                Report::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $templateId,
+                    'created_by' => auth()->id(),
+                    'report_datetime' => now(),
+                ]);
+            }
+        }
+
+        // Create medications
+        if ($request->has('medications')) {
+            foreach ($request->medications as $medicationData) {
+                // Only create if required fields are present
+                if (!empty($medicationData['patient_id']) && !empty($medicationData['name'])) {
+                    Medication::create([
+                        'patient_id' => $medicationData['patient_id'],
                         'room_id' => $room->id,
-                        'user_id' => $doctorId,
-                        'role' => 'doctor'
+                        'name' => $medicationData['name'],
+                        'dosage' => $medicationData['dosage'] ?? null,
+                        'quantity' => $medicationData['quantity'] ?? null,
+                        'notes' => $medicationData['notes'] ?? null,
                     ]);
                 }
             }
+        }
 
-            // Add nurses
-            if ($request->has('nurses')) {
-                foreach ($request->nurses as $nurseId) {
-                    RoomUser::create([
-                        'room_id' => $room->id,
-                        'user_id' => $nurseId,
-                        'role' => 'nurse'
-                    ]);
-                }
-            }
+        // Sync to Firestore for chat functionality
+        $this->firestoreService->syncRoom($room);
 
-            // Create reports from selected templates
-             if ($request->has('report_templates')) {
-                foreach ($request->report_templates as $templateId) {
-                    // Create history entry
-                    RoomReportTemplateHistory::create([
-                        'room_id' => $room->id,
-                        'report_template_id' => $templateId,
-                        'assigned_at' => now(),
-                        'assigned_by' => auth()->id(),
-                        'is_active' => true,
-                    ]);
-
-                    // Create report
-                    Report::create([
-                        'room_id' => $room->id,
-                        'report_template_id' => $templateId,
-                        'created_by' => auth()->id(),
-                        'report_datetime' => now(),
-                    ]);
-                }
-            }
-
-            // Create medications
-            if ($request->has('medications')) {
-                foreach ($request->medications as $medicationData) {
-                    // Only create if required fields are present
-                    if (!empty($medicationData['patient_id']) && !empty($medicationData['name'])) {
-                        Medication::create([
-                            'patient_id' => $medicationData['patient_id'],
-                            'room_id' => $room->id,
-                            'name' => $medicationData['name'],
-                            'dosage' => $medicationData['dosage'] ?? null,
-                            'quantity' => $medicationData['quantity'] ?? null,
-                            'notes' => $medicationData['notes'] ?? null,
-                        ]);
-                    }
-                }
-            }
-
-            // Sync to Firestore for chat functionality
-            $this->firestoreService->syncRoom($room);
-
-            DB::commit();
-            return redirect()->route('rooms.index')
-                ->with('success', __('messages.room_created_successfully'));
+        DB::commit();
+        return redirect()->route('rooms.index')
+            ->with('success', __('messages.room_created_successfully'));
 
         // } catch (\Exception $e) {
         //     DB::rollback();
@@ -209,7 +209,7 @@ class RoomController extends Controller
         $room->load([
             'family',
             'patients',
-            'doctors', 
+            'doctors',
             'nurses',
             'familyMembers',
             'reports.template',
@@ -219,7 +219,7 @@ class RoomController extends Controller
         ]);
 
         $reportTemplates = ReportTemplate::orderBy('title_en')->get();
-        
+
         return view('admin.rooms.show', compact('room', 'reportTemplates'));
     }
 
@@ -230,7 +230,7 @@ class RoomController extends Controller
     {
         $room->load(['patients', 'doctors', 'nurses', 'familyMembers']);
         $families = Family::orderBy('name')->get();
-        
+
         return view('admin.rooms.edit', compact('room', 'families'));
     }
 
@@ -250,8 +250,13 @@ class RoomController extends Controller
             'doctors.*' => 'exists:users,id',
             'nurses' => 'nullable|array',
             'nurses.*' => 'exists:users,id',
+            'super_nurses' => 'nullable|array',
+            'super_nurses.*' => 'exists:users,id',
             'family_members' => 'nullable|array',
-            'family_members.*' => 'exists:users,id'
+            'family_members.*' => 'exists:users,id',
+            'report_templates' => 'nullable|array',
+            'report_templates.*' => 'exists:report_templates,id',
+            'template_notes' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
@@ -304,6 +309,17 @@ class RoomController extends Controller
                 }
             }
 
+            // Add super nurses
+            if ($request->has('super_nurses')) {
+                foreach ($request->super_nurses as $superNurseId) {
+                    RoomUser::create([
+                        'room_id' => $room->id,
+                        'user_id' => $superNurseId,
+                        'role' => 'super_nurse'
+                    ]);
+                }
+            }
+
             // Add family members
             if ($request->has('family_members')) {
                 foreach ($request->family_members as $familyMemberId) {
@@ -315,13 +331,44 @@ class RoomController extends Controller
                 }
             }
 
+            // ✅ Handle template changes
+            if ($request->has('report_templates') && !empty($request->report_templates)) {
+                // Deactivate current active templates
+                RoomReportTemplateHistory::where('room_id', $room->id)
+                    ->where('is_active', true)
+                    ->update([
+                        'is_active' => false,
+                        'replaced_at' => now(),
+                    ]);
+
+                // Add new templates
+                foreach ($request->report_templates as $templateId) {
+                    // Create history entry
+                    RoomReportTemplateHistory::create([
+                        'room_id' => $room->id,
+                        'report_template_id' => $templateId,
+                        'assigned_at' => now(),
+                        'assigned_by' => auth()->id(),
+                        'is_active' => true,
+                        'notes' => $request->template_notes,
+                    ]);
+
+                    // Create new empty report for this template
+                    Report::create([
+                        'room_id' => $room->id,
+                        'report_template_id' => $templateId,
+                        'created_by' => auth()->id(),
+                        'report_datetime' => now(),
+                    ]);
+                }
+            }
+
             // Sync updated room to Firestore
             $this->firestoreService->syncRoom($room);
 
             DB::commit();
             return redirect()->route('rooms.index')
                 ->with('success', __('messages.room_updated_successfully'));
-
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()
@@ -338,10 +385,10 @@ class RoomController extends Controller
         try {
             // Delete from Firestore first
             $this->firestoreService->deleteRoom($room->id);
-            
+
             // Then delete from database
             $room->delete();
-            
+
             return redirect()->route('rooms.index')
                 ->with('success', __('messages.room_deleted_successfully'));
         } catch (\Exception $e) {
@@ -431,9 +478,9 @@ class RoomController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -442,8 +489,8 @@ class RoomController extends Controller
         }
 
         $rooms = $query->select('id', 'title', 'family_id')
-                      ->orderBy('title')
-                      ->get();
+            ->orderBy('title')
+            ->get();
 
         return response()->json($rooms);
     }
@@ -456,7 +503,7 @@ class RoomController extends Controller
         $stats = [
             'users' => [
                 'patients' => $room->patients()->count(),
-                'doctors' => $room->doctors()->count(), 
+                'doctors' => $room->doctors()->count(),
                 'nurses' => $room->nurses()->count(),
                 'family' => $room->familyMembers()->count(),
                 'total' => $room->users()->count()

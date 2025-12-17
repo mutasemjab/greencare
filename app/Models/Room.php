@@ -33,6 +33,14 @@ class Room extends Model
         return $value ?? $this->attributes['code'] ?? null;
     }
 
+    public function superNurses()
+    {
+        return $this->belongsToMany(User::class, 'room_users')
+                ->wherePivot('role', 'super_nurse')
+                ->withPivot('role')
+                ->withTimestamps();
+    }
+
     public function templateHistory()
     {
         return $this->hasMany(RoomReportTemplateHistory::class)->orderBy('assigned_at', 'desc');

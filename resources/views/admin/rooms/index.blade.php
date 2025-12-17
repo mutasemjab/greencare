@@ -129,13 +129,25 @@
                                             <div class="btn-group" role="group">
                                                 @can('room-table')
                                                     <a href="{{ route('rooms.show', $room) }}" 
-                                                       class="btn btn-sm btn-info" title="{{ __('messages.view') }}">
+                                                       class="btn btn-sm btn-info" 
+                                                       title="{{ __('messages.view') }}">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 @endcan
+                                                
+                                                {{-- ✅ Template History Button --}}
+                                                @can('room-table')
+                                                    <a href="{{ route('rooms.template-history', $room) }}" 
+                                                       class="btn btn-sm btn-secondary" 
+                                                       title="{{ __('messages.template_history') }}">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                                @endcan
+                                                
                                                 @can('room-edit')
                                                     <a href="{{ route('rooms.edit', $room) }}" 
-                                                       class="btn btn-sm btn-warning" title="{{ __('messages.edit') }}">
+                                                       class="btn btn-sm btn-warning" 
+                                                       title="{{ __('messages.edit') }}">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endcan
@@ -222,7 +234,9 @@ $(document).ready(function() {
     setTimeout(function() {
         $('.alert').fadeOut('slow');
     }, 5000);
+    
+    // Tooltip initialization for better UX
+    $('[data-toggle="tooltip"]').tooltip();
 });
 </script>
 @endpush
-

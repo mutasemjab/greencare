@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('room_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('role', ['patient', 'family', 'doctor', 'nurse']);
+            $table->enum('role', ['patient', 'family', 'doctor', 'nurse','super_nurse']);
             $table->timestamps();
         });
     }
