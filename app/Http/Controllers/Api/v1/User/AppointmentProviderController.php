@@ -17,7 +17,7 @@ class AppointmentProviderController extends Controller
     /**
      * Store a new appointment provider.
      */
-     public function store(Request $request)
+    public function store(Request $request)
     {
         try {
             // Validation rules
@@ -52,7 +52,7 @@ class AppointmentProviderController extends Controller
 
             // Use authenticated user ID if user_id is not provided
             $userId = $request->user_id ?? Auth::id();
-            
+
             if (!$userId) {
                 return $this->error_response(
                     __('messages.user_required'),
@@ -94,7 +94,6 @@ class AppointmentProviderController extends Controller
                 __('messages.appointment_created_successfully'),
                 $appointmentData
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_creating_appointment'),
@@ -104,11 +103,11 @@ class AppointmentProviderController extends Controller
     }
 
 
-   public function getUserAppointments(Request $request)
+    public function getUserAppointments(Request $request)
     {
         try {
             $userId = $request->user_id ?? Auth::id();
-            
+
             if (!$userId) {
                 return $this->error_response(
                     __('messages.user_required'),
@@ -116,7 +115,13 @@ class AppointmentProviderController extends Controller
                 );
             }
 
-            $appointments = AppointmentProvider::with(['provider', 'user'])
+            $appointments = AppointmentProvider::with([
+                'provider',
+                'user',
+                'diagnosis.diagnosedBy',
+                'diagnosis.room',
+                'diagnosis.medications.schedules'
+            ])
                 ->where('user_id', $userId)
                 ->orderBy('date_of_appointment', 'desc')
                 ->orderBy('time_of_appointment', 'desc')
@@ -130,18 +135,17 @@ class AppointmentProviderController extends Controller
                 __('messages.appointments_retrieved_successfully'),
                 $appointmentsData
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_retrieving_appointments'),
-                []
+                ['error' => $e->getMessage()]
             );
         }
     }
 
-     private function formatAppointmentData($appointment)
+    private function formatAppointmentData($appointment)
     {
-        return [
+        $data = [
             'id' => $appointment->id,
             'name_of_patient' => $appointment->name_of_patient,
             'phone_of_patient' => $appointment->phone_of_patient,
@@ -172,8 +176,48 @@ class AppointmentProviderController extends Controller
             'created_at' => $appointment->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $appointment->updated_at->format('Y-m-d H:i:s'),
         ];
+
+        // Add diagnosis information if exists
+        if ($appointment->diagnosis) {
+            $data['diagnosis'] = [
+                'id' => $appointment->diagnosis->id,
+                'diagnosis' => $appointment->diagnosis->diagnosis,
+                'symptoms' => $appointment->diagnosis->symptoms,
+                'treatment_plan' => $appointment->diagnosis->treatment_plan,
+                'notes' => $appointment->diagnosis->notes,
+                'diagnosed_by' => [
+                    'id' => $appointment->diagnosis->diagnosedBy->id,
+                    'name' => $appointment->diagnosis->diagnosedBy->name,
+                    'user_type' => $appointment->diagnosis->diagnosedBy->user_type,
+                ],
+                'room' => $appointment->diagnosis->room ? [
+                    'id' => $appointment->diagnosis->room->id,
+                    'title' => $appointment->diagnosis->room->title,
+                    'description' => $appointment->diagnosis->room->description,
+                ] : null,
+                'medications' => $appointment->diagnosis->medications->map(function ($medication) {
+                    return [
+                        'id' => $medication->id,
+                        'name' => $medication->name,
+                        'dosage' => $medication->dosage,
+                        'quantity' => $medication->quantity,
+                        'notes' => $medication->notes,
+                        'schedules' => $medication->schedules->map(function ($schedule) {
+                            return [
+                                'id' => $schedule->id,
+                                'time' => $schedule->time,
+                                'frequency' => $schedule->frequency,
+                            ];
+                        }),
+                    ];
+                }),
+                'diagnosed_at' => $appointment->diagnosis->created_at->format('Y-m-d H:i:s'),
+                'updated_at' => $appointment->diagnosis->updated_at->format('Y-m-d H:i:s'),
+            ];
+        } else {
+            $data['diagnosis'] = null;
+        }
+
+        return $data;
     }
-
-   
-
 }
