@@ -66,6 +66,13 @@
                         <p>{{ __('messages.nurses') }}</p>
                     </a>
                 </li>
+                
+                <li class="nav-item">
+                    <a href="{{ route('super-nurses.index') }}" class="nav-link {{ request()->routeIs('super-nurses.*') ? 'active' : '' }}">
+                        <i class="fas fa-user-nurse nav-icon"></i>
+                        <p>{{ __('messages.super-nurses') }}</p>
+                    </a>
+                </li>
 
                 <!-- Medical Services -->
                 <li class="nav-header">{{ __('messages.medical_services') }}</li>

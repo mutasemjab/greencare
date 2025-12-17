@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\ReportAnswer;
 use App\Models\Medication;
 use App\Models\MedicationSchedule;
+use App\Models\RoomReportTemplateHistory;
 use App\Models\User;
 use App\Services\FirestoreRoomService;
 use App\Traits\Responses;
@@ -104,14 +105,24 @@ class RoomReportController extends Controller
             // Add current user (creator) to room
             $room->users()->attach(Auth::id(), ['role' => Auth::user()->user_type]);
 
-            // Create reports from selected templates
+            // Create reports from selected templates AND track in history
             if ($request->has('report_templates')) {
                 foreach ($request->report_templates as $templateId) {
+                    // Create report
                     Report::create([
                         'room_id' => $room->id,
                         'report_template_id' => $templateId,
                         'created_by' => Auth::id(),
                         'report_datetime' => now(),
+                    ]);
+
+                    // Track template assignment in history
+                    RoomReportTemplateHistory::create([
+                        'room_id' => $room->id,
+                        'report_template_id' => $templateId,
+                        'assigned_at' => now(),
+                        'assigned_by' => Auth::id(),
+                        'is_active' => true,
                     ]);
                 }
             }
@@ -128,6 +139,15 @@ class RoomReportController extends Controller
                     'created_by' => Auth::id(),
                 ]);
 
+                // Track initial template in history
+                RoomReportTemplateHistory::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $request->input('initial_report.template_id'),
+                    'assigned_at' => now(),
+                    'assigned_by' => Auth::id(),
+                    'is_active' => true,
+                ]);
+
                 // Save report answers
                 foreach ($request->input('initial_report.answers') as $index => $answer) {
                     // Get the field to check its input type
@@ -135,13 +155,16 @@ class RoomReportController extends Controller
 
                     $value = $answer['value'];
 
-                    // Handle file uploads for photo, pdf, and signature fields
+                    // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
                     if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
                         // Check if file exists in the request
                         $fileKey = "initial_report.answers.{$index}.value";
                         if ($request->hasFile($fileKey)) {
                             $uploadedFile = $request->file($fileKey);
                             $value = uploadImage('assets/admin/uploads', $uploadedFile);
+                        } elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
+                            // If already a URL, keep it as is
+                            $value = $value;
                         }
                     }
 
@@ -275,9 +298,9 @@ class RoomReportController extends Controller
 
         // Add date/hour validation based on user type
         if ($userType === 'doctor') {
-            $rules['date'] = 'required|date_format:Y-m-d'; // e.g., 2025-10-07
+            $rules['date'] = 'required|date_format:Y-m-d';
         } else if ($userType === 'nurse') {
-            $rules['hour'] = 'required|date_format:H:i'; // e.g., 04:00
+            $rules['hour'] = 'required|date_format:H:i';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -290,8 +313,6 @@ class RoomReportController extends Controller
         $room = Room::find($request->room_id);
         $userInRoom = $room->users()->where('user_id', Auth::id())->first();
 
-
-
         // Verify template is recurring type and matches user type
         $template = ReportTemplate::find($request->template_id);
         if ($template->report_type !== 'recurring') {
@@ -301,7 +322,6 @@ class RoomReportController extends Controller
         // Map user_type to created_for field in templates
         $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
 
-
         DB::beginTransaction();
         try {
             // Prepare report datetime based on user type
@@ -310,19 +330,21 @@ class RoomReportController extends Controller
             if ($userType === 'doctor') {
                 $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
 
-                // 🔥 Prevent duplicate report in the same hour (doctor)
+                // Prevent duplicate report in the same day (doctor)
                 $existingReport = Report::where('room_id', $request->room_id)
+                    ->where('report_template_id', $request->template_id)
                     ->whereDate('report_datetime', $request->date)
                     ->exists();
 
                 if ($existingReport) {
-                    return $this->error_response('A report for this hour already exists for doctor', null);
+                    return $this->error_response('A report for this date already exists for doctor', null);
                 }
             } else if ($userType === 'nurse') {
                 $reportDatetime = now()->format('Y-m-d') . ' ' . $request->hour . ':00';
 
-                // 🔥 Prevent duplicate reports in the same hour
+                // Prevent duplicate reports in the same hour
                 $existingReport = Report::where('room_id', $request->room_id)
+                    ->where('report_template_id', $request->template_id)
                     ->whereDate('report_datetime', now()->format('Y-m-d'))
                     ->whereRaw('HOUR(report_datetime) = ?', [date('H', strtotime($reportDatetime))])
                     ->exists();
@@ -330,6 +352,23 @@ class RoomReportController extends Controller
                 if ($existingReport) {
                     return $this->error_response('A report for this hour already exists', null);
                 }
+            }
+
+            // ✅ Check if template is already tracked in history for this room
+            $templateHistory = RoomReportTemplateHistory::where('room_id', $request->room_id)
+                ->where('report_template_id', $request->template_id)
+                ->where('is_active', true)
+                ->first();
+
+            // If not tracked yet, create history entry
+            if (!$templateHistory) {
+                RoomReportTemplateHistory::create([
+                    'room_id' => $request->room_id,
+                    'report_template_id' => $request->template_id,
+                    'assigned_at' => now(),
+                    'assigned_by' => Auth::id(),
+                    'is_active' => true,
+                ]);
             }
 
             // Create the report
@@ -340,12 +379,30 @@ class RoomReportController extends Controller
                 'report_datetime' => $reportDatetime,
             ]);
 
-            // Save report answers
-            foreach ($request->answers as $answer) {
+            // Save report answers with file upload handling
+            foreach ($request->answers as $index => $answer) {
+                // Get the field to check its input type
+                $field = \App\Models\ReportField::find($answer['field_id']);
+                
+                $value = $answer['value'];
+
+                // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
+                if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                    // Check if file exists in the request
+                    $fileKey = "answers.{$index}.value";
+                    if ($request->hasFile($fileKey)) {
+                        $uploadedFile = $request->file($fileKey);
+                        $value = uploadImage('assets/admin/uploads', $uploadedFile);
+                    } elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
+                        // If already a URL, keep it as is
+                        $value = $value;
+                    }
+                }
+
                 ReportAnswer::create([
                     'report_id' => $report->id,
                     'report_field_id' => $answer['field_id'],
-                    'value' => json_encode($answer['value']),
+                    'value' => json_encode($value),
                 ]);
             }
 
@@ -371,12 +428,12 @@ class RoomReportController extends Controller
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
 
-        // Validate request - same validation for all user types now
+        // Validate request
         $validator = Validator::make($request->all(), [
             'room_id' => 'required|exists:rooms,id',
             'date' => 'required|date_format:Y-m-d',
-            'hour' => 'nullable|date_format:H', // Optional - if provided, filter by hour
-            'report_type' => 'nullable|in:doctor,nurse,all', // Optional - filter by report creator type
+            'hour' => 'nullable|date_format:H',
+            'report_type' => 'nullable|in:doctor,nurse,all',
         ]);
 
         if ($validator->fails()) {
@@ -385,9 +442,8 @@ class RoomReportController extends Controller
 
         // Verify user has access to the room
         $room = Room::find($request->room_id);
-        
 
-        // Build query - accessible to all user types (patient, doctor, nurse)
+        // Build query - accessible to all user types
         $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
             ->where('room_id', $request->room_id)
             ->whereNotNull('report_datetime');
@@ -400,7 +456,7 @@ class RoomReportController extends Controller
             $query->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
         }
 
-        // Optionally filter by report creator type (doctor or nurse reports)
+        // Optionally filter by report creator type
         if ($request->filled('report_type') && $request->report_type !== 'all') {
             $query->whereHas('creator', function ($q) use ($request) {
                 $q->where('user_type', $request->report_type);
@@ -409,13 +465,41 @@ class RoomReportController extends Controller
 
         $reports = $query->orderBy('report_datetime', 'desc')->get();
 
-        // Merge answers into fields
+        // ✅ Process answers and fix signature/photo display
         $reports->each(function ($report) {
             $answersGrouped = $report->answers->keyBy('report_field_id');
 
             $report->template->sections->each(function ($section) use ($answersGrouped) {
                 $section->fields->each(function ($field) use ($answersGrouped) {
-                    $field->answer = $answersGrouped[$field->id]->value ?? null;
+                    $answerValue = null;
+                    
+                    if (isset($answersGrouped[$field->id])) {
+                        $rawValue = $answersGrouped[$field->id]->value;
+                        
+                        // Decode JSON value
+                        $decodedValue = json_decode($rawValue, true);
+                        
+                        // ✅ FIX: Handle photo, pdf, and signature fields - ensure URL is returned
+                        if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                            // If it's a string (URL), return as is
+                            if (is_string($decodedValue)) {
+                                $answerValue = $decodedValue;
+                            } 
+                            // If it's still JSON encoded, decode it
+                            elseif (is_string($rawValue)) {
+                                $answerValue = $rawValue;
+                            }
+                            
+                            // Ensure it's a full URL
+                            if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
+                                $answerValue = url($answerValue);
+                            }
+                        } else {
+                            $answerValue = $decodedValue;
+                        }
+                    }
+                    
+                    $field->answer = $answerValue;
                 });
             });
 
@@ -447,12 +531,11 @@ class RoomReportController extends Controller
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Detect language from header (default en)
+        // Detect language from header
         $lang = $request->header('Accept-Language', 'en');
         $lang = in_array(strtolower($lang), ['ar', 'en']) ? strtolower($lang) : 'en';
 
         $room = Room::find($request->room_id);
-
 
         // Fetch reports with relations
         $query = Report::where('room_id', $request->room_id)
@@ -475,7 +558,7 @@ class RoomReportController extends Controller
         foreach ($reports as $report) {
             $template = $report->template;
 
-            // Skip if already added (to merge multiple reports of same template)
+            // Skip if already added
             if (!isset($templates[$template->id])) {
                 $templates[$template->id] = [
                     'id' => $template->id,
@@ -496,12 +579,34 @@ class RoomReportController extends Controller
                 foreach ($section->fields as $field) {
                     // Find the answer for this field in the current report
                     $answer = $report->answers->firstWhere('report_field_id', $field->id);
+                    
+                    $answerValue = null;
+                    
+                    if ($answer) {
+                        $decodedValue = json_decode($answer->value, true);
+                        
+                        // ✅ FIX: Handle photo, pdf, and signature fields properly
+                        if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                            if (is_string($decodedValue)) {
+                                $answerValue = $decodedValue;
+                            } elseif (is_string($answer->value)) {
+                                $answerValue = $answer->value;
+                            }
+                            
+                            // Ensure it's a full URL
+                            if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
+                                $answerValue = url($answerValue);
+                            }
+                        } else {
+                            $answerValue = $decodedValue;
+                        }
+                    }
 
                     $sectionData['fields'][] = [
                         'id' => $field->id,
                         'label' => $field->{'label_' . $lang},
                         'input_type' => $field->input_type,
-                        'answer' => $answer ? json_decode($answer->value, true) : null,
+                        'answer' => $answerValue,
                     ];
                 }
 

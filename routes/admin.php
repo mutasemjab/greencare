@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\TypeHomeXrayController;
 use App\Http\Controllers\Admin\TypeMedicalTestController;
 use App\Http\Controllers\Admin\TypeRequestNurseController;
 use App\Http\Controllers\Admin\ShowerController;
+use App\Http\Controllers\Admin\SuperNurseController;
 use App\Http\Controllers\Admin\TransferPatientController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
@@ -84,6 +85,14 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
         Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
 
+        Route::post('rooms/{room}/change-template', [RoomController::class, 'changeTemplate'])
+            ->name('rooms.change-template');
+        Route::get('rooms/{room}/template-history', [RoomController::class, 'templateHistory'])
+            ->name('rooms.template-history');
+
+        Route::resource('super-nurses', SuperNurseController::class);
+        Route::post('super-nurses/{superNurse}/toggle-status', [SuperNurseController::class, 'toggleStatus'])
+        ->name('super-nurses.toggle-status');
 
         // User (Patient) management routes
         Route::resource('users', UserController::class);

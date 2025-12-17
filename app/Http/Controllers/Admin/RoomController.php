@@ -12,6 +12,7 @@ use App\Models\Medication;
 use App\Models\User;
 use App\Models\ReportTemplate;
 use App\Models\Report;
+use App\Models\RoomReportTemplateHistory;
 use App\Services\FirestoreRoomService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -147,12 +148,23 @@ class RoomController extends Controller
             }
 
             // Create reports from selected templates
-            if ($request->has('report_templates')) {
+             if ($request->has('report_templates')) {
                 foreach ($request->report_templates as $templateId) {
+                    // Create history entry
+                    RoomReportTemplateHistory::create([
+                        'room_id' => $room->id,
+                        'report_template_id' => $templateId,
+                        'assigned_at' => now(),
+                        'assigned_by' => auth()->id(),
+                        'is_active' => true,
+                    ]);
+
+                    // Create report
                     Report::create([
                         'room_id' => $room->id,
                         'report_template_id' => $templateId,
-                        'created_by' => auth()->id(), // Current user (doctor/nurse)
+                        'created_by' => auth()->id(),
+                        'report_datetime' => now(),
                     ]);
                 }
             }
@@ -460,5 +472,39 @@ class RoomController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    public function changeTemplate(Request $request, Room $room)
+    {
+        $validator = Validator::make($request->all(), [
+            'template_id' => 'required|exists:report_templates,id',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        try {
+            $room->assignTemplate($request->template_id, $request->notes);
+
+            return redirect()->back()
+                ->with('success', __('messages.template_changed_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('messages.error_changing_template'));
+        }
+    }
+
+    /**
+     * View template history
+     */
+    public function templateHistory(Room $room)
+    {
+        $history = $room->templateHistory()
+            ->with(['template', 'assignedBy', 'reports'])
+            ->get();
+
+        return view('admin.rooms.template-history', compact('room', 'history'));
     }
 }

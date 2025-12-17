@@ -45,8 +45,32 @@ class User extends Authenticatable
     /**
      * Get user type text
      */
-    public function getUserTypeTextAttribute()
+
+      public function getUserTypeTextAttribute()
     {
-        return __('messages.' . $this->user_type);
+        $types = [
+            'patient' => __('messages.patient'),
+            'nurse' => __('messages.nurse'),
+            'doctor' => __('messages.doctor'),
+            'super_nurse' => __('messages.super_nurse'),
+        ];
+
+        return $types[$this->user_type] ?? $this->user_type;
+    }
+
+    /**
+     * Check if user is super nurse
+     */
+    public function isSuperNurse()
+    {
+        return $this->user_type === 'super_nurse';
+    }
+
+    /**
+     * Scope for super nurses
+     */
+    public function scopeSuperNurses($query)
+    {
+        return $query->where('user_type', 'super_nurse');
     }
 }
