@@ -37,7 +37,7 @@
                         <h3 class="card-title">{{ __('messages.diagnosis_details') }}</h3>
                         <div>
                             @can('diagnosis-edit')
-                                <a href="{{ route('diagnosis.edit', $diagnosis->id) }}" class="btn btn-warning btn-sm mr-2">
+                                <a href="{{ route('diagnosis.edit', $diagnosis) }}" class="btn btn-warning btn-sm mr-2">
                                     <i class="fas fa-edit"></i> {{ __('messages.edit') }}
                                 </a>
                             @endcan
