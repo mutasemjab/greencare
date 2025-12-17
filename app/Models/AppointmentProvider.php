@@ -29,7 +29,7 @@ class AppointmentProvider extends Model
 
     public function diagnosis()
     {
-        return $this->hasOne(PatientDiagnose::class);
+        return $this->hasOne(PatientDiagnosis::class);
     }
     
     /**

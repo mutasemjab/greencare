@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentProvider;
-use App\Models\PatientDiagnose;
+use App\Models\PatientDiagnosis;
 use App\Models\Medication;
 use App\Models\MedicationSchedule;
 use App\Models\Room;
@@ -113,7 +113,7 @@ class DiagnosisController extends Controller
         DB::beginTransaction();
         try {
             // Create diagnosis
-            $diagnosis = PatientDiagnose::create([
+            $diagnosis = PatientDiagnosis::create([
                 'appointment_provider_id' => $request->appointment_provider_id,
                 'patient_id' => $request->patient_id,
                 'diagnosed_by' => auth()->id(),
@@ -167,7 +167,7 @@ class DiagnosisController extends Controller
     /**
      * Display the specified diagnosis
      */
-    public function show(PatientDiagnose $diagnosis)
+    public function show(PatientDiagnosis $diagnosis)
     {
         $diagnosis->load([
             'appointment.provider',
@@ -183,7 +183,7 @@ class DiagnosisController extends Controller
     /**
      * Show the form for editing the specified diagnosis
      */
-    public function edit(PatientDiagnose $diagnosis)
+    public function edit(PatientDiagnosis $diagnosis)
     {
         $diagnosis->load(['appointment', 'medications.schedules']);
         $rooms = Room::orderBy('title')->get();
@@ -194,7 +194,7 @@ class DiagnosisController extends Controller
     /**
      * Update the specified diagnosis
      */
-    public function update(Request $request, PatientDiagnose $diagnosis)
+    public function update(Request $request, PatientDiagnosis $diagnosis)
     {
         $validator = Validator::make($request->all(), [
             'room_id' => 'nullable|exists:rooms,id',
@@ -275,7 +275,7 @@ class DiagnosisController extends Controller
     /**
      * Remove the specified diagnosis
      */
-    public function destroy(PatientDiagnose $diagnosis)
+    public function destroy(PatientDiagnosis $diagnosis)
     {
         try {
             $diagnosis->delete();
