@@ -82,9 +82,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         });
 
 
-            Route::resource('diagnosis', DiagnosisController::class);
-            Route::get('diagnosis/create/{appointment}', [DiagnosisController::class, 'create'])
-                ->name('diagnosis.create.appointment');
+        Route::resource('diagnosis', DiagnosisController::class)
+            ->parameters(['diagnosis' => 'diagnosis']);
+
+        Route::get('diagnosis/create/{appointment}', [DiagnosisController::class, 'create'])
+            ->name('diagnosis.create.appointment');
 
         // Notification
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
@@ -97,7 +99,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         Route::resource('super-nurses', SuperNurseController::class);
         Route::post('super-nurses/{superNurse}/toggle-status', [SuperNurseController::class, 'toggleStatus'])
-        ->name('super-nurses.toggle-status');
+            ->name('super-nurses.toggle-status');
 
         // User (Patient) management routes
         Route::resource('users', UserController::class);
@@ -222,9 +224,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
 
 
-         Route::resource('showers', ShowerController::class);
-         Route::get('showers/card-price/{id}', [ShowerController::class, 'getCardPrice'])->name('showers.card-price');
-
+        Route::resource('showers', ShowerController::class);
+        Route::get('showers/card-price/{id}', [ShowerController::class, 'getCardPrice'])->name('showers.card-price');
     });
 });
 
