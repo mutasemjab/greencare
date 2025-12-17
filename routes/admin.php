@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\CareerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DeliveryController;
+use App\Http\Controllers\Admin\DiagnosisController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\FamilyController;
 use App\Http\Controllers\Admin\MedicationController;
@@ -80,6 +81,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
             return response()->json(Permission::where('guard_name', $guard_name)->get());
         });
 
+
+            Route::resource('diagnosis', DiagnosisController::class);
+            Route::get('diagnosis/create/{appointment}', [DiagnosisController::class, 'create'])
+                ->name('diagnosis.create.appointment');
 
         // Notification
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');

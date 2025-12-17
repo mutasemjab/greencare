@@ -15,7 +15,6 @@
                                 <i class="fas fa-plus"></i> {{ __('messages.add_appointment_provider') }}
                             </a>
                         @endcan
-                       
                     </div>
                 </div>
 
@@ -38,6 +37,16 @@
                                         </select>
                                     </div>
 
+                                    <!-- Diagnosis Status Filter -->
+                                    <div class="col-md-2 mb-3">
+                                        <label for="has_diagnosis" class="form-label">{{ __('messages.diagnosis_status') }}</label>
+                                        <select name="has_diagnosis" id="has_diagnosis" class="form-control">
+                                            <option value="">{{ __('messages.all') }}</option>
+                                            <option value="1" {{ request('has_diagnosis') == '1' ? 'selected' : '' }}>{{ __('messages.with_diagnosis') }}</option>
+                                            <option value="0" {{ request('has_diagnosis') == '0' ? 'selected' : '' }}>{{ __('messages.without_diagnosis') }}</option>
+                                        </select>
+                                    </div>
+
                                     <!-- Date From -->
                                     <div class="col-md-2 mb-3">
                                         <label for="date_from" class="form-label">{{ __('messages.date_from') }}</label>
@@ -48,19 +57,6 @@
                                     <div class="col-md-2 mb-3">
                                         <label for="date_to" class="form-label">{{ __('messages.date_to') }}</label>
                                         <input type="date" name="date_to" id="date_to" class="form-control" value="{{ $dateTo }}">
-                                    </div>
-
-                                    <!-- User Filter -->
-                                    <div class="col-md-2 mb-3">
-                                        <label for="user_id" class="form-label">{{ __('messages.user') }}</label>
-                                        <select name="user_id" id="user_id" class="form-control">
-                                            <option value="">{{ __('messages.all_users') }}</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}" {{ $userId == $user->id ? 'selected' : '' }}>
-                                                    {{ $user->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
                                     </div>
 
                                     <!-- Provider Filter -->
@@ -85,7 +81,6 @@
                                 </div>
 
                                 <div class="row">
-                                    <!-- Filter Buttons -->
                                     <div class="col-md-12 mb-3 d-flex align-items-end">
                                         <button type="submit" class="btn btn-primary mr-2">
                                             <i class="fas fa-filter"></i> {{ __('messages.filter') }}
@@ -99,19 +94,6 @@
                         </div>
                     </div>
 
-                    <!-- Statistics -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <strong>{{ __('messages.total_appointments') }}:</strong> {{ $appointments->total() }}
-                                @if($status !== 'all')
-                                    - <strong>{{ __('messages.filtered_by_status') }}:</strong> 
-                                    {{ __('messages.status_' . strtolower(str_replace(' ', '_', $statusOptions[$status]))) }}
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Table -->
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
@@ -121,11 +103,9 @@
                                     <th>{{ __('messages.patient_name') }}</th>
                                     <th>{{ __('messages.patient_phone') }}</th>
                                     <th>{{ __('messages.provider') }}</th>
-                                    <th>{{ __('messages.user') }}</th>
                                     <th>{{ __('messages.appointment_date') }}</th>
-                                    <th>{{ __('messages.appointment_time') }}</th>
                                     <th>{{ __('messages.status') }}</th>
-                                    <th>{{ __('messages.created_at') }}</th>
+                                    <th>{{ __('messages.diagnosis_status') }}</th>
                                     <th>{{ __('messages.actions') }}</th>
                                 </tr>
                             </thead>
@@ -146,22 +126,10 @@
                                         </td>
                                         <td>
                                             @if($appointment->provider)
-                                                <div>
-                                                    <strong>{{ $appointment->provider->name }}</strong><br>
-                                                    <small class="text-muted">
-                                                        {{ __('messages.experience') }}: {{ $appointment->provider->number_years_experience }}
-                                                    </small>
-                                                </div>
-                                            @else
-                                                <span class="text-muted">{{ __('messages.not_available') }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($appointment->user)
-                                                <div>
-                                                    <strong>{{ $appointment->user->name }}</strong><br>
-                                                    <small class="text-muted">{{ $appointment->user->email }}</small>
-                                                </div>
+                                                <strong>{{ $appointment->provider->name }}</strong><br>
+                                                <small class="text-muted">
+                                                    {{ __('messages.experience') }}: {{ $appointment->provider->number_years_experience }}
+                                                </small>
                                             @else
                                                 <span class="text-muted">{{ __('messages.not_available') }}</span>
                                             @endif
@@ -169,13 +137,9 @@
                                         <td>
                                             @if($appointment->date_of_appointment)
                                                 {{ $appointment->date_of_appointment->format('Y-m-d') }}
-                                            @else
-                                                <span class="text-muted">{{ __('messages.not_specified') }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($appointment->time_of_appointment)
-                                                {{ $appointment->time_of_appointment->format('H:i') }}
+                                                @if($appointment->time_of_appointment)
+                                                    <br><small>{{ $appointment->time_of_appointment }}</small>
+                                                @endif
                                             @else
                                                 <span class="text-muted">{{ __('messages.not_specified') }}</span>
                                             @endif
@@ -194,11 +158,21 @@
                                                 </select>
                                             @else
                                                 <span class="badge {{ $appointment->status_badge_class }}">
-                                                    {{ __('messages.status_' . strtolower(str_replace(' ', '_', $appointment->status_name))) }}
+                                                    {{ $appointment->status_name }}
                                                 </span>
                                             @endcan
                                         </td>
-                                        <td>{{ $appointment->created_at->format('Y-m-d H:i') }}</td>
+                                        <td>
+                                            @if($appointment->diagnosis)
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check-circle"></i> {{ __('messages.diagnosed') }}
+                                                </span>
+                                            @else
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-exclamation-circle"></i> {{ __('messages.pending_diagnosis') }}
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 @can('appointmentProvider-table')
@@ -208,12 +182,27 @@
                                                     </a>
                                                 @endcan
 
-                                                @can('appointmentProvider-edit')
-                                                    <a href="{{ route('appointment-providers.edit', $appointment->id) }}" 
-                                                       class="btn btn-warning btn-sm" title="{{ __('messages.edit') }}">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                @endcan
+                                                @if($appointment->diagnosis)
+                                                    @can('diagnosis-table')
+                                                        <a href="{{ route('diagnosis.show', $appointment->diagnosis->id) }}" 
+                                                           class="btn btn-success btn-sm" title="{{ __('messages.view_diagnosis') }}">
+                                                            <i class="fas fa-stethoscope"></i>
+                                                        </a>
+                                                    @endcan
+                                                    @can('diagnosis-edit')
+                                                        <a href="{{ route('diagnosis.edit', $appointment->diagnosis->id) }}" 
+                                                           class="btn btn-warning btn-sm" title="{{ __('messages.edit_diagnosis') }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    @endcan
+                                                @else
+                                                    @can('diagnosis-add')
+                                                        <a href="{{ route('diagnosis.create.appointment', $appointment->id) }}" 
+                                                           class="btn btn-primary btn-sm" title="{{ __('messages.add_diagnosis') }}">
+                                                            <i class="fas fa-plus"></i> {{ __('messages.diagnose') }}
+                                                        </a>
+                                                    @endcan
+                                                @endif
 
                                                 @can('appointmentProvider-delete')
                                                     <form action="{{ route('appointment-providers.destroy', $appointment->id) }}" 
@@ -232,8 +221,11 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center">
-                                            {{ __('messages.no_appointment_providers_found') }}
+                                        <td colspan="8" class="text-center">
+                                            <div class="py-4">
+                                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">{{ __('messages.no_appointment_providers_found') }}</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -257,17 +249,6 @@
 @section('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when filters change
-    const selects = ['#status', '#user_id', '#provider_id'];
-    selects.forEach(selector => {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.addEventListener('change', function() {
-                document.getElementById('filterForm').submit();
-            });
-        }
-    });
-
     // Status change handler
     const statusSelects = document.querySelectorAll('.status-select');
     statusSelects.forEach(select => {
@@ -276,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const newStatus = this.value;
             const originalStatus = this.querySelector('option[selected]').value;
             
-            // Show loading state
             this.disabled = true;
             
             fetch(`{{ route('appointment-providers.update-status', ':id') }}`.replace(':id', appointmentId), {
@@ -292,21 +272,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success message
                     showAlert('success', data.message);
-                    
-                    // Update the selected option
                     this.querySelector('option[selected]').removeAttribute('selected');
                     this.querySelector(`option[value="${newStatus}"]`).setAttribute('selected', 'selected');
                 } else {
-                    // Revert selection
                     this.value = originalStatus;
                     showAlert('error', data.message);
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                // Revert selection
                 this.value = originalStatus;
                 showAlert('error', '{{ __("messages.error_occurred") }}');
             })
@@ -320,37 +294,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButtons = document.querySelectorAll('.delete-btn');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const confirmMessage = this.dataset.confirm;
-            
-            if (confirm(confirmMessage)) {
-                this.closest('form').submit();
+            if (!confirm(this.dataset.confirm)) {
+                e.preventDefault();
             }
         });
     });
 
-    // Alert function
     function showAlert(type, message) {
         const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
         const alertHtml = `
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
                 ${message}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
                 </button>
             </div>
         `;
         
-        // Insert at the top of the card body
-        const cardBody = document.querySelector('.card-body');
-        cardBody.insertAdjacentHTML('afterbegin', alertHtml);
+        document.querySelector('.card-body').insertAdjacentHTML('afterbegin', alertHtml);
         
-        // Auto-hide after 5 seconds
         setTimeout(() => {
-            const alert = cardBody.querySelector(`.${alertClass}`);
-            if (alert) {
-                alert.remove();
-            }
+            const alert = document.querySelector(`.${alertClass}`);
+            if (alert) alert.remove();
         }, 5000);
     }
 });

@@ -27,6 +27,11 @@ class AppointmentProvider extends Model
         return $this->belongsTo(Provider::class);
     }
 
+    public function diagnosis()
+    {
+        return $this->hasOne(PatientDiagnosis::class);
+    }
+    
     /**
      * Get the user that owns the appointment.
      */

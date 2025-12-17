@@ -18,25 +18,19 @@ class AppointmentProviderController extends Controller
      */
     public function index(Request $request)
     {
-        // Check permission
         if (!Gate::allows('appointmentProvider-table')) {
             abort(403, __('messages.unauthorized_access'));
         }
 
-        $appointments = collect();
-        
-        // Get filter parameters
         $status = $request->get('status', 'all');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
-        $userId = $request->get('user_id');
         $providerId = $request->get('provider_id');
         $search = $request->get('search');
-        
-        // Base query
-        $query = AppointmentProvider::with(['user', 'provider']);
+        $hasDiagnosis = $request->get('has_diagnosis');
 
-        // Apply filters
+        $query = AppointmentProvider::with(['user', 'provider', 'diagnosis']);
+
         if ($status !== 'all') {
             $query->where('status', $status);
         }
@@ -49,47 +43,42 @@ class AppointmentProviderController extends Controller
             $query->where('date_of_appointment', '<=', $dateTo);
         }
 
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
-
         if ($providerId) {
             $query->where('provider_id', $providerId);
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name_of_patient', 'like', "%{$search}%")
-                  ->orWhere('phone_of_patient', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('phone_of_patient', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
             });
         }
 
-        // Get appointments with pagination
+        // Filter by diagnosis status
+        if ($hasDiagnosis !== null && $hasDiagnosis !== '') {
+            if ($hasDiagnosis == '1') {
+                $query->has('diagnosis');
+            } else {
+                $query->doesntHave('diagnosis');
+            }
+        }
+
         $appointments = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        // Get users and providers for filter dropdowns
-        $users = User::select('id', 'name')->orderBy('name')->get();
         $providers = Provider::select('id', 'name')->orderBy('name')->get();
-
-        // Get status options
         $statusOptions = AppointmentProvider::getStatusOptions();
 
         return view('admin.appointment-providers.index', compact(
-            'appointments', 
-            'users', 
-            'providers', 
+            'appointments',
+            'providers',
             'statusOptions',
-            'status', 
-            'dateFrom', 
-            'dateTo', 
-            'userId', 
+            'status',
+            'dateFrom',
+            'dateTo',
             'providerId',
             'search'
         ));
     }
-
     /**
      * Show the form for creating a new appointment provider.
      */
@@ -142,7 +131,6 @@ class AppointmentProviderController extends Controller
 
             return redirect()->route('admin.appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_created_successfully'));
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', __('messages.error_creating_appointment_provider'))
@@ -220,7 +208,6 @@ class AppointmentProviderController extends Controller
 
             return redirect()->route('admin.appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_updated_successfully'));
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', __('messages.error_updating_appointment_provider'))
@@ -244,7 +231,6 @@ class AppointmentProviderController extends Controller
 
             return redirect()->route('admin.appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_deleted_successfully'));
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', __('messages.error_deleting_appointment_provider'));
@@ -274,16 +260,13 @@ class AppointmentProviderController extends Controller
             $appointment->update(['status' => $request->status]);
 
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'message' => __('messages.status_updated_successfully'),
                 'status_name' => $appointment->status_name,
                 'status_badge_class' => $appointment->status_badge_class
             ]);
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => __('messages.error_updating_status')]);
         }
     }
-
-  
 }

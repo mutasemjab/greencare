@@ -29,6 +29,12 @@ class Medication extends Model
         return $this->belongsTo(Room::class);
     }
 
+     public function diagnosis()
+    {
+        return $this->belongsTo(PatientDiagnosis::class, 'diagnosis_id');
+    }
+
+
     /**
      * Get medication schedules
      */
