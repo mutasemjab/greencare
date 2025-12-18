@@ -62,6 +62,20 @@ class SpecialMedicalFormApiController extends Controller
                             'user_type' => $form->creator->user_type,
                             'photo' => $form->creator->photo,
                         ],
+                        'replies' => $form->replies->map(function ($reply) {
+                            return [
+                                'id' => $reply->id,
+                                'note' => $reply->note,
+                                'signature_url' => $reply->signature_url,
+                                'user' => [
+                                    'id' => $reply->user->id,
+                                    'name' => $reply->user->name,
+                                    'user_type' => $reply->user->user_type,
+                                    'photo' => $reply->user->photo,
+                                ],
+                                'created_at' => $reply->created_at->format('Y-m-d H:i:s'),
+                            ];
+                        }),
                         'replies_count' => $form->replies->count(),
                         'created_at' => $form->created_at->format('Y-m-d H:i:s'),
                         'updated_at' => $form->updated_at->format('Y-m-d H:i:s'),
