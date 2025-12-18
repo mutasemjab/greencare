@@ -33,14 +33,14 @@ class RoomReportController extends Controller
     {
         try {
             $query = ReportTemplate::query();
-            
+
             // Optional: Filter by user type if needed
             if ($request->has('created_for')) {
                 $query->where('created_for', $request->created_for);
             }
-            
+
             $templates = $query->get();
-            
+
             return $this->success_response('Report templates retrieved successfully', [
                 'templates' => $templates
             ]);
@@ -130,7 +130,7 @@ class RoomReportController extends Controller
             // Handle initial report submission if provided
             $initialReport = null;
             $medicationsCount = 0;
-            
+
             if ($request->has('initial_report.template_id')) {
                 // Create the initial report
                 $initialReport = Report::create([
@@ -245,7 +245,7 @@ class RoomReportController extends Controller
         ]);
     }
 
-    
+
 
     /**
      * Get available report templates for current user type
@@ -383,7 +383,7 @@ class RoomReportController extends Controller
             foreach ($request->answers as $index => $answer) {
                 // Get the field to check its input type
                 $field = \App\Models\ReportField::find($answer['field_id']);
-                
+
                 $value = $answer['value'];
 
                 // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
@@ -472,24 +472,24 @@ class RoomReportController extends Controller
             $report->template->sections->each(function ($section) use ($answersGrouped) {
                 $section->fields->each(function ($field) use ($answersGrouped) {
                     $answerValue = null;
-                    
+
                     if (isset($answersGrouped[$field->id])) {
                         $rawValue = $answersGrouped[$field->id]->value;
-                        
+
                         // Decode JSON value
                         $decodedValue = json_decode($rawValue, true);
-                        
+
                         // ✅ FIX: Handle photo, pdf, and signature fields - ensure URL is returned
                         if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
                             // If it's a string (URL), return as is
                             if (is_string($decodedValue)) {
                                 $answerValue = $decodedValue;
-                            } 
+                            }
                             // If it's still JSON encoded, decode it
                             elseif (is_string($rawValue)) {
                                 $answerValue = $rawValue;
                             }
-                            
+
                             // Ensure it's a full URL
                             if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
                                 $answerValue = url($answerValue);
@@ -498,7 +498,7 @@ class RoomReportController extends Controller
                             $answerValue = $decodedValue;
                         }
                     }
-                    
+
                     $field->answer = $answerValue;
                 });
             });
@@ -579,12 +579,12 @@ class RoomReportController extends Controller
                 foreach ($section->fields as $field) {
                     // Find the answer for this field in the current report
                     $answer = $report->answers->firstWhere('report_field_id', $field->id);
-                    
+
                     $answerValue = null;
-                    
+
                     if ($answer) {
                         $decodedValue = json_decode($answer->value, true);
-                        
+
                         // ✅ FIX: Handle photo, pdf, and signature fields properly
                         if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
                             if (is_string($decodedValue)) {
@@ -592,7 +592,7 @@ class RoomReportController extends Controller
                             } elseif (is_string($answer->value)) {
                                 $answerValue = $answer->value;
                             }
-                            
+
                             // Ensure it's a full URL
                             if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
                                 $answerValue = url($answerValue);
@@ -671,18 +671,23 @@ class RoomReportController extends Controller
     /**
      * Get all rooms for the authenticated nurse with completion status
      */
-   public function getNurseRooms(Request $request)
+    public function getNurseRooms(Request $request)
     {
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
 
-        // Get all rooms where the nurse is a member
-        $rooms = Room::whereHas('users', function ($query) use ($currentUser) {
-            $query->where('user_id', $currentUser->id)
-                ->where('role', 'nurse');
-        })
-            ->with(['users']) // Load room users if needed
-            ->get();
+        // If super_nurse, get all rooms
+        if ($userType === 'super_nurse') {
+            $rooms = Room::with(['users'])->get();
+        } else {
+            // Get only rooms where the nurse is a member
+            $rooms = Room::whereHas('users', function ($query) use ($currentUser) {
+                $query->where('user_id', $currentUser->id)
+                    ->where('role', 'nurse');
+            })
+                ->with(['users'])
+                ->get();
+        }
 
         // Add is_complete flag to each room
         $roomsWithStatus = $rooms->map(function ($room) {
