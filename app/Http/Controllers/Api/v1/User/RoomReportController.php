@@ -212,7 +212,7 @@ class RoomReportController extends Controller
             DB::commit();
 
             $responseData = [
-                'room' => $room->load('users', 'reports.reportTemplate')
+                'room' => $room->load('users', 'reports.template')
             ];
 
             if ($initialReport) {
