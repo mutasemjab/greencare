@@ -272,7 +272,7 @@ class RoomReportController extends Controller
 
         return $this->success_response('Templates retrieved successfully', [
             'user_type' => $userType,
-            'templates' => $templates
+            'template' => $templates
         ]);
     }
 
