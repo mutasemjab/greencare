@@ -149,11 +149,13 @@ class RoomReportController extends Controller
                 ]);
 
                 // Save report answers
+                // Save report answers
                 foreach ($request->input('initial_report.answers') as $index => $answer) {
                     // Get the field to check its input type
                     $field = \App\Models\ReportField::find($answer['field_id']);
 
-                    $value = $answer['value'];
+                    // ✅ FIX: Initialize value as null for file uploads
+                    $value = $answer['value'] ?? null;
 
                     // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
                     if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
@@ -165,6 +167,9 @@ class RoomReportController extends Controller
                         } elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
                             // If already a URL, keep it as is
                             $value = $value;
+                        } elseif (empty($value)) {
+                            // Skip this answer if no file was uploaded and no value exists
+                            continue;
                         }
                     }
 
