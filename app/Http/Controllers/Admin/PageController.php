@@ -50,7 +50,7 @@ class PageController extends Controller
         try {
             Page::create($request->all());
 
-            return redirect()->route('admin.pages.index')
+            return redirect()->route('pages.index')
                 ->with('success', __('messages.page_created_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -102,7 +102,7 @@ class PageController extends Controller
         try {
             $page->update($request->all());
 
-            return redirect()->route('admin.pages.index')
+            return redirect()->route('pages.index')
                 ->with('success', __('messages.page_updated_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -118,7 +118,7 @@ class PageController extends Controller
     {
         try {
             $page->delete();
-            return redirect()->route('admin.pages.index')
+            return redirect()->route('pages.index')
                 ->with('success', __('messages.page_deleted_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
