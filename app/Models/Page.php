@@ -12,6 +12,7 @@ class Page extends Model
     
     const TYPE_TERMS_AND_CONDITIONS = 1;
     const TYPE_PRIVACY_POLICY = 2;
+    const TYPE_CONTACT_US = 3;
 
     /**
      * Get page type name
@@ -21,6 +22,7 @@ class Page extends Model
         return match($this->type) {
             self::TYPE_TERMS_AND_CONDITIONS => __('messages.terms_and_conditions'),
             self::TYPE_PRIVACY_POLICY => __('messages.privacy_policy'),
+            self::TYPE_CONTACT_US => __('messages.contact_us'),
             default => __('messages.unknown_type'),
         };
     }
@@ -55,5 +57,9 @@ class Page extends Model
     public function scopePrivacyPolicy($query)
     {
         return $query->where('type', self::TYPE_PRIVACY_POLICY);
+    }
+    public function scopeContactUs($query)
+    {
+        return $query->where('type', self::TYPE_CONTACT_US);
     }
 }

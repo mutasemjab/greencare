@@ -32,7 +32,7 @@ class PageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|integer|in:1,2',
+            'type' => 'required|integer|in:1,2,3',
             'title_en' => 'required|string|max:255',
             'title_ar' => 'required|string|max:255',
             'description_en' => 'required|string',
@@ -82,7 +82,7 @@ class PageController extends Controller
     public function update(Request $request, Page $page)
     {
         $request->validate([
-            'type' => 'required|integer|in:1,2',
+            'type' => 'required|integer|in:1,2,3',
             'title_en' => 'required|string|max:255',
             'title_ar' => 'required|string|max:255',
             'description_en' => 'required|string',
@@ -134,6 +134,7 @@ class PageController extends Controller
         return [
             1 => __('messages.terms_and_conditions'),
             2 => __('messages.privacy_policy'),
+            3 => __('messages.contact_us'),
         ];
     }
 
@@ -145,6 +146,7 @@ class PageController extends Controller
         $types = [
             1 => __('messages.terms_and_conditions'),
             2 => __('messages.privacy_policy'),
+            3 => __('messages.contact_us'),
         ];
 
         return $types[$type] ?? __('messages.unknown_type');

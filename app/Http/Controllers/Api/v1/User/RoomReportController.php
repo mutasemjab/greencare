@@ -156,7 +156,7 @@ class RoomReportController extends Controller
 
                     // ✅ FIX: Initialize value as null for file uploads
                     $value = $answer['value'] ?? null;
-                    
+                      
 
                     // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
                     if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {

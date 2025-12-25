@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('type'); // 1 terms and condition // 2 privacy policy 
+            $table->tinyInteger('type'); // 1 terms and condition // 2 privacy policy // 3 contact us 
             $table->string('title_en'); 
             $table->string('title_ar'); 
             $table->text('description_en');
