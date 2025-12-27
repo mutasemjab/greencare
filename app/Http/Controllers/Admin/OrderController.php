@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Order;
 use App\Models\User;
-use App\Models\Driver;
-use App\Models\Service;
-use App\Models\WalletTransaction;
+use App\Models\Notification;
+use App\Traits\SendsOrderNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
+    use SendsOrderNotifications;
+
     /**
      * Display a listing of orders
      */
@@ -126,7 +125,9 @@ class OrderController extends Controller
         }
     }
 
-
+    /**
+     * Update the specified order
+     */
     public function update(Request $request, $id)
     {
         try {
@@ -136,7 +137,7 @@ class OrderController extends Controller
                 'note' => 'nullable|string|max:500',
             ]);
 
-            $order = Order::with('orderProducts')->findOrFail($id);
+            $order = Order::with('orderProducts', 'user')->findOrFail($id);
             $oldStatus = $order->order_status;
             $oldPaymentStatus = $order->payment_status;
 
@@ -150,27 +151,27 @@ class OrderController extends Controller
                     'note' => $request->note
                 ]);
 
-                // Handle payment status change
+                // ============================================
+                // Send notifications
+                // ============================================
+                
+                // Send order status change notification
+                if ($oldStatus != $request->order_status) {
+                    $this->sendOrderStatusNotification($order, $oldStatus, $request->order_status);
+                }
+
+                // Send payment status notification
                 if ($oldPaymentStatus != $request->payment_status) {
-                    $this->handlePaymentStatusChange($order, $request->payment_status);
+                    $this->sendPaymentStatusNotification($order, $request->payment_status);
                 }
 
-                // Handle delivery - create voucher when status changes to 4 (Delivered)
-                if ($request->order_status == 4 && $oldStatus != 4) {
-                    $warehouseId = $request->warehouse_id ?? $this->getDefaultWarehouseId();
-                    $this->createDeliveryVoucher($order, $warehouseId);
-                }
-
-                // Handle refund if status changed to refund
-                if ($request->order_status == 6 && $oldStatus != 6) {
-                    $this->processRefund($order);
-                }
+                // ============================================
 
                 DB::commit();
 
                 $message = 'Order updated successfully';
                 if ($request->order_status == 4 && $oldStatus != 4) {
-                    $message .= ' and delivery voucher created.';
+                    $message .= ' and customer notified about delivery.';
                 }
 
                 return redirect()->route('orders.show', $order->id)
@@ -187,114 +188,27 @@ class OrderController extends Controller
     }
 
     /**
-     * Get default warehouse ID
+     * Delete the specified order
      */
-    private function getDefaultWarehouseId()
-    {
-        $defaultWarehouse = DB::table('warehouses')
-            ->orderBy('id', 'asc')
-            ->first();
-        
-        if (!$defaultWarehouse) {
-            throw new \Exception('No warehouse found. Please create a warehouse first.');
-        }
-        
-        return $defaultWarehouse->id;
-    }
-
-    /**
-     * Create delivery voucher when order is delivered
-     */
-    private function createDeliveryVoucher(Order $order, $warehouseId)
+    public function destroy($id)
     {
         try {
-            // Validate warehouse exists
-            $warehouse = DB::table('warehouses')->find($warehouseId);
-            if (!$warehouse) {
-                throw new \Exception('Selected warehouse not found.');
+            $order = Order::findOrFail($id);
+            
+            // Only allow deletion of pending or canceled orders
+            if (!in_array($order->order_status, [1, 5])) {
+                return back()->with('error', 'Only pending or canceled orders can be deleted.');
             }
 
-            // Check if voucher already exists for this order
-            $existingVoucher = DB::table('note_vouchers')
-                ->where('order_id', $order->id)
-                ->where('type', 2)
-                ->first();
+            $order->delete();
 
-            if ($existingVoucher) {
-                \Log::warning("Delivery voucher already exists for order {$order->id}");
-                return; // Don't create duplicate voucher
-            }
-
-            // Generate voucher number
-            $voucherNumber = $this->generateVoucherNumber(2); // type 2 = out
-
-            // Create note voucher (type 2 = out, meaning products going out of warehouse)
-            $noteVoucher = DB::table('note_vouchers')->insertGetId([
-                'number' => $voucherNumber,
-                'type' => 2, // 2 = out (products leaving warehouse for delivery)
-                'date_note_voucher' => now()->toDateString(),
-                'note' => "Delivery voucher for Order #{$order->number} - Order delivered to customer",
-                'warehouse_id' => $warehouseId,
-                'order_id' => $order->id,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            // Get order products
-            $orderProducts = DB::table('order_products')
-                ->where('order_id', $order->id)
-                ->get();
-
-            if ($orderProducts->isEmpty()) {
-                throw new \Exception('No products found in this order.');
-            }
-
-            // Create voucher products entries
-            $voucherProductsData = [];
-            foreach ($orderProducts as $orderProduct) {
-                $voucherProductsData[] = [
-                    'quantity' => $orderProduct->quantity,
-                    'note' => "Delivered - Order #{$order->number}",
-                    'product_id' => $orderProduct->product_id,
-                    'note_voucher_id' => $noteVoucher,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-            }
-
-            // Bulk insert voucher products
-            DB::table('voucher_products')->insert($voucherProductsData);
-
-            // Log the voucher creation
-            \Log::info("Delivery voucher created for order {$order->id}", [
-                'order_id' => $order->id,
-                'voucher_id' => $noteVoucher,
-                'voucher_number' => $voucherNumber,
-                'warehouse_id' => $warehouseId,
-                'products_count' => $orderProducts->count()
-            ]);
+            return redirect()->route('orders.index')
+                ->with('success', 'Order deleted successfully');
 
         } catch (\Exception $e) {
-            \Log::error("Failed to create delivery voucher for order {$order->id}: " . $e->getMessage());
-            throw new \Exception("Failed to create delivery voucher: " . $e->getMessage());
+            return back()->with('error', 'Failed to delete order: ' . $e->getMessage());
         }
     }
-
-    /**
-     * Generate unique voucher number
-     */
-    private function generateVoucherNumber($type)
-    {
-        $lastVoucher = DB::table('note_vouchers')
-            ->where('type', $type)
-            ->lockForUpdate() // Prevent race conditions
-            ->orderBy('number', 'desc')
-            ->first();
-        
-        return $lastVoucher ? $lastVoucher->number + 1 : 1;
-    }
-
-  
 
     /**
      * Get order statistics
@@ -304,58 +218,24 @@ class OrderController extends Controller
         return [
             'total_orders' => Order::count(),
             'pending_orders' => Order::where('order_status', 1)->count(),
+            'accepted_orders' => Order::where('order_status', 2)->count(),
+            'on_the_way_orders' => Order::where('order_status', 3)->count(),
             'delivered_orders' => Order::where('order_status', 4)->count(),
             'canceled_orders' => Order::where('order_status', 5)->count(),
-            'total_revenue' => Order::where('order_status', 4)->sum('total_prices'),
+            'refund_orders' => Order::where('order_status', 6)->count(),
+            'total_revenue' => Order::where('order_status', 4)
+                                   ->where('payment_status', 1)
+                                   ->sum('total_prices'),
             'unpaid_orders' => Order::where('payment_status', 2)->count(),
             'today_orders' => Order::whereDate('created_at', today())->count(),
             'this_month_orders' => Order::whereMonth('created_at', now()->month)
                                        ->whereYear('created_at', now()->year)
-                                       ->count()
+                                       ->count(),
+            'today_revenue' => Order::whereDate('created_at', today())
+                                   ->where('order_status', 4)
+                                   ->where('payment_status', 1)
+                                   ->sum('total_prices'),
         ];
-    }
-
-    /**
-     * Handle payment status change
-     */
-    private function handlePaymentStatusChange($order, $newPaymentStatus)
-    {
-        if ($newPaymentStatus == 1 && $order->payment_type == 'wallet') {
-            // Deduct from user wallet if payment is marked as paid
-            $user = $order->user;
-            if ($user->balance >= $order->total_prices) {
-                $user->decrement('balance', $order->total_prices);
-                
-                // Create wallet transaction
-                WalletTransaction::create([
-                    'user_id' => $user->id,
-                    'amount' => $order->total_prices,
-                    'type_of_transaction' => 2, // withdrawal
-                    'note' => "Payment for order #{$order->number}"
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Process refund
-     */
-    private function processRefund($order)
-    {
-        if ($order->payment_status == 1) { // Only refund if paid
-            $user = $order->user;
-            
-            // Add refund to user wallet
-            $user->increment('balance', $order->total_prices);
-            
-            // Create wallet transaction for refund
-            WalletTransaction::create([
-                'user_id' => $user->id,
-                'amount' => $order->total_prices,
-                'type_of_transaction' => 1, // add
-                'note' => "Refund for order #{$order->number}"
-            ]);
-        }
     }
 
     /**
@@ -388,7 +268,71 @@ class OrderController extends Controller
         return $labels[$status] ?? 'Unknown';
     }
 
-  
+    /**
+     * Export orders to Excel (optional)
+     */
+    public function export(Request $request)
+    {
+        // Implementation for exporting orders
+        // You can use Laravel Excel package
+    }
 
-   
+    /**
+     * Print order invoice (optional)
+     */
+    public function printInvoice($id)
+    {
+        try {
+            $order = Order::with([
+                'user',
+                'address',
+                'orderProducts.product'
+            ])->findOrFail($id);
+
+            $order->order_status_label = $this->getOrderStatusLabel($order->order_status);
+            $order->payment_status_label = $this->getPaymentStatusLabel($order->payment_status);
+
+            return view('admin.orders.invoice', compact('order'));
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to generate invoice: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk update order status (optional)
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        try {
+            $request->validate([
+                'order_ids' => 'required|array',
+                'order_ids.*' => 'exists:orders,id',
+                'order_status' => 'required|integer|in:1,2,3,4,5,6',
+            ]);
+
+            $orders = Order::with('user')->whereIn('id', $request->order_ids)->get();
+
+            DB::beginTransaction();
+
+            foreach ($orders as $order) {
+                $oldStatus = $order->order_status;
+                
+                $order->update([
+                    'order_status' => $request->order_status
+                ]);
+
+                // Send notification for each order
+                $this->sendOrderStatusNotification($order, $oldStatus, $request->order_status);
+            }
+
+            DB::commit();
+
+            return back()->with('success', count($orders) . ' orders updated successfully');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Failed to update orders: ' . $e->getMessage());
+        }
+    }
 }

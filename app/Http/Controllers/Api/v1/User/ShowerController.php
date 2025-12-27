@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\v1\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Room;
 use App\Models\Shower;
 use App\Models\User;
 use App\Traits\Responses;
+use App\Traits\SendsAppointmentNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShowerController extends Controller
 {
-    use Responses;
+    use Responses , SendsAppointmentNotifications;
     /**
      * Store a new shower appointment.
      */
@@ -223,6 +225,33 @@ class ShowerController extends Controller
 
             // Load user relationship for response
             $shower->load('user');
+
+            // ============================================
+            // Send notifications
+            // ============================================
+            
+            // Send notification to the user who created the shower appointment
+            $this->sendShowerAppointmentNotification(
+                $shower,
+                $finalPrice,
+                $discountInfo
+            );
+
+            // Send notification to room members if patient code was provided
+            if ($request->code_patient && $discountInfo) {
+                $room = Room::where('code', $request->code_patient)->first();
+                
+                if ($room) {
+                    $this->sendShowerToRoomNotification(
+                        $shower,
+                        $room,
+                        $finalPrice
+                    );
+                }
+            }
+
+            // ============================================
+
 
             // Format response data
             $showerData = [

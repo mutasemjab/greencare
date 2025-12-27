@@ -96,7 +96,6 @@ class AppointmentApiController extends Controller
                     'medical_test_types' => $medicalTestTypes,
                 ]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_occurred'),
@@ -111,9 +110,9 @@ class AppointmentApiController extends Controller
     private function getHierarchicalXrayTypes()
     {
         // Get main categories with their children
-        $mainCategories = TypeHomeXray::with(['children' => function($query) {
-                $query->orderBy('name');
-            }])
+        $mainCategories = TypeHomeXray::with(['children' => function ($query) {
+            $query->orderBy('name');
+        }])
             ->whereNull('parent_id')
             ->orderBy('name')
             ->get();
@@ -179,9 +178,9 @@ class AppointmentApiController extends Controller
         return $hierarchicalTypes;
     }
 
-   
 
-     /**
+
+    /**
      * Validate room code and get discount
      */
     private function validateRoomCodeAndGetDiscount($roomCode)
@@ -273,7 +272,7 @@ class AppointmentApiController extends Controller
 
             // Validate room code and get discount
             $roomValidation = $this->validateRoomCodeAndGetDiscount($request->room_code);
-            
+
             if ($request->room_code && !$roomValidation['valid']) {
                 return $this->error_response(
                     $roomValidation['error'] ?? __('messages.invalid_room_code'),
@@ -342,12 +341,12 @@ class AppointmentApiController extends Controller
 
             // Format response data with enhanced x-ray info
             $serviceDisplayName = $serviceInfo->name ?? __('messages.' . ($serviceInfo->type_of_service ?? 'unknown'));
-            
+
             // For elderly care, include care type information
             if ($request->service_type === 'elderly_care' && $serviceInfo) {
                 $serviceDisplayName = __('messages.' . $serviceInfo->type_of_service);
             }
-            
+
             // For x-ray types, include hierarchy information
             if ($request->service_type === 'home_xray' && $serviceInfo) {
                 $serviceDisplayName = $serviceInfo->isSubcategory() ? $serviceInfo->full_name : $serviceInfo->name;
@@ -410,153 +409,177 @@ class AppointmentApiController extends Controller
                 ];
             }
 
-        if ($request->room_code && isset($roomValidation['room'])) {
-            try {
-                $room = $roomValidation['room'];
-                
-                // Extract only serializable data
-                $messageData = [
-                    'room_id' => $room->id,
-                    'room_code' => $room->code,
-                    'user_id' => $userId,
-                    'user_name' => $appointment->user->name,
-                    'user_photo' => $appointment->user->photo ?? 'null',
-                    'appointment_id' => $appointment->id,
-                    'service_name' => $serviceDisplayName,
-                    'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d H:i:s'),
-                    'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i:s') : null,
-                    'note' => $appointment->note,
-                    'address' => $appointment->address,
-                    'lat' => $appointment->lat,
-                    'lng' => $appointment->lng,
-                    'final_price' => $priceCalculation['final_price'],
-                    'discount_percent' => $priceCalculation['discount_percent'],
-                    'discount_amount' => $priceCalculation['discount_amount'],
-                ];
-                
-                // Add care type for elderly care
-                if ($request->service_type === 'elderly_care' && $serviceInfo) {
-                    $messageData['care_type'] = __('messages.' . $serviceInfo->type_of_care);
-                }
-                
-                dispatch(function () use ($messageData) {
-                    try {
-                        $projectId = config('firebase.project_id');
-                        $baseUrl = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents";
-                        
-                        // Generate 20 character random ID
-                        $messageId = \Illuminate\Support\Str::random(20);
-                        
-                        // Format appointment message
-                        $messageText = "📅 New Appointment Booked\n\n";
-                        
-                        // Add care type if available
-                        if (isset($messageData['care_type'])) {
-                            $messageText .= "Care Type: {$messageData['care_type']}\n";
-                        }
-                        
-                        $messageText .= "Service: {$messageData['service_name']}\n";
-                        $messageText .= "Date: " . \Carbon\Carbon::parse($messageData['date_of_appointment'])->format('M d, Y') . "\n";
-                        
-                        if ($messageData['time_of_appointment']) {
-                            $messageText .= "Time: " . \Carbon\Carbon::parse($messageData['time_of_appointment'])->format('h:i A') . "\n";
-                        }
-                        
-                        // Add address if available
-                        if ($messageData['address']) {
-                            $messageText .= "Address: {$messageData['address']}\n";
-                        }
-                        
-                        // Add location coordinates if available
-                        if ($messageData['lat'] && $messageData['lng']) {
-                            $messageText .= "Location: {$messageData['lat']}, {$messageData['lng']}\n";
-                        }
-                        
-                        $messageText .= "Price: JD" . number_format($messageData['final_price'], 2) . "\n";
-                        
-                        if ($messageData['discount_percent'] > 0) {
-                            $messageText .= "Discount: " . $messageData['discount_percent'] . "% (-JD" . number_format($messageData['discount_amount'], 2) . ")\n";
-                        }
-                        
-                        if ($messageData['note']) {
-                            $messageText .= "\nNote: " . $messageData['note'];
-                        }
-                        
-                        // Prepare message data
-                        $firestoreData = [
-                            'fields' => [
-                                'created_at' => ['timestampValue' => now()->toIso8601String()],
-                                'id' => ['stringValue' => $messageId],
-                                'is_delivered' => ['booleanValue' => false],
-                                'is_read' => ['booleanValue' => false],
-                                'media_url' => ['stringValue' => ''],
-                                'reply_to' => ['stringValue' => ''],
-                                'sender_avatar' => ['stringValue' => $messageData['user_photo']],
-                                'sender_id' => ['integerValue' => (string)$messageData['user_id']],
-                                'sender_name' => ['stringValue' => $messageData['user_name']],
-                                'text' => ['stringValue' => $messageText],
-                                'type' => ['stringValue' => 'appointment'],
-                            ]
-                        ];
-                        
-                        // Add location data if available
-                        if ($messageData['lat'] && $messageData['lng']) {
-                            $firestoreData['fields']['location'] = [
-                                'mapValue' => [
-                                    'fields' => [
-                                        'lat' => ['doubleValue' => (float)$messageData['lat']],
-                                        'lng' => ['doubleValue' => (float)$messageData['lng']],
-                                        'address' => ['stringValue' => $messageData['address'] ?? '']
-                                    ]
-                                ]
-                            ];
-                        }
-                        
-                        // Send to Firestore messages subcollection
-                        $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
-                            "{$baseUrl}/rooms/room_{$messageData['room_id']}/messages/{$messageId}",
-                            $firestoreData
-                        );
-                        
-                        if ($response->successful()) {
-                            \Log::info("Appointment message sent to room: {$messageData['room_code']} (ID: {$messageData['room_id']})");
-                            
-                            // Update room's last_message
-                            $roomUpdate = [
-                                'fields' => [
-                                    'last_message' => ['stringValue' => $messageText],
-                                    'last_message_at' => ['timestampValue' => now()->toIso8601String()],
-                                ]
-                            ];
-                            
-                            \Illuminate\Support\Facades\Http::timeout(10)->patch(
-                                "{$baseUrl}/rooms/room_{$messageData['room_id']}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
-                                $roomUpdate
-                            );
-                        } else {
-                            \Log::error('Failed to send appointment message', [
-                                'room_code' => $messageData['room_code'],
-                                'status' => $response->status(),
-                                'body' => $response->body()
-                            ]);
-                        }
-                        
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send appointment message: ' . $e->getMessage());
-                    }
-                })->afterResponse();
-                
-            } catch (\Exception $e) {
-                \Log::error('Failed to dispatch appointment message: ' . $e->getMessage());
+
+            // ============================================
+            // Send notifications
+            // ============================================
+
+            // Send notification to the user who created the appointment
+            $this->sendAppointmentCreatedNotification(
+                $appointment,
+                $request->service_type,
+                $serviceDisplayName,
+                $priceCalculation['final_price']
+            );
+
+            // Send notification to room members if room code was provided
+            if ($request->room_code && isset($roomValidation['room'])) {
+                $this->sendAppointmentToRoomNotification(
+                    $appointment,
+                    $roomValidation['room'],
+                    $request->service_type,
+                    $serviceDisplayName,
+                    $priceCalculation['final_price']
+                );
             }
-        }
+
+            // ============================================
+
+
+            if ($request->room_code && isset($roomValidation['room'])) {
+                try {
+                    $room = $roomValidation['room'];
+
+                    // Extract only serializable data
+                    $messageData = [
+                        'room_id' => $room->id,
+                        'room_code' => $room->code,
+                        'user_id' => $userId,
+                        'user_name' => $appointment->user->name,
+                        'user_photo' => $appointment->user->photo ?? 'null',
+                        'appointment_id' => $appointment->id,
+                        'service_name' => $serviceDisplayName,
+                        'date_of_appointment' => $appointment->date_of_appointment->format('Y-m-d H:i:s'),
+                        'time_of_appointment' => $appointment->time_of_appointment ? $appointment->time_of_appointment->format('H:i:s') : null,
+                        'note' => $appointment->note,
+                        'address' => $appointment->address,
+                        'lat' => $appointment->lat,
+                        'lng' => $appointment->lng,
+                        'final_price' => $priceCalculation['final_price'],
+                        'discount_percent' => $priceCalculation['discount_percent'],
+                        'discount_amount' => $priceCalculation['discount_amount'],
+                    ];
+
+                    // Add care type for elderly care
+                    if ($request->service_type === 'elderly_care' && $serviceInfo) {
+                        $messageData['care_type'] = __('messages.' . $serviceInfo->type_of_care);
+                    }
+
+                    dispatch(function () use ($messageData) {
+                        try {
+                            $projectId = config('firebase.project_id');
+                            $baseUrl = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents";
+
+                            // Generate 20 character random ID
+                            $messageId = \Illuminate\Support\Str::random(20);
+
+                            // Format appointment message
+                            $messageText = "📅 New Appointment Booked\n\n";
+
+                            // Add care type if available
+                            if (isset($messageData['care_type'])) {
+                                $messageText .= "Care Type: {$messageData['care_type']}\n";
+                            }
+
+                            $messageText .= "Service: {$messageData['service_name']}\n";
+                            $messageText .= "Date: " . \Carbon\Carbon::parse($messageData['date_of_appointment'])->format('M d, Y') . "\n";
+
+                            if ($messageData['time_of_appointment']) {
+                                $messageText .= "Time: " . \Carbon\Carbon::parse($messageData['time_of_appointment'])->format('h:i A') . "\n";
+                            }
+
+                            // Add address if available
+                            if ($messageData['address']) {
+                                $messageText .= "Address: {$messageData['address']}\n";
+                            }
+
+                            // Add location coordinates if available
+                            if ($messageData['lat'] && $messageData['lng']) {
+                                $messageText .= "Location: {$messageData['lat']}, {$messageData['lng']}\n";
+                            }
+
+                            $messageText .= "Price: JD" . number_format($messageData['final_price'], 2) . "\n";
+
+                            if ($messageData['discount_percent'] > 0) {
+                                $messageText .= "Discount: " . $messageData['discount_percent'] . "% (-JD" . number_format($messageData['discount_amount'], 2) . ")\n";
+                            }
+
+                            if ($messageData['note']) {
+                                $messageText .= "\nNote: " . $messageData['note'];
+                            }
+
+                            // Prepare message data
+                            $firestoreData = [
+                                'fields' => [
+                                    'created_at' => ['timestampValue' => now()->toIso8601String()],
+                                    'id' => ['stringValue' => $messageId],
+                                    'is_delivered' => ['booleanValue' => false],
+                                    'is_read' => ['booleanValue' => false],
+                                    'media_url' => ['stringValue' => ''],
+                                    'reply_to' => ['stringValue' => ''],
+                                    'sender_avatar' => ['stringValue' => $messageData['user_photo']],
+                                    'sender_id' => ['integerValue' => (string)$messageData['user_id']],
+                                    'sender_name' => ['stringValue' => $messageData['user_name']],
+                                    'text' => ['stringValue' => $messageText],
+                                    'type' => ['stringValue' => 'appointment'],
+                                ]
+                            ];
+
+                            // Add location data if available
+                            if ($messageData['lat'] && $messageData['lng']) {
+                                $firestoreData['fields']['location'] = [
+                                    'mapValue' => [
+                                        'fields' => [
+                                            'lat' => ['doubleValue' => (float)$messageData['lat']],
+                                            'lng' => ['doubleValue' => (float)$messageData['lng']],
+                                            'address' => ['stringValue' => $messageData['address'] ?? '']
+                                        ]
+                                    ]
+                                ];
+                            }
+
+                            // Send to Firestore messages subcollection
+                            $response = \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                                "{$baseUrl}/rooms/room_{$messageData['room_id']}/messages/{$messageId}",
+                                $firestoreData
+                            );
+
+                            if ($response->successful()) {
+                                \Log::info("Appointment message sent to room: {$messageData['room_code']} (ID: {$messageData['room_id']})");
+
+                                // Update room's last_message
+                                $roomUpdate = [
+                                    'fields' => [
+                                        'last_message' => ['stringValue' => $messageText],
+                                        'last_message_at' => ['timestampValue' => now()->toIso8601String()],
+                                    ]
+                                ];
+
+                                \Illuminate\Support\Facades\Http::timeout(10)->patch(
+                                    "{$baseUrl}/rooms/room_{$messageData['room_id']}?updateMask.fieldPaths=last_message&updateMask.fieldPaths=last_message_at",
+                                    $roomUpdate
+                                );
+                            } else {
+                                \Log::error('Failed to send appointment message', [
+                                    'room_code' => $messageData['room_code'],
+                                    'status' => $response->status(),
+                                    'body' => $response->body()
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            \Log::error('Failed to send appointment message: ' . $e->getMessage());
+                        }
+                    })->afterResponse();
+                } catch (\Exception $e) {
+                    \Log::error('Failed to dispatch appointment message: ' . $e->getMessage());
+                }
+            }
 
 
             return $this->success_response(
                 __('messages.appointment_created_successfully'),
                 $responseData
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_creating_appointment'),
@@ -692,7 +715,6 @@ class AppointmentApiController extends Controller
                 __('messages.appointments_fetched_successfully'),
                 ['appointments' => $appointments]
             );
-
         } catch (\Exception $e) {
             return $this->error_response(
                 __('messages.error_fetching_appointments'),
@@ -700,6 +722,4 @@ class AppointmentApiController extends Controller
             );
         }
     }
-
-  
 }

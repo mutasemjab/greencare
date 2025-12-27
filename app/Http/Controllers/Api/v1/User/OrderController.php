@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\v1\User;
 
 use App\Http\Controllers\Controller;
@@ -16,12 +17,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Services\FirestoreMessageService;
+use App\Traits\SendsOrderNotifications;
 
 class OrderController extends Controller
 {
-    use Responses;
+    use Responses, SendsOrderNotifications;
 
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $orders = Order::with([
             'orderProducts',
@@ -35,25 +37,25 @@ class OrderController extends Controller
 
 
 
-   public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'address_id' => 'nullable|exists:user_addresses,id',
             'payment_type' => 'required|in:cash,card',
             'coupon_code' => 'nullable|string',
-            'code' => 'nullable|exists:rooms,code', 
+            'code' => 'nullable|exists:rooms,code',
         ]);
 
         DB::beginTransaction();
 
         try {
             $user = $request->user();
-            
+
             // Get cart items with product relationships
             $cartItems = Cart::with(['product'])
-                            ->where('user_id', $user->id)
-                            ->where('status', 1)
-                            ->get();
+                ->where('user_id', $user->id)
+                ->where('status', 1)
+                ->get();
 
             if ($cartItems->isEmpty()) {
                 return $this->error_response('Cart is empty', []);
@@ -74,11 +76,11 @@ class OrderController extends Controller
 
                 // Calculate base price (product price adjustment if any)
                 $basePrice = $product->price_after_discount ?? $product->price;
-            
+
 
                 // Calculate discount value per unit
                 $originalPrice = $product->price;
-                
+
                 $discountValue = $originalPrice - $basePrice;
 
                 // Calculate subtotal before tax
@@ -168,7 +170,7 @@ class OrderController extends Controller
 
             if ($request->code) {
                 $room = \App\Models\Room::where('code', $request->code)->first();
-                
+
                 if ($room && $room->discount > 0) {
                     // Calculate room discount as percentage of total before tax
                     $roomDiscount = ($totalBeforeTax * $room->discount) / 100;
@@ -222,12 +224,17 @@ class OrderController extends Controller
             DB::commit();
 
             // ============================================
+            // Send order created notification
+            // ============================================
+            $this->sendOrderCreatedNotification($order);
+
+            // ============================================
             // Send message to Firestore room
             // ============================================
             try {
                 if ($room) {
                     $firestoreMessageService = app(FirestoreMessageService::class);
-                    
+
                     $orderMessageData = [
                         'order_id' => $order->id,
                         'order_number' => $order->number,
@@ -240,7 +247,7 @@ class OrderController extends Controller
                         'status' => 'pending',
                         'sender_avatar' => $user->photo ?? '',
                     ];
-                    
+
                     $firestoreMessageService->sendOrderMessage(
                         $room->id,
                         $orderMessageData,
@@ -267,7 +274,6 @@ class OrderController extends Controller
                     'items_count' => $cartItems->sum('quantity')
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Order creation failed: ' . $e->getMessage());
@@ -283,7 +289,7 @@ class OrderController extends Controller
 
     public function details($id)
     {
-        $order = Order::with('orderProducts','orderProducts.product','orderProducts.product.images')->find($id);
+        $order = Order::with('orderProducts', 'orderProducts.product', 'orderProducts.product.images')->find($id);
 
         if (!$order) {
             return $this->error_response('Order not found', []);
@@ -305,5 +311,4 @@ class OrderController extends Controller
 
         return $this->success_response('Order cancelled successfully', $order);
     }
-   
 }

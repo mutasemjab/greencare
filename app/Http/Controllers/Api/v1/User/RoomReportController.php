@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\ReportAnswer;
 use App\Models\Medication;
 use App\Models\MedicationSchedule;
+use App\Models\ReportSchedule;
 use App\Models\RoomReportTemplateHistory;
 use App\Models\User;
 use App\Services\FirestoreRoomService;
@@ -413,8 +414,26 @@ class RoomReportController extends Controller
                     'value' => json_encode($value),
                 ]);
             }
+            // ============================================
+            // Update schedule as completed
+            // ============================================
+            $schedule = ReportSchedule::where('room_id', $request->room_id)
+                ->where('report_template_id', $request->template_id)
+                ->where('user_id', Auth::id())
+                ->where('completed', false)
+                ->orderBy('scheduled_for', 'asc')
+                ->first();
+
+            if ($schedule) {
+                $schedule->update([
+                    'completed' => true,
+                    'report_id' => $report->id
+                ]);
+            }
 
             DB::commit();
+
+
 
             // Load the complete report with relationships
             $report->load(['template.sections.fields.options', 'answers']);
