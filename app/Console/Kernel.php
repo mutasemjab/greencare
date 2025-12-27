@@ -15,15 +15,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
-        // إنشاء سجلات الأدوية يومياً في منتصف الليل
+        // هذا سيعمل مرة واحدة يومياً في منتصف الليل
         $schedule->command('medications:generate-logs 7')
-                ->daily()
-                ->at('00:00');
+            ->daily()
+            ->at('00:00')
+            ->appendOutputTo(storage_path('logs/schedule.log'));
 
-        // إرسال تذكيرات الأدوية كل 5 دقائق
+        // هذا سيعمل كل 5 دقائق
         $schedule->command('medications:send-reminders')
-                ->everyFiveMinutes();
+            ->everyFiveMinutes()
+            ->appendOutputTo(storage_path('logs/schedule.log'));
     }
 
     /**
@@ -33,7 +34,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
