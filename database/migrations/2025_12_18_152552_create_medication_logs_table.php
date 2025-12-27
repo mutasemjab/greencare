@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('medication_id')->constrained()->onDelete('cascade');
             $table->dateTime('scheduled_time');
             $table->boolean('taken')->default(false); // 0 = ما أخذ، 1 = أخذ
+            $table->timestamp('notification_sent_at')->nullable();
             $table->timestamps();
         });
     }

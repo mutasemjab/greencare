@@ -16,6 +16,14 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        // إنشاء سجلات الأدوية يومياً في منتصف الليل
+        $schedule->command('medications:generate-logs 7')
+                ->daily()
+                ->at('00:00');
+
+        // إرسال تذكيرات الأدوية كل 5 دقائق
+        $schedule->command('medications:send-reminders')
+                ->everyFiveMinutes();
     }
 
     /**

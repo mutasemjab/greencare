@@ -158,6 +158,11 @@ Route::group(['prefix' => 'v1/user'], function () {
             Route::post('/', [PledgeFormController::class, 'store']);
         });
 
+        // for reminder
+        Route::post('medication-logs/{log}/mark-taken', [MedicationLogController::class, 'markAsTaken']);
+        Route::get('medication-logs/today', [MedicationLogController::class, 'getTodaySchedule']);
+        Route::get('medication-logs/upcoming', [MedicationLogController::class, 'getUpcomingReminders']);
+
         Route::post('appointments', [AppointmentApiController::class, 'storeAppointment']);
         Route::get('appointments', [AppointmentApiController::class, 'getAppointmentsByType']);
 
