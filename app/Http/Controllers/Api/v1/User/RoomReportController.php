@@ -149,7 +149,6 @@ class RoomReportController extends Controller
                 ]);
 
                 // Save report answers
-                // Save report answers
                 foreach ($request->input('initial_report.answers') as $index => $answer) {
                     // Get the field to check its input type
                     $field = \App\Models\ReportField::find($answer['field_id']);
@@ -601,7 +600,7 @@ class RoomReportController extends Controller
 
                             // Ensure it's a full URL
                             if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
-                                $answerValue = url($answerValue);
+                                $answerValue = $answerValue;
                             }
                         } else {
                             $answerValue = $decodedValue;
