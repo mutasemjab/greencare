@@ -23,7 +23,7 @@ class SendMedicationReminders extends Command
                 now(),
                 now()->addMinutes(15)
             ])
-            ->whereDoesntHave('notification_sent') // تجنب إرسال الإشعار مرتين
+            ->whereNull('notification_sent_at') // ✅ تصحيح: استخدام whereNull بدلاً من whereDoesntHave
             ->get();
 
         $sentCount = 0;
