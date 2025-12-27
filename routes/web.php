@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactUsController;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -22,7 +23,7 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
     Route::get('/', [HomeController::class, 'index'])->name('home');
-          Route::get('/contact-us', 'ContactUsController@contact')->name('contact');
-        Route::post('/contact-us', 'ContactUsController@store')->name('contact.store');
+          Route::get('/contact-us', [ContactUsController::class, 'contact'])->name('contact');
+        Route::post('/contact-us', [ContactUsController::class, 'store'])->name('contact.store');
 });
 
