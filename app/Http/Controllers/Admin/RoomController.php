@@ -14,12 +14,14 @@ use App\Models\ReportTemplate;
 use App\Models\Report;
 use App\Models\RoomReportTemplateHistory;
 use App\Services\FirestoreRoomService;
+use App\Traits\SendsRoomNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class RoomController extends Controller
 {
+    use SendsRoomNotifications; 
     protected $firestoreService;
 
     public function __construct(FirestoreRoomService $firestoreService)
@@ -116,6 +118,8 @@ class RoomController extends Controller
             'family_id' => $request->family_id,
         ]);
 
+         $allUserIds = collect();
+
         // Add patients
         foreach ($request->patients as $patientId) {
             RoomUser::create([
@@ -123,6 +127,7 @@ class RoomController extends Controller
                 'user_id' => $patientId,
                 'role' => 'patient'
             ]);
+            $allUserIds->push($patientId);
         }
 
         // Add doctors
@@ -133,6 +138,7 @@ class RoomController extends Controller
                     'user_id' => $doctorId,
                     'role' => 'doctor'
                 ]);
+                $allUserIds->push($doctorId);
             }
         }
 
@@ -144,6 +150,8 @@ class RoomController extends Controller
                     'user_id' => $nurseId,
                     'role' => 'nurse'
                 ]);
+                
+                $allUserIds->push($nurseId);
             }
         }
 
@@ -190,6 +198,12 @@ class RoomController extends Controller
         $this->firestoreService->syncRoom($room);
 
         DB::commit();
+
+        // ========================================
+        // Send notifications to all room members
+        // ========================================
+        $this->sendRoomCreatedNotifications($room, $allUserIds);
+
         return redirect()->route('rooms.index')
             ->with('success', __('messages.room_created_successfully'));
 

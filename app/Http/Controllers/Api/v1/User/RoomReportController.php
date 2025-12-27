@@ -13,6 +13,7 @@ use App\Models\RoomReportTemplateHistory;
 use App\Models\User;
 use App\Services\FirestoreRoomService;
 use App\Traits\Responses;
+use App\Traits\SendsRoomNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RoomReportController extends Controller
 {
-    use Responses;
+    use Responses, SendsRoomNotifications;
 
     public function getPatient()
     {
@@ -155,7 +156,7 @@ class RoomReportController extends Controller
 
                     // ✅ FIX: Initialize value as null for file uploads
                     $value = $answer['value'] ?? null;
-                      
+
 
                     // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
                     if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
@@ -215,6 +216,8 @@ class RoomReportController extends Controller
             $firestoreService->syncRoom($room);
 
             DB::commit();
+
+            $this->sendRoomCreatedNotifications($room);
 
             $responseData = [
                 'room' => $room->load('users', 'reports.template')
@@ -694,10 +697,13 @@ class RoomReportController extends Controller
                 ->get();
         }
 
-        // Add is_complete flag to each room
+        // Add is_complete flag and user_ids to each room
         $roomsWithStatus = $rooms->map(function ($room) {
             // Check if there are any pledge forms for this room
             $hasPledgeForm = \App\Models\PledgeForm::where('room_id', $room->id)->exists();
+
+            // Get user IDs in this room
+            $userIds = $room->users->pluck('id')->toArray();
 
             return [
                 'id' => $room->id,
@@ -708,6 +714,7 @@ class RoomReportController extends Controller
                 'created_at' => $room->created_at,
                 'updated_at' => $room->updated_at,
                 'is_complete' => $hasPledgeForm,
+                'user_ids' => $userIds, // ← إضافة IDs المستخدمين
             ];
         });
 
