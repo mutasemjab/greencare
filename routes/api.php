@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1\User;
 
+use App\Http\Controllers\Api\v1\Lab\LabAuthController;
 use App\Http\Controllers\Api\v1\User\NewsController;
 use App\Http\Controllers\Api\v1\User\HomeController;
 use Illuminate\Http\Request;
@@ -201,5 +202,30 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         // Delete form
         Route::delete('special-medical-forms/{formId}', [SpecialMedicalFormApiController::class, 'deleteForm']);
+    });
+});
+
+
+// Unauthenticated Routes
+Route::group(['prefix' => 'v1/lab'], function () {
+
+    //---------------- Auth --------------------//
+    Route::post('/send-otp', [LabAuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [LabAuthController::class, 'verifyOtp']);
+    Route::post('/resend-otp', [LabAuthController::class, 'resendOtp']);
+    Route::post('/register', [LabAuthController::class, 'register']);
+    Route::post('/login', [LabAuthController::class, 'login']);
+
+    // Authenticated Routes
+    Route::group(['middleware' => ['auth:lab-api']], function () {
+        
+        Route::post('/updateFcmToken', [LabAuthController::class, 'updateFcmToken']);
+        Route::get('/active', [LabAuthController::class, 'active']);
+        Route::get('/lab_profile', [LabAuthController::class, 'labProfile']);
+        Route::post('/update_profile', [LabAuthController::class, 'updateProfile']);
+        Route::post('/delete_account', [LabAuthController::class, 'deleteAccount']);
+
+        // Add more lab-specific routes here
+        // Example: lab tests, reports, patients, etc.
     });
 });

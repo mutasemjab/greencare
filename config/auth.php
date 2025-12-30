@@ -53,7 +53,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'lab-api' => [
+            'driver' => 'passport',
+            'provider' => 'labs',
+        ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------
@@ -81,10 +87,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'labs' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Lab::class,
+        ],
     ],
 
     /*

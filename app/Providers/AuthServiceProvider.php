@@ -17,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-       // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
     ];
 
     /**
@@ -29,16 +29,19 @@ class AuthServiceProvider extends ServiceProvider
     {
         $gate->before(function ($user, $ability) {
             if (Auth::guard('admin')->check()) {
-               if(auth()->user()->is_super){
-                   return true;
-               }
-           }else{
-            return false;
-           }
-       });
+                if (auth()->user()->is_super) {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        });
         $this->registerPolicies();
 
-
+        Passport::tokensCan([
+            'user' => 'User Access',
+            'lab' => 'Lab Access',
+        ]);
         //
     }
 }
