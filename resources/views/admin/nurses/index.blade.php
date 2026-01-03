@@ -104,12 +104,7 @@
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                @can('nurse-table')
-                                                    <a href="{{ route('nurses.show', $nurse) }}" 
-                                                       class="btn btn-sm btn-info" title="{{ __('messages.view') }}">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                @endcan
+                                               
                                                 @can('nurse-edit')
                                                     <a href="{{ route('nurses.edit', $nurse) }}" 
                                                        class="btn btn-sm btn-warning" title="{{ __('messages.edit') }}">
