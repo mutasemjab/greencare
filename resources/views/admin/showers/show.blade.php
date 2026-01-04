@@ -127,6 +127,66 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Location Information -->
+                    @if($shower->address || ($shower->lat && $shower->lng))
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ __('messages.location_info') }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($shower->address)
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">{{ __('messages.address') }}:</h6>
+                                <p class="mb-2">
+                                    <i class="fas fa-map-pin me-1"></i>
+                                    {{ $shower->address }}
+                                </p>
+                                @if($shower->lat && $shower->lng)
+                                <a href="https://www.google.com/maps?q={{ $shower->lat }},{{ $shower->lng }}" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    {{ __('messages.open_in_google_maps') }}
+                                </a>
+                                @endif
+                            </div>
+                            @endif
+
+                            @if($shower->lat && $shower->lng)
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">{{ __('messages.latitude') }}:</h6>
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">{{ $shower->lat }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">{{ __('messages.longitude') }}:</h6>
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">{{ $shower->lng }}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Embedded Map -->
+                            <div class="mt-3">
+                                <iframe 
+                                    width="100%" 
+                                    height="300" 
+                                    frameborder="0" 
+                                    style="border:0; border-radius: 8px;" 
+                                    src="https://www.google.com/maps?q={{ $shower->lat }},{{ $shower->lng }}&output=embed"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Sidebar -->

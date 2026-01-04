@@ -19,7 +19,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="user_id" class="form-label">{{ __('messages.user') }} <span class="text-danger">*</span></label>
-                                <select name="user_id" id="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
+                                <select name="user_id" id="user_id" class="form-control @error('user_id') is-invalid @enderror" required>
                                     <option value="">{{ __('messages.select_user') }}</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
@@ -76,7 +76,7 @@
 
                             <div class="col-md-4 mb-3">
                                 <label for="from_place" class="form-label">{{ __('messages.from_place') }} <span class="text-danger">*</span></label>
-                                <select name="from_place" id="from_place" class="form-select @error('from_place') is-invalid @enderror" required>
+                                <select name="from_place" id="from_place" class="form-control @error('from_place') is-invalid @enderror" required>
                                     <option value="1" {{ old('from_place', 1) == 1 ? 'selected' : '' }}>{{ __('messages.inside_amman') }}</option>
                                     <option value="2" {{ old('from_place') == 2 ? 'selected' : '' }}>{{ __('messages.outside_amman') }}</option>
                                 </select>
@@ -130,7 +130,7 @@
 
                             <div class="col-md-4 mb-3">
                                 <label for="to_place" class="form-label">{{ __('messages.to_place') }} <span class="text-danger">*</span></label>
-                                <select name="to_place" id="to_place" class="form-select @error('to_place') is-invalid @enderror" required>
+                                <select name="to_place" id="to_place" class="form-control @error('to_place') is-invalid @enderror" required>
                                     <option value="1" {{ old('to_place', 1) == 1 ? 'selected' : '' }}>{{ __('messages.inside_amman') }}</option>
                                     <option value="2" {{ old('to_place') == 2 ? 'selected' : '' }}>{{ __('messages.outside_amman') }}</option>
                                 </select>

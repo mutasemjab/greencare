@@ -168,6 +168,7 @@
                             <th>{{ __('messages.user') }}</th>
                             <th>{{ __('messages.patient_code') }}</th>
                             <th>{{ __('messages.date_and_time') }}</th>
+                            <th>{{ __('messages.address') }}</th>
                             <th>{{ __('messages.price') }}</th>
                             <th>{{ __('messages.payment_method') }}</th>
                             <th>{{ __('messages.notes') }}</th>
@@ -203,6 +204,9 @@
                                         {{ $shower->time_of_shower->format('H:i') }}
                                     </div>
                                 @endif
+                            </td>
+                            <td>
+                                {{ $shower->address }}
                             </td>
                             <td>
                                 <strong class="text-success">{{ number_format($shower->price, 2) }} {{ __('messages.currency') }}</strong>
