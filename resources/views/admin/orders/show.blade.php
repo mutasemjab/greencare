@@ -160,7 +160,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('messages.phone_number') }}</label>
-                            <p class="form-control-static">{{ $order->user->country_code }}{{ $order->user->phone }}</p>
+                            <p class="form-control-static">{{ $order->user->phone }}</p>
                         </div>
                         @if($order->user->email)
                         <div class="mb-3">

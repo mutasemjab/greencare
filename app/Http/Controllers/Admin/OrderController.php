@@ -89,7 +89,7 @@ class OrderController extends Controller
     {
         try {
             $order = Order::with([
-                'user:id,name,phone,email,country_code',
+                'user:id,name,phone,email,',
                 'address',
                 'orderProducts.product'
             ])->findOrFail($id);
