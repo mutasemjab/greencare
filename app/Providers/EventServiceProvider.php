@@ -6,7 +6,18 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
-
+use App\Models\Order;
+use App\Models\ElderlyCare;
+use App\Models\HomeXray;
+use App\Models\MedicalTest;
+use App\Models\RequestNurse;
+use App\Models\AppointmentProvider;
+use App\Observers\OrderObserver;
+use App\Observers\ElderlyCareObserver;
+use App\Observers\HomeXrayObserver;
+use App\Observers\MedicalTestObserver;
+use App\Observers\RequestNurseObserver;
+use App\Observers\AppointmentProviderObserver;
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -25,9 +36,14 @@ class EventServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+     public function boot()
     {
-        //
+        Order::observe(OrderObserver::class);
+        ElderlyCare::observe(ElderlyCareObserver::class);
+        HomeXray::observe(HomeXrayObserver::class);
+        MedicalTest::observe(MedicalTestObserver::class);
+        RequestNurse::observe(RequestNurseObserver::class);
+        AppointmentProvider::observe(AppointmentProviderObserver::class);
     }
 
     /**

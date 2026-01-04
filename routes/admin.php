@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\MedicationController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\NurseController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PageController;
@@ -88,6 +89,17 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('diagnosis/create/{appointment}', [DiagnosisController::class, 'create'])
             ->name('diagnosis.create.appointment');
 
+            // for admin
+            Route::prefix('notifications')->name('admin.notifications.')->group(function () {
+                Route::get('/', [AdminNotificationController::class, 'index'])->name('index');
+                Route::post('/{id}/mark-as-read', [AdminNotificationController::class, 'markAsRead'])->name('markAsRead');
+                Route::post('/mark-all-as-read', [AdminNotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+                Route::get('/unread-count', [AdminNotificationController::class, 'getUnreadCount'])->name('unreadCount');
+                Route::get('/latest', [AdminNotificationController::class, 'getLatest'])->name('latest');
+                Route::delete('/{id}', [AdminNotificationController::class, 'destroy'])->name('destroy');
+                Route::delete('/read/all', [AdminNotificationController::class, 'deleteAllRead'])->name('deleteAllRead');
+            });
+            
         // Notification
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
         Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
