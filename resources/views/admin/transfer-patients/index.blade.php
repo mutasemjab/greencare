@@ -29,7 +29,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label">{{ __('messages.from_place') }}</label>
-                                    <select name="from_place" class="form-select">
+                                    <select name="from_place" class="form-control">
                                         <option value="">{{ __('messages.all') }}</option>
                                         <option value="1" {{ request('from_place') == '1' ? 'selected' : '' }}>{{ __('messages.inside_amman') }}</option>
                                         <option value="2" {{ request('from_place') == '2' ? 'selected' : '' }}>{{ __('messages.outside_amman') }}</option>
@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label">{{ __('messages.to_place') }}</label>
-                                    <select name="to_place" class="form-select">
+                                    <select name="to_place" class="form-control">
                                         <option value="">{{ __('messages.all') }}</option>
                                         <option value="1" {{ request('to_place') == '1' ? 'selected' : '' }}>{{ __('messages.inside_amman') }}</option>
                                         <option value="2" {{ request('to_place') == '2' ? 'selected' : '' }}>{{ __('messages.outside_amman') }}</option>
