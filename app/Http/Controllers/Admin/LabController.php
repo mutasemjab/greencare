@@ -46,7 +46,7 @@ class LabController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        try {
+       // try {
             DB::beginTransaction();
 
             $data = $request->only([
@@ -69,12 +69,12 @@ class LabController extends Controller
             return redirect()->route('labs.index')
                            ->with('success', __('messages.Lab_Added_Successfully'));
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                           ->with('error', __('messages.Something_Went_Wrong'))
-                           ->withInput();
-        }
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     return redirect()->back()
+        //                    ->with('error', __('messages.Something_Went_Wrong'))
+        //                    ->withInput();
+        // }
     }
 
     /**

@@ -105,7 +105,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="activate" class="form-label">{{ __('messages.Status') }} <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('activate') is-invalid @enderror" 
+                                    <select class="form-control @error('activate') is-invalid @enderror" 
                                             id="activate" 
                                             name="activate" 
                                             required>
