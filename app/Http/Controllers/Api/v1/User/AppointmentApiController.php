@@ -13,13 +13,14 @@ use App\Models\RequestNurse;
 use App\Models\Room;
 use App\Models\TypeRequestNurse;
 use App\Traits\Responses;
+use App\Traits\SendsAppointmentNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentApiController extends Controller
 {
-    use Responses;
+    use Responses,SendsAppointmentNotifications;
 
     /**
      * Get all service types information for appointments
