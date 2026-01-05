@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1\User;
 
+use App\Http\Controllers\Api\v1\Lab\LabAppointmentController;
 use App\Http\Controllers\Api\v1\Lab\LabAuthController;
 use App\Http\Controllers\Api\v1\User\NewsController;
 use App\Http\Controllers\Api\v1\User\HomeController;
@@ -226,6 +227,20 @@ Route::group(['prefix' => 'v1/lab'], function () {
         Route::post('/delete_account', [LabAuthController::class, 'deleteAccount']);
 
         // Add more lab-specific routes here
-        // Example: lab tests, reports, patients, etc.
+         Route::prefix('appointments')->group(function () {
+        // Get lab's appointments
+        Route::get('/', [LabAppointmentController::class, 'getAppointments']);
+
+        // Update appointment status
+        Route::post('/update-status', [LabAppointmentController::class, 'updateAppointmentStatus']);
+        
+        // Upload results
+        Route::post('/upload-results', [LabAppointmentController::class, 'uploadResults']);
+        
+        // Get appointment details
+        Route::get('/{type}/{id}', [LabAppointmentController::class, 'getAppointmentDetails']);
+        });
+
+
     });
 });

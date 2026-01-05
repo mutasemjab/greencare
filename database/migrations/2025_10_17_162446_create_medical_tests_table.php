@@ -27,6 +27,10 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('room_id')->nullable();
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
+            $table->enum('status', ['pending', 'confirmed', 'processing', 'finished', 'cancelled'])
+                ->default('pending');
+            $table->unsignedBigInteger('lab_id')->nullable();
+            $table->foreign('lab_id')->references('id')->on('labs')->onDelete('set null');
             $table->timestamps();
         });
     }
