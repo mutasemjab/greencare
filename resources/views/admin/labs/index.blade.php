@@ -49,7 +49,7 @@
                                         <td>{{ $loop->iteration + ($labs->currentPage() - 1) * $labs->perPage() }}</td>
                                         <td>
                                             @if($lab->photo)
-                                                <img src="{{ asset('assets/admin/uploads/labs/'. $lab->photo) }}" 
+                                                <img src="{{ asset('assets/admin/uploads/'. $lab->photo) }}" 
                                                      alt="{{ $lab->name }}" 
                                                      class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
                                             @else

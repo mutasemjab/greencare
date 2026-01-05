@@ -14,7 +14,7 @@
                         <!-- Photo -->
                         @if($lab->photo)
                             <div class="col-md-12 mb-4 text-center">
-                                <img src="{{ asset('assets/admin/uploads/labs/' . $lab->photo) }}" 
+                                <img src="{{ asset('assets/admin/uploads/' . $lab->photo) }}" 
                                      alt="{{ $lab->name }}" 
                                      class="img-thumbnail" 
                                      style="max-width: 300px;">

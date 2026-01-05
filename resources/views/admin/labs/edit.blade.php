@@ -141,7 +141,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">{{ __('messages.Current_Photo') }}</label>
                                         <div>
-                                            <img src="{{ asset('assets/admin/uploads/labs/' . $lab->photo) }}" 
+                                            <img src="{{ asset('assets/admin/uploads/' . $lab->photo) }}" 
                                                  alt="{{ $lab->name }}" 
                                                  class="img-thumbnail" 
                                                  style="max-width: 200px;">
