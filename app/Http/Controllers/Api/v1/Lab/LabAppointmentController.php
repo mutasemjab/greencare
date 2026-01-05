@@ -179,7 +179,7 @@ class LabAppointmentController extends Controller
                 'appointment_id' => 'required|integer',
                 'notes' => 'nullable|string|max:2000',
                 'files' => 'required|array|min:1|max:10',
-                'files.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max per file
+                'files.*' => 'file|mimes:pdf,jpg,jpeg,png', // 10MB max per file
             ]);
 
             if ($validator->fails()) {
@@ -202,7 +202,7 @@ class LabAppointmentController extends Controller
             // Upload files
             $uploadedFiles = [];
             foreach ($request->file('files') as $file) {
-                $path = $file->store('appointment_results/' . $request->appointment_type, 'public');
+                $path = uploadImage('assets/admin/uploads', $file);
                 $uploadedFiles[] = $path;
             }
 
