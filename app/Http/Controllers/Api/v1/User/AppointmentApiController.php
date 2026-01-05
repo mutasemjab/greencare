@@ -299,6 +299,8 @@ class AppointmentApiController extends Controller
                 'lng' => $request->lng,
                 'user_id' => $userId,
                 'room_id' => $roomValidation['room']->id ?? null,
+                'status' => 'pending',  
+                'lab_id' => 1,          
             ];
 
             // Create appointment based on service type

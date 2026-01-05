@@ -112,6 +112,11 @@ class PermissionSeeder extends Seeder
             'appointmentProvider-add',
             'appointmentProvider-edit',
             'appointmentProvider-delete',
+        
+            'lab-table',
+            'lab-add',
+            'lab-edit',
+            'lab-delete',
 
         ];
 
