@@ -87,20 +87,7 @@
                                 </div>
                             </div>
 
-                            <!-- Password -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">{{ __('messages.Password') }}</label>
-                                    <input type="password" 
-                                           class="form-control @error('password') is-invalid @enderror" 
-                                           id="password" 
-                                           name="password">
-                                    <small class="form-text text-muted">{{ __('messages.Leave_Empty_Keep_Current') }}</small>
-                                    @error('password')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                            
 
                             <!-- Status -->
                             <div class="col-md-6">

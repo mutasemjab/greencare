@@ -43,7 +43,6 @@ class LabController extends Controller
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => 'required|string|min:6',
         ]);
 
        // try {
@@ -54,12 +53,9 @@ class LabController extends Controller
                 'address', 'description', 'activate'
             ]);
 
-            // Hash password
-            $data['password'] = Hash::make($request->password);
-
             // Handle photo upload
             if ($request->hasFile('photo')) {
-                $data['photo'] = uploadImage('assets/admin/uploads/labs', $request->file('photo'));
+                $data['photo'] = uploadImage('assets/admin/uploads/', $request->file('photo'));
             }
 
             Lab::create($data);
@@ -107,7 +103,6 @@ class LabController extends Controller
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => 'nullable|string|min:6',
         ]);
 
         try {
@@ -118,21 +113,17 @@ class LabController extends Controller
                 'address', 'description', 'activate'
             ]);
 
-            // Update password if provided
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->password);
-            }
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
                 // Delete old photo
                 if ($lab->photo) {
-                    $oldPhotoPath = base_path('assets/admin/uploads/labs/' . $lab->photo);
+                    $oldPhotoPath = base_path('assets/admin/uploads/' . $lab->photo);
                     if (file_exists($oldPhotoPath)) {
                         unlink($oldPhotoPath);
                     }
                 }
-                $data['photo'] = uploadImage('assets/admin/uploads/labs', $request->file('photo'));
+                $data['photo'] = uploadImage('assets/admin/uploads/', $request->file('photo'));
             }
 
             $lab->update($data);
@@ -158,7 +149,7 @@ class LabController extends Controller
         try {
             // Delete photo from storage
             if ($lab->photo) {
-                $photoPath = base_path('assets/admin/uploads/labs/' . $lab->photo);
+                $photoPath = base_path('assets/admin/uploads/' . $lab->photo);
                 if (file_exists($photoPath)) {
                     unlink($photoPath);
                 }
