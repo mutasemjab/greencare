@@ -145,9 +145,9 @@ class LabAppointmentController extends Controller
             }
 
             $updateData = ['status' => $request->status];
-            
+
             if ($request->status === 'cancelled' && $request->cancellation_reason) {
-                $updateData['note'] = ($appointment->note ? $appointment->note . "\n\n" : '') . 
+                $updateData['note'] = ($appointment->note ? $appointment->note . "\n\n" : '') .
                     "Cancellation Reason: " . $request->cancellation_reason;
             }
 
@@ -208,7 +208,7 @@ class LabAppointmentController extends Controller
 
             // Create or update result
             $result = $appointment->result;
-            
+
             if ($result) {
                 // Append new files to existing ones
                 $existingFiles = $result->files ?? [];
@@ -341,13 +341,11 @@ class LabAppointmentController extends Controller
         }
 
         // Add room info if available
-        if ($appointment->room) {
-            $data['room'] = [
-                'id' => $appointment->room->id,
-                'code' => $appointment->room->code,
-                'name' => $appointment->room->name ?? null,
-            ];
-        }
+        $data['room'] = $appointment->room ? [
+            'id' => $appointment->room->id,
+            'code' => $appointment->room->code,
+            'title' => $appointment->room->title ?? null,
+        ] : null;
 
         // Add result info if available
         if ($appointment->result) {
