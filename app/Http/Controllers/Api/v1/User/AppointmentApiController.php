@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AppointmentApiController extends Controller
 {
-    use Responses,SendsAppointmentNotifications;
+    use Responses, SendsAppointmentNotifications;
 
     /**
      * Get all service types information for appointments
@@ -300,9 +300,13 @@ class AppointmentApiController extends Controller
                 'lng' => $request->lng,
                 'user_id' => $userId,
                 'room_id' => $roomValidation['room']->id ?? null,
-                'status' => 'pending',  
-                'lab_id' => 1,          
             ];
+
+            // Add status and lab_id only for home_xray and medical_test
+            if (in_array($request->service_type, ['home_xray', 'medical_test'])) {
+                $appointmentData['status'] = 'pending';
+                $appointmentData['lab_id'] = 1;
+            }
 
             // Create appointment based on service type
             $appointment = null;
@@ -390,6 +394,13 @@ class AppointmentApiController extends Controller
                     'updated_at' => $appointment->updated_at->format('Y-m-d H:i:s'),
                 ]
             ];
+
+            // Add status and lab info for home_xray and medical_test
+            if (in_array($request->service_type, ['home_xray', 'medical_test'])) {
+                $responseData['appointment']['status'] = $appointment->status;
+                $responseData['appointment']['status_name'] = $appointment->status_name;
+                $responseData['appointment']['lab_id'] = $appointment->lab_id;
+            }
 
             // Add care type information for elderly care appointments
             if ($request->service_type === 'elderly_care' && $serviceInfo) {

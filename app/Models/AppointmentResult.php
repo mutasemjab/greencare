@@ -35,14 +35,15 @@ class AppointmentResult extends Model
     /**
      * Get all file URLs
      */
-    public function getFileUrlsAttribute()
+     public function getFileUrlsAttribute()
     {
         if (!$this->files) {
             return [];
         }
 
         return array_map(function ($file) {
-            return url('assets/admin/uploads/' . $file);
+            // Changed from url('storage/' . $file) to match your upload path
+            return asset('assets/admin/uploads/' . $file);
         }, $this->files);
     }
 }
