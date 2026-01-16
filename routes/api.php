@@ -44,7 +44,33 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/settings', [SettingController::class, 'index']);
+    Route::get('/news', [NewsController::class, 'index']);
+    Route::get('/news/{id}', [NewsController::class, 'newsDetails']);
 
+    // Types API Routes
+    Route::prefix('types')->group(function () {
+        Route::get('/', [TypeController::class, 'index']); // GET /api/v1/types
+    });
+
+
+
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryController::class, 'getProductsFromCategory']);
+    Route::get('/categories/{id}/getChildrenCategory', [CategoryController::class, 'getChildrenCategory']);
+
+    Route::get('/brands', [BrandController::class, 'index']);
+    Route::get('/brands/{id}', [BrandController::class, 'getProductsFromBrand']);
+
+    Route::get('/products/{id}', [ProductController::class, 'productDetails']);
+    Route::get('/product/search', [ProductController::class, 'searchProduct']);
+    Route::post('/products', [ProductController::class, 'getProducts']);
+
+    Route::get('/featuredProducts', [ProductController::class, 'featuredProducts']);
+
+    // Provider Categories API Routes
+    Route::prefix('provider-categories')->group(function () {
+        Route::get('/type/{typeId}', [ProviderCategoryController::class, 'getByType']); // GET /api/v1/provider-categories/type/{typeId}
+    });
 
     // Auth Route
     Route::group(['middleware' => ['auth:user-api']], function () {
@@ -56,9 +82,7 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         Route::post('updateFcmToken', [AuthController::class, 'updateFcmToken']);
 
-        Route::get('/home', [HomeController::class, 'index']);
-        Route::get('/news', [NewsController::class, 'index']);
-        Route::get('/news/{id}', [NewsController::class, 'newsDetails']);
+
 
 
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
@@ -82,19 +106,6 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
 
-        Route::get('/categories', [CategoryController::class, 'index']);
-        Route::get('/categories/{id}', [CategoryController::class, 'getProductsFromCategory']);
-        Route::get('/categories/{id}/getChildrenCategory', [CategoryController::class, 'getChildrenCategory']);
-
-        Route::get('/brands', [BrandController::class, 'index']);
-        Route::get('/brands/{id}', [BrandController::class, 'getProductsFromBrand']);
-
-        Route::get('/products/{id}', [ProductController::class, 'productDetails']);
-        Route::get('/product/search', [ProductController::class, 'searchProduct']);
-        Route::post('/products', [ProductController::class, 'getProducts']);
-
-        Route::get('/featuredProducts', [ProductController::class, 'featuredProducts']);
-
         Route::get('/productFavourites', [FavouriteController::class, 'index']);
         Route::post('/productFavourites', [FavouriteController::class, 'store']);
 
@@ -111,15 +122,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/coupons/validate', [CouponController::class, 'validateCoupon']);
 
 
-        // Types API Routes
-        Route::prefix('types')->group(function () {
-            Route::get('/', [TypeController::class, 'index']); // GET /api/v1/types
-        });
 
-        // Provider Categories API Routes
-        Route::prefix('provider-categories')->group(function () {
-            Route::get('/type/{typeId}', [ProviderCategoryController::class, 'getByType']); // GET /api/v1/provider-categories/type/{typeId}
-        });
 
         Route::post('/appointment-providers', [AppointmentProviderController::class, 'store']);
         // Get user appointments
@@ -219,7 +222,7 @@ Route::group(['prefix' => 'v1/lab'], function () {
 
     // Authenticated Routes
     Route::group(['middleware' => ['auth:lab-api']], function () {
-        
+
         Route::post('/updateFcmToken', [LabAuthController::class, 'updateFcmToken']);
         Route::get('/active', [LabAuthController::class, 'active']);
         Route::get('/lab_profile', [LabAuthController::class, 'labProfile']);
@@ -227,20 +230,18 @@ Route::group(['prefix' => 'v1/lab'], function () {
         Route::post('/delete_account', [LabAuthController::class, 'deleteAccount']);
 
         // Add more lab-specific routes here
-         Route::prefix('appointments')->group(function () {
-        // Get lab's appointments
-        Route::get('/', [LabAppointmentController::class, 'getAppointments']);
+        Route::prefix('appointments')->group(function () {
+            // Get lab's appointments
+            Route::get('/', [LabAppointmentController::class, 'getAppointments']);
 
-        // Update appointment status
-        Route::post('/update-status', [LabAppointmentController::class, 'updateAppointmentStatus']);
-        
-        // Upload results
-        Route::post('/upload-results', [LabAppointmentController::class, 'uploadResults']);
-        
-        // Get appointment details
-        Route::get('/{type}/{id}', [LabAppointmentController::class, 'getAppointmentDetails']);
+            // Update appointment status
+            Route::post('/update-status', [LabAppointmentController::class, 'updateAppointmentStatus']);
+
+            // Upload results
+            Route::post('/upload-results', [LabAppointmentController::class, 'uploadResults']);
+
+            // Get appointment details
+            Route::get('/{type}/{id}', [LabAppointmentController::class, 'getAppointmentDetails']);
         });
-
-
     });
 });
