@@ -10,6 +10,14 @@ use Illuminate\Http\Request;
 
 class PledgeFormController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:pledgeForm-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:pledgeForm-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:pledgeForm-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:pledgeForm-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

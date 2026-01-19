@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\DB;
 
 class TransferPatientController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:transferPatient-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:transferPatient-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:transferPatient-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:transferPatient-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

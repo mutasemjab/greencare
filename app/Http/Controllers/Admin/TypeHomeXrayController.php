@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TypeHomeXrayController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:typeHomeXray-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:typeHomeXray-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:typeHomeXray-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:typeHomeXray-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

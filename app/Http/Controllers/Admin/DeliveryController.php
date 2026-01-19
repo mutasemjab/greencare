@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\DB;
 
 class DeliveryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:delivery-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:delivery-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:delivery-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:delivery-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $deliveries = DB::table('deliveries')->get();

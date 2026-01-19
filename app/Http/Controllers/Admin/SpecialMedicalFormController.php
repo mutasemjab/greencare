@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 
 class SpecialMedicalFormController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:specialMedicalForm-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:specialMedicalForm-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:specialMedicalForm-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:specialMedicalForm-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of all special medical forms
      */

@@ -13,6 +13,14 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:appointment-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:appointment-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:appointment-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:appointment-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of all appointments.
      */

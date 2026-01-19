@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Validator;
 
 class ShowerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:shower-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:shower-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:shower-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:shower-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of shower appointments
      */

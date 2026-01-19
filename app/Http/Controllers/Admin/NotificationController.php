@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:notification-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:notification-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:notification-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:notification-delete', ['only' => ['destroy']]);
+    }
+
     public function create()
     {
 

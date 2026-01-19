@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class CareerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:career-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:career-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:career-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:career-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $careers = Career::withCount('applications')->orderBy('title')->paginate(15);

@@ -16,6 +16,11 @@ class FCMController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    public function __construct()
+    {
+        $this->middleware('permission:fcm-send');
+    }
+
     public static function sendMessage($title, $body, $fcmToken, $userId, $screen = "order")
     {
         if (!$fcmToken) {

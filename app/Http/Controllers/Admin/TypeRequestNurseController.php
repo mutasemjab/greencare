@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TypeRequestNurseController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:typeRequestNurse-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:typeRequestNurse-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:typeRequestNurse-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:typeRequestNurse-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

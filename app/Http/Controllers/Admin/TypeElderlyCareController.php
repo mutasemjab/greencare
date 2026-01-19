@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TypeElderlyCareController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:typeElderlyCare-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:typeElderlyCare-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:typeElderlyCare-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:typeElderlyCare-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

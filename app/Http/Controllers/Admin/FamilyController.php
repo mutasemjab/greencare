@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Validator;
 
 class FamilyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:family-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:family-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:family-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:family-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of families
      */

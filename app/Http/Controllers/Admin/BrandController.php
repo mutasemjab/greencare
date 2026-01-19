@@ -10,7 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class BrandController extends Controller
 {
-    
+    public function __construct()
+    {
+        $this->middleware('permission:brand-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:brand-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:brand-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:brand-delete', ['only' => ['destroy']]);
+    }
 
     public function index()
     {
