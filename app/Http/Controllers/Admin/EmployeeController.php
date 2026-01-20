@@ -23,7 +23,7 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        $data = Admin::where('is_super_admin', 0);
+        $data = Admin::where('is_super', 0);
         if ($request->search != '' ||  $request->search) {
             $data->where(function ($query) use ($request) {
                 $query->where('admins.name', 'LIKE', "%$request->search%")
