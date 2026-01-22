@@ -35,7 +35,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <input type="text" name="search" class="form-control"
-                                       placeholder="Search role name or guard"
+                                       placeholder="Search role name"
                                        value="{{ request('search') }}">
                             </div>
                             <div class="col-md-2">
@@ -58,7 +58,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
-                                    <th>Guard</th>
+                                    <th>Permissions</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -70,7 +70,14 @@
                                             <strong>{{ $role->name }}</strong>
                                         </td>
                                         <td>
-                                            <span class="badge badge-info">{{ $role->guard_name }}</span>
+                                            <div style="font-size: 11px; max-width: 400px;">
+                                                @foreach($role->permissions as $permission)
+                                                    <span class="badge bg-secondary me-1 mb-1">{{ $permission->name }}</span>
+                                                @endforeach
+                                                @if($role->permissions->isEmpty())
+                                                    <span class="text-muted">No permissions</span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">

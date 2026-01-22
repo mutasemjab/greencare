@@ -43,12 +43,11 @@ class RoleController extends Controller
         // $shop = $manager->shop;
 
         if ($request->search != '' ||  $request->search) {
-            $data = Role::where(function ($query) use ($request) {
-                $query->where('roles.name', 'LIKE', "%$request->search%")
-                    ->orWhere('roles.guard_name',  'LIKE', "%$request->search%");
+            $data = Role::with('permissions')->where(function ($query) use ($request) {
+                $query->where('roles.name', 'LIKE', "%$request->search%");
             })->paginate(10);
         } else {
-            $data = Role::paginate(10);
+            $data = Role::with('permissions')->paginate(10);
         }
          return view('admin.roles.index', compact('data'));
     }
