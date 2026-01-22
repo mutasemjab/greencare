@@ -22,7 +22,7 @@ class LoginController extends Controller
   return redirect()->route('admin.dashboard');
 
  }else{
-  return redirect()->route('admin.showlogin');
+  return redirect()->route('admin.showlogin')->withErrors(['login' => 'اسم المستخدم أو كلمة المرور غير صحيحة']);
  }
 
 
