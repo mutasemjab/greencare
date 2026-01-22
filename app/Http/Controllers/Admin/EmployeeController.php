@@ -28,7 +28,7 @@ class EmployeeController extends Controller
             $data->where(function ($query) use ($request) {
                 $query->where('admins.name', 'LIKE', "%$request->search%")
                     ->orWhere('admins.email',  'LIKE', "%$request->search%")
-                    ->orWhere('admins.mobile',  'LIKE', "%$request->search%");
+                    ->orWhere('admins.username',  'LIKE', "%$request->search%");
             });
         }
         $data = $data->paginate(10);
