@@ -76,6 +76,12 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::group(['middleware' => ['auth:user-api']], function () {
 
 
+        // Get appointments within a specific room
+        Route::get('rooms/appointments', [UserAppointmentResultsController::class, 'getRoomAppointmentResults']);
+        
+        // Get all user appointments (across all rooms)
+        Route::get('appointments', [UserAppointmentResultsController::class, 'getAllUserAppointmentResults']);
+        
         // image for chat
         Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'index']);
         Route::post('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'store']);
