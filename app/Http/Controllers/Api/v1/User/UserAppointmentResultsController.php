@@ -16,17 +16,20 @@ class UserAppointmentResultsController extends Controller
     use Responses;
 
     /**
-     * Get user's appointment results within a specific room
+     * Get user's appointment results
+     * - With room_id: returns results for that specific room
+     * - Without room_id: returns all results across all rooms
      */
-    public function getRoomAppointmentResults(Request $request)
+    public function getAppointmentResults(Request $request)
     {
         try {
             $user = Auth::user();
 
             $validator = Validator::make($request->all(), [
-                'room_id' => 'required|exists:rooms,id',
+                'room_id' => 'nullable|exists:rooms,id',
                 'type' => 'nullable|in:medical_test,home_xray,all',
                 'status' => 'nullable|in:pending,confirmed,processing,finished,cancelled',
+                'with_room' => 'nullable|boolean', // Include room details (only used when room_id is not provided)
             ]);
 
             if ($validator->fails()) {
@@ -36,105 +39,20 @@ class UserAppointmentResultsController extends Controller
                 );
             }
 
-            $roomId = $request->room_id;
-            $type = $request->get('type', 'all');
-            $status = $request->get('status');
-
-            // Verify user is in the room
-            $room = Room::find($roomId);
-            $userInRoom = $room->users()->where('user_id', $user->id)->exists();
-
-            if (!$userInRoom) {
-                return $this->error_response(__('messages.unauthorized_access'), []);
-            }
-
-            $appointments = collect();
-
-            // Get Medical Tests for this user in this room
-            if ($type === 'all' || $type === 'medical_test') {
-                $medicalTests = MedicalTest::with(['typeMedicalTest', 'lab', 'result'])
-                    ->where('user_id', $user->id)
-                    ->where('room_id', $roomId)
-                    ->when($status, function ($query) use ($status) {
-                        return $query->where('status', $status);
-                    })
-                    ->orderBy('date_of_appointment', 'desc')
-                    ->orderBy('time_of_appointment', 'desc')
-                    ->get()
-                    ->map(function ($item) {
-                        return $this->formatUserAppointment($item, 'medical_test');
-                    });
-
-                $appointments = $appointments->merge($medicalTests);
-            }
-
-            // Get Home X-rays for this user in this room
-            if ($type === 'all' || $type === 'home_xray') {
-                $homeXrays = HomeXray::with(['typeHomeXray', 'lab', 'result'])
-                    ->where('user_id', $user->id)
-                    ->where('room_id', $roomId)
-                    ->when($status, function ($query) use ($status) {
-                        return $query->where('status', $status);
-                    })
-                    ->orderBy('date_of_appointment', 'desc')
-                    ->orderBy('time_of_appointment', 'desc')
-                    ->get()
-                    ->map(function ($item) {
-                        return $this->formatUserAppointment($item, 'home_xray');
-                    });
-
-                $appointments = $appointments->merge($homeXrays);
-            }
-
-            // Sort by date if showing all types
-            if ($type === 'all') {
-                $appointments = $appointments->sortByDesc('date_of_appointment')->values();
-            }
-
-            return $this->success_response(
-                __('messages.appointments_fetched_successfully'),
-                [
-                    'room' => [
-                        'id' => $room->id,
-                        'title' => $room->title,
-                        'code' => $room->code,
-                    ],
-                    'appointments' => $appointments,
-                    'total' => $appointments->count()
-                ]
-            );
-        } catch (\Exception $e) {
-            return $this->error_response(
-                __('messages.error_occurred'),
-                ['error' => $e->getMessage()]
-            );
-        }
-    }
-
-    /**
-     * Get all user's appointment results (across all rooms)
-     */
-    public function getAllUserAppointmentResults(Request $request)
-    {
-        try {
-            $user = Auth::user();
-
-            $validator = Validator::make($request->all(), [
-                'type' => 'nullable|in:medical_test,home_xray,all',
-                'status' => 'nullable|in:pending,confirmed,processing,finished,cancelled',
-                'with_room' => 'nullable|boolean', // Include room details
-            ]);
-
-            if ($validator->fails()) {
-                return $this->error_response(
-                    __('messages.validation_error'),
-                    ['errors' => $validator->errors()]
-                );
-            }
-
+            $roomId = $request->get('room_id');
             $type = $request->get('type', 'all');
             $status = $request->get('status');
             $withRoom = $request->get('with_room', true);
+
+            // If room_id is provided, verify user is in the room
+            if ($roomId) {
+                $room = Room::find($roomId);
+                $userInRoom = $room->users()->where('user_id', $user->id)->exists();
+
+                if (!$userInRoom) {
+                    return $this->error_response(__('messages.unauthorized_access'), []);
+                }
+            }
 
             $appointments = collect();
 
@@ -143,7 +61,11 @@ class UserAppointmentResultsController extends Controller
                 $medicalTestsQuery = MedicalTest::with(['typeMedicalTest', 'lab', 'result'])
                     ->where('user_id', $user->id);
 
-                if ($withRoom) {
+                // Filter by room if room_id provided
+                if ($roomId) {
+                    $medicalTestsQuery->where('room_id', $roomId);
+                } elseif ($withRoom) {
+                    // Include room details if requested and no specific room
                     $medicalTestsQuery->with('room:id,title,code');
                 }
 
@@ -154,8 +76,8 @@ class UserAppointmentResultsController extends Controller
                     ->orderBy('date_of_appointment', 'desc')
                     ->orderBy('time_of_appointment', 'desc')
                     ->get()
-                    ->map(function ($item) use ($withRoom) {
-                        return $this->formatUserAppointment($item, 'medical_test', $withRoom);
+                    ->map(function ($item) use ($roomId, $withRoom) {
+                        return $this->formatUserAppointment($item, 'medical_test', !$roomId && $withRoom);
                     });
 
                 $appointments = $appointments->merge($medicalTests);
@@ -166,7 +88,11 @@ class UserAppointmentResultsController extends Controller
                 $homeXraysQuery = HomeXray::with(['typeHomeXray', 'lab', 'result'])
                     ->where('user_id', $user->id);
 
-                if ($withRoom) {
+                // Filter by room if room_id provided
+                if ($roomId) {
+                    $homeXraysQuery->where('room_id', $roomId);
+                } elseif ($withRoom) {
+                    // Include room details if requested and no specific room
                     $homeXraysQuery->with('room:id,title,code');
                 }
 
@@ -177,8 +103,8 @@ class UserAppointmentResultsController extends Controller
                     ->orderBy('date_of_appointment', 'desc')
                     ->orderBy('time_of_appointment', 'desc')
                     ->get()
-                    ->map(function ($item) use ($withRoom) {
-                        return $this->formatUserAppointment($item, 'home_xray', $withRoom);
+                    ->map(function ($item) use ($roomId, $withRoom) {
+                        return $this->formatUserAppointment($item, 'home_xray', !$roomId && $withRoom);
                     });
 
                 $appointments = $appointments->merge($homeXrays);
@@ -189,19 +115,33 @@ class UserAppointmentResultsController extends Controller
                 $appointments = $appointments->sortByDesc('date_of_appointment')->values();
             }
 
+            // Build response
+            $response = [
+                'appointments' => $appointments,
+                'total' => $appointments->count(),
+            ];
+
+            // Add room info if room_id was provided
+            if ($roomId) {
+                $response['room'] = [
+                    'id' => $room->id,
+                    'title' => $room->title,
+                    'code' => $room->code,
+                ];
+            } else {
+                // Add summary statistics for all appointments
+                $response['summary'] = [
+                    'pending' => $appointments->where('status', 'pending')->count(),
+                    'confirmed' => $appointments->where('status', 'confirmed')->count(),
+                    'processing' => $appointments->where('status', 'processing')->count(),
+                    'finished' => $appointments->where('status', 'finished')->count(),
+                    'cancelled' => $appointments->where('status', 'cancelled')->count(),
+                ];
+            }
+
             return $this->success_response(
                 __('messages.appointments_fetched_successfully'),
-                [
-                    'appointments' => $appointments,
-                    'total' => $appointments->count(),
-                    'summary' => [
-                        'pending' => $appointments->where('status', 'pending')->count(),
-                        'confirmed' => $appointments->where('status', 'confirmed')->count(),
-                        'processing' => $appointments->where('status', 'processing')->count(),
-                        'finished' => $appointments->where('status', 'finished')->count(),
-                        'cancelled' => $appointments->where('status', 'cancelled')->count(),
-                    ]
-                ]
+                $response
             );
         } catch (\Exception $e) {
             return $this->error_response(
