@@ -77,7 +77,7 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
         // Get all user appointments (across all rooms)
-        Route::get('/appointmentsResultFromLab', [UserAppointmentResultsController::class, 'getAllUserAppointmentResults']);
+        Route::get('/appointmentsResultFromLab', [UserAppointmentResultsController::class, 'getAppointmentResults']);
         
         // image for chat
         Route::get('/uploadPhotoVoice', [UploadPhotoVoiceController::class, 'index']);
