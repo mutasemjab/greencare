@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:page-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:page-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:page-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:page-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of pages
      */

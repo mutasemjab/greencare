@@ -14,6 +14,11 @@ class AdminNotificationController extends Controller
     public function __construct(AdminNotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+
+        $this->middleware('permission:adminNotification-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:adminNotification-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:adminNotification-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:adminNotification-delete', ['only' => ['destroy']]);
     }
 
     /**

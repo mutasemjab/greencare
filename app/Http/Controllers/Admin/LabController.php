@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Storage;
 
 class LabController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:lab-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:lab-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:lab-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:lab-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of labs.
      */

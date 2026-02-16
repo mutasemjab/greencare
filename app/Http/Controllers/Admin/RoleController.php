@@ -9,9 +9,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use Gate;
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:role-table', ['only' => ['index']]);
+        $this->middleware('permission:role-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:role-delete', ['only' => ['delete']]);
+    }
+
+    private function groupPermissionsByResource($permissions)
+    {
+        $grouped = [];
+        foreach ($permissions as $permission) {
+            $resource = explode('-', $permission->name)[0];
+            if (!isset($grouped[$resource])) {
+                $grouped[$resource] = [];
+            }
+            $grouped[$resource][] = $permission;
+        }
+        return $grouped;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -19,19 +39,15 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-    
-        if(!Gate::allows('role-table'))
-            return "Not auth";
         // $manager = Manager::where('email', auth()->user()->email)->first();
         // $shop = $manager->shop;
 
         if ($request->search != '' ||  $request->search) {
-            $data = Role::where(function ($query) use ($request) {
-                $query->where('roles.name', 'LIKE', "%$request->search%")
-                    ->orWhere('roles.guard_name',  'LIKE', "%$request->search%");
+            $data = Role::with('permissions')->where(function ($query) use ($request) {
+                $query->where('roles.name', 'LIKE', "%$request->search%");
             })->paginate(10);
         } else {
-            $data = Role::paginate(10);
+            $data = Role::with('permissions')->paginate(10);
         }
          return view('admin.roles.index', compact('data'));
     }
@@ -43,9 +59,9 @@ class RoleController extends Controller
      */
     public function create()
     {
-
-        $data = Permission::where('guard_name','admin')->get();
-        return view('admin.roles.create', compact('data'));
+        $permissions = Permission::where('guard_name','admin')->get();
+        $groupedPermissions = $this->groupPermissionsByResource($permissions);
+        return view('admin.roles.create', compact('groupedPermissions'));
     }
 
     /**
@@ -110,11 +126,11 @@ class RoleController extends Controller
      */
     public function edit($id)
     {
-
         $permissions = Permission::where('guard_name','admin')->get();
+        $groupedPermissions = $this->groupPermissionsByResource($permissions);
         $role_permissions = DB::table('role_has_permissions')->where('role_id',$id)->pluck('permission_id')->toArray();
         $data = Role::find($id);
-         return view('admin.roles.edit', compact('permissions','role_permissions','data'));
+        return view('admin.roles.edit', compact('groupedPermissions','role_permissions','data'));
     }
 
     /**

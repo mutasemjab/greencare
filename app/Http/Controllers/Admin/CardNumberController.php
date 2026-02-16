@@ -18,6 +18,14 @@ use Illuminate\Support\Facades\DB;
 
 class CardNumberController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:cardNumber-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:cardNumber-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:cardNumber-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:cardNumber-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Toggle the sell status of a card number
      */

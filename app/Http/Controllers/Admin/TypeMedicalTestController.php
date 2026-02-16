@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TypeMedicalTestController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:typeMedicalTest-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:typeMedicalTest-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:typeMedicalTest-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:typeMedicalTest-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */

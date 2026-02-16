@@ -14,6 +14,14 @@ class OrderController extends Controller
 {
     use SendsOrderNotifications;
 
+    public function __construct()
+    {
+        $this->middleware('permission:order-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:order-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:order-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:order-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of orders
      */

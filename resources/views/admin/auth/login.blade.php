@@ -30,6 +30,9 @@
 
       <form action="{{ route('admin.login') }}" method="post">
         @csrf
+        @error('login')
+          <div class="alert alert-danger">{{ $message }}</div>
+        @enderror
         <div class="input-group mb-3">
           <input  type="text" name="username" class="form-control" placeholder="username">
           <div class="input-group-append">

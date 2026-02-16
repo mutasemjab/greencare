@@ -118,6 +118,105 @@ class PermissionSeeder extends Seeder
             'lab-edit',
             'lab-delete',
 
+            'adminNotification-table',
+            'adminNotification-add',
+            'adminNotification-edit',
+            'adminNotification-delete',
+
+            'appConfig-table',
+            'appConfig-add',
+            'appConfig-edit',
+            'appConfig-delete',
+
+            'appointment-table',
+            'appointment-add',
+            'appointment-edit',
+            'appointment-delete',
+
+            'banner-table',
+            'banner-add',
+            'banner-edit',
+            'banner-delete',
+
+            'card-table',
+            'card-add',
+            'card-edit',
+            'card-delete',
+
+            'cardNumber-table',
+            'cardNumber-add',
+            'cardNumber-edit',
+            'cardNumber-delete',
+
+            'career-table',
+            'career-add',
+            'career-edit',
+            'career-delete',
+
+            'coupon-table',
+            'coupon-add',
+            'coupon-edit',
+            'coupon-delete',
+
+            'family-table',
+            'family-add',
+            'family-edit',
+            'family-delete',
+
+            'news-table',
+            'news-add',
+            'news-edit',
+            'news-delete',
+
+            'pledgeForm-table',
+            'pledgeForm-add',
+            'pledgeForm-edit',
+            'pledgeForm-delete',
+
+            'pos-table',
+            'pos-add',
+            'pos-edit',
+            'pos-delete',
+
+            'shower-table',
+            'shower-add',
+            'shower-edit',
+            'shower-delete',
+
+            'specialMedicalForm-table',
+            'specialMedicalForm-add',
+            'specialMedicalForm-edit',
+            'specialMedicalForm-delete',
+
+            'transferPatient-table',
+            'transferPatient-add',
+            'transferPatient-edit',
+            'transferPatient-delete',
+
+            'typeElderlyCare-table',
+            'typeElderlyCare-add',
+            'typeElderlyCare-edit',
+            'typeElderlyCare-delete',
+
+            'typeHomeXray-table',
+            'typeHomeXray-add',
+            'typeHomeXray-edit',
+            'typeHomeXray-delete',
+
+            'typeMedicalTest-table',
+            'typeMedicalTest-add',
+            'typeMedicalTest-edit',
+            'typeMedicalTest-delete',
+
+            'typeRequestNurse-table',
+            'typeRequestNurse-add',
+            'typeRequestNurse-edit',
+            'typeRequestNurse-delete',
+
+            'dashboard-view',
+
+            'fcm-send',
+
         ];
 
          foreach ($permissions_admin as $permission_ad) {

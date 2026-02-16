@@ -13,15 +13,22 @@ use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:employee-table', ['only' => ['index']]);
+        $this->middleware('permission:employee-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:employee-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:employee-delete', ['only' => ['show', 'destroy']]);
+    }
 
     public function index(Request $request)
     {
-        $data = Admin::where('is_super_admin', 0);
+        $data = Admin::where('is_super', 0);
         if ($request->search != '' ||  $request->search) {
             $data->where(function ($query) use ($request) {
                 $query->where('admins.name', 'LIKE', "%$request->search%")
                     ->orWhere('admins.email',  'LIKE', "%$request->search%")
-                    ->orWhere('admins.mobile',  'LIKE', "%$request->search%");
+                    ->orWhere('admins.username',  'LIKE', "%$request->search%");
             });
         }
         $data = $data->paginate(10);
@@ -35,13 +42,8 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        if (auth()->user()->can('employee-add')) {
-            $roles = Role::get();
-            return view('admin.employee.create', compact('roles'));
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
-        }
+        $roles = Role::get();
+        return view('admin.employee.create', compact('roles'));
     }
 
     /**
@@ -52,45 +54,40 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        if (auth()->user()->can('employee-add')) {
-            $this->validate($request, [
-                'name' => 'required',
-                'password' => 'required',
-                'roles' => 'required'
+        $this->validate($request, [
+            'name' => 'required',
+            'password' => 'required',
+            'roles' => 'required'
+        ]);
+
+        DB::beginTransaction();
+        try {
+
+
+            $admin = new Admin([
+                'name' => $request->name,
+                'username' => $request->username,
+                'is_super' => 0,
+                'password' => Hash::make($request->password),
+
             ]);
 
-            DB::beginTransaction();
-            try {
-
-
-                $admin = new Admin([
-                    'name' => $request->name,
-                    'username' => $request->username,
-                    'is_super' => 0,
-                    'password' => Hash::make($request->password),
-
+            $admin->save();
+            foreach ($request->roles as $role) {
+                DB::table('model_has_roles')->insert([
+                    'role_id' => $role,
+                    'model_type' => 'App\Models\admin',
+                    'model_id' => $admin->id
                 ]);
-
-                $admin->save();
-                foreach ($request->roles as $role) {
-                    DB::table('model_has_roles')->insert([
-                        'role_id' => $role,
-                        'model_type' => 'App\Models\admin',
-                        'model_id' => $admin->id
-                    ]);
-                }
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Employee created successfully');
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::info("Error Occured", ['message' => $e]);
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Wrong');
             }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
+            DB::commit();
+            return redirect()->route('admin.employee.index')
+                ->with('success', 'Employee created successfully');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::info("Error Occured", ['message' => $e]);
+            return redirect()->route('admin.employee.index')
+                ->with('error', 'Something Wrong');
         }
     }
 
@@ -102,22 +99,17 @@ class EmployeeController extends Controller
      */
     public function show($id)
     {
-        if (auth()->user()->can('employee-delete')) {
-            DB::beginTransaction();
-            try {
-                Admin::find($id)->delete();
-                DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Admin deleted successfully');
-            } catch (Exception $e) {
-                DB::rollback();
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Error');
-            }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
+        DB::beginTransaction();
+        try {
+            Admin::find($id)->delete();
+            DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
+            DB::commit();
+            return redirect()->route('admin.employee.index')
+                ->with('success', 'Admin deleted successfully');
+        } catch (Exception $e) {
+            DB::rollback();
+            return redirect()->route('admin.employee.index')
+                ->with('error', 'Something Error');
         }
     }
 
@@ -129,15 +121,10 @@ class EmployeeController extends Controller
      */
     public function edit($id)
     {
-        if (auth()->user()->can('employee-edit')) {
-            $admin = Admin::find($id);
-            $roles = Role::all();
-            $adminRole = $admin->roles->pluck('id')->all();
-            return view('admin.employee.edit', compact('admin', 'roles', 'adminRole'));
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
-        }
+        $admin = Admin::find($id);
+        $roles = Role::all();
+        $adminRole = $admin->roles->pluck('id')->all();
+        return view('admin.employee.edit', compact('admin', 'roles', 'adminRole'));
     }
 
     /**
@@ -149,43 +136,38 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (auth()->user()->can('employee-edit')) {
-            $this->validate($request, [
-                'name' => 'required',
-                'roles' => 'required'
-            ]);
+        $this->validate($request, [
+            'name' => 'required',
+            'roles' => 'required'
+        ]);
 
-            DB::beginTransaction();
-            try {
-                $admin = Admin::find($id);
+        DB::beginTransaction();
+        try {
+            $admin = Admin::find($id);
 
-                $admin->name = $request->name;
-                $admin->username = $request->username;
-                if ($request->password) {
-                    $admin->password = Hash::make($request->password);
-                }
-                $admin->save();
-                DB::table('model_has_roles')->where('model_type', 'App\Models\admin')
-                    ->where('model_id', $id)->delete();
-                foreach ($request->roles as $role) {
-                    DB::table('model_has_roles')->insert([
-                        'role_id' => $role,
-                        'model_type' => 'App\Models\admin',
-                        'model_id' => $admin->id
-                    ]);
-                }
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Employee updated successfully');
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::info("Error Occured", ['message' => $e]);
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Wrong');
+            $admin->name = $request->name;
+            $admin->username = $request->username;
+            if ($request->password) {
+                $admin->password = Hash::make($request->password);
             }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
+            $admin->save();
+            DB::table('model_has_roles')->where('model_type', 'App\Models\admin')
+                ->where('model_id', $id)->delete();
+            foreach ($request->roles as $role) {
+                DB::table('model_has_roles')->insert([
+                    'role_id' => $role,
+                    'model_type' => 'App\Models\admin',
+                    'model_id' => $admin->id
+                ]);
+            }
+            DB::commit();
+            return redirect()->route('admin.employee.index')
+                ->with('success', 'Employee updated successfully');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::info("Error Occured", ['message' => $e]);
+            return redirect()->route('admin.employee.index')
+                ->with('error', 'Something Wrong');
         }
     }
 

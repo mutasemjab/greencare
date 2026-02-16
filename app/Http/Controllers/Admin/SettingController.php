@@ -10,7 +10,15 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
-   public function index()
+    public function __construct()
+    {
+        $this->middleware('permission:setting-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:setting-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:setting-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:setting-delete', ['only' => ['destroy']]);
+    }
+
+    public function index()
     {
         $settings = Setting::all();
         return view('admin.settings.index', compact('settings'));

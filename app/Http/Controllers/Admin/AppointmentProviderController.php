@@ -8,19 +8,23 @@ use App\Models\Provider;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class AppointmentProviderController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:appointmentProvider-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:appointmentProvider-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:appointmentProvider-edit', ['only' => ['edit', 'update', 'updateStatus']]);
+        $this->middleware('permission:appointmentProvider-delete', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of appointment providers.
      */
     public function index(Request $request)
     {
-        if (!Gate::allows('appointmentProvider-table')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $status = $request->get('status', 'all');
         $dateFrom = $request->get('date_from');
@@ -84,10 +88,6 @@ class AppointmentProviderController extends Controller
      */
     public function create()
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-add')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $users = User::select('id', 'name', 'email')->orderBy('name')->get();
         $providers = Provider::select('id', 'name', 'price')->orderBy('name')->get();
@@ -101,10 +101,6 @@ class AppointmentProviderController extends Controller
      */
     public function store(Request $request)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-add')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $validator = Validator::make($request->all(), [
             'name_of_patient' => 'required|string|max:255',
@@ -143,10 +139,6 @@ class AppointmentProviderController extends Controller
      */
     public function show($id)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-table')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $appointment = AppointmentProvider::with(['user', 'provider'])->findOrFail($id);
 
@@ -158,10 +150,6 @@ class AppointmentProviderController extends Controller
      */
     public function edit($id)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-edit')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $appointment = AppointmentProvider::findOrFail($id);
         $users = User::select('id', 'name', 'email')->orderBy('name')->get();
@@ -176,10 +164,6 @@ class AppointmentProviderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-edit')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         $appointment = AppointmentProvider::findOrFail($id);
 
@@ -220,10 +204,6 @@ class AppointmentProviderController extends Controller
      */
     public function destroy($id)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-delete')) {
-            abort(403, __('messages.unauthorized_access'));
-        }
 
         try {
             $appointment = AppointmentProvider::findOrFail($id);
@@ -242,10 +222,6 @@ class AppointmentProviderController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        // Check permission
-        if (!Gate::allows('appointmentProvider-edit')) {
-            return response()->json(['success' => false, 'message' => __('messages.unauthorized_access')]);
-        }
 
         $validator = Validator::make($request->all(), [
             'status' => 'required|in:1,2,3,4,5'

@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\File;
 
 class CategoryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:category-table', ['only' => ['index', 'show']]);
+        $this->middleware('permission:category-add', ['only' => ['create', 'store']]);
+        $this->middleware('permission:category-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:category-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $categories = DB::table('categories')
