@@ -23,6 +23,9 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                 if ($guard === 'lab') {
+                    return redirect()->route('lab.dashboard');
+                }
                 //write code for redirect both for admin or front in case login alerady done
                 if ($request->is('admin') || $request->is('admin/*')) {
                     //redirect Backend

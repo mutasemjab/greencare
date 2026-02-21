@@ -212,39 +212,3 @@ Route::group(['prefix' => 'v1/user'], function () {
     });
 });
 
-
-// Unauthenticated Routes
-Route::group(['prefix' => 'v1/lab'], function () {
-
-    //---------------- Auth --------------------//
-    Route::post('/send-otp', [LabAuthController::class, 'sendOtp']);
-    Route::post('/verify-otp', [LabAuthController::class, 'verifyOtp']);
-    Route::post('/resend-otp', [LabAuthController::class, 'resendOtp']);
-    Route::post('/register', [LabAuthController::class, 'register']);
-    Route::post('/login', [LabAuthController::class, 'login']);
-
-    // Authenticated Routes
-    Route::group(['middleware' => ['auth:lab-api']], function () {
-
-        Route::post('/updateFcmToken', [LabAuthController::class, 'updateFcmToken']);
-        Route::get('/active', [LabAuthController::class, 'active']);
-        Route::get('/lab_profile', [LabAuthController::class, 'labProfile']);
-        Route::post('/update_profile', [LabAuthController::class, 'updateProfile']);
-        Route::post('/delete_account', [LabAuthController::class, 'deleteAccount']);
-
-        // Add more lab-specific routes here
-        Route::prefix('appointments')->group(function () {
-            // Get lab's appointments
-            Route::get('/', [LabAppointmentController::class, 'getAppointments']);
-
-            // Update appointment status
-            Route::post('/update-status', [LabAppointmentController::class, 'updateAppointmentStatus']);
-
-            // Upload results
-            Route::post('/upload-results', [LabAppointmentController::class, 'uploadResults']);
-
-            // Get appointment details
-            Route::get('/{type}/{id}', [LabAppointmentController::class, 'getAppointmentDetails']);
-        });
-    });
-});

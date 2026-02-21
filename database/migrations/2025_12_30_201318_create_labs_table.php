@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('phone')->unique();
+            $table->string('password');
             $table->string('license_number')->unique()->nullable(); // رقم الترخيص
             $table->string('address')->nullable();
             $table->text('description')->nullable();
