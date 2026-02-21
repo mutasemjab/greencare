@@ -1784,6 +1784,11 @@ return [
 'Leave_Empty_Keep_Current' => 'اتركه فارغاً للاحتفاظ بكلمة المرور الحالية',
 'Max_File_Size' => 'الحد الأقصى لحجم الملف',
 'Are_You_Sure_Delete' => 'هل أنت متأكد من الحذف؟',
+// resources/lang/en/messages.php أو resources/lang/ar/messages.php
+'Password' => 'كلمة المرور',
+'Confirm_Password' => 'تأكيد كلمة المرور',
+'Minimum_6_Characters' => 'الحد الأدنى 6 أحرف',
+'Leave_Blank_To_Keep_Current_Password' => 'اتركه فارغاً للإبقاء على كلمة المرور الحالية',
   "" => "",
   "" => "",
 

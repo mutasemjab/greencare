@@ -1,3 +1,4 @@
+{{-- resources/views/admin/labs/edit.blade.php --}}
 @extends('layouts.admin')
 
 @section('content')
@@ -57,6 +58,32 @@
                                 </div>
                             </div>
 
+                            <!-- Password -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">{{ __('messages.Password') }}</label>
+                                    <input type="password" 
+                                           class="form-control @error('password') is-invalid @enderror" 
+                                           id="password" 
+                                           name="password">
+                                    @error('password')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">{{ __('messages.Leave_Blank_To_Keep_Current_Password') }}</small>
+                                </div>
+                            </div>
+
+                            <!-- Password Confirmation -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password_confirmation" class="form-label">{{ __('messages.Confirm_Password') }}</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password_confirmation" 
+                                           name="password_confirmation">
+                                </div>
+                            </div>
+
                             <!-- Email -->
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -86,8 +113,6 @@
                                     @enderror
                                 </div>
                             </div>
-
-                            
 
                             <!-- Status -->
                             <div class="col-md-6">

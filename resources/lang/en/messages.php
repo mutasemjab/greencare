@@ -1837,6 +1837,7 @@ return [
 'Leave_Empty_Keep_Current' => 'Leave empty to keep current password',
 'Max_File_Size' => 'Maximum file size',
 'Are_You_Sure_Delete' => 'Are you sure you want to delete this?',
+
   "" => "",
 
 ];

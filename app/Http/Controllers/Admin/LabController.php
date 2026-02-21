@@ -46,20 +46,28 @@ class LabController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:labs,email',
             'phone' => 'required|string|unique:labs,phone',
+            'password' => 'required|string|min:6|confirmed', // جديد
             'license_number' => 'nullable|string|unique:labs,license_number',
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'password.required' => 'كلمة المرور مطلوبة',
+            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+            'password.confirmed' => 'كلمة المرور غير متطابقة',
         ]);
 
-       // try {
+        try {
             DB::beginTransaction();
 
             $data = $request->only([
                 'name', 'email', 'phone', 'license_number', 
                 'address', 'description', 'activate'
             ]);
+
+            // Hash password
+            $data['password'] = Hash::make($request->password);
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
@@ -73,12 +81,12 @@ class LabController extends Controller
             return redirect()->route('labs.index')
                            ->with('success', __('messages.Lab_Added_Successfully'));
 
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     return redirect()->back()
-        //                    ->with('error', __('messages.Something_Went_Wrong'))
-        //                    ->withInput();
-        // }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                           ->with('error', __('messages.Something_Went_Wrong'))
+                           ->withInput();
+        }
     }
 
     /**
@@ -106,11 +114,15 @@ class LabController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:labs,email,' . $lab->id,
             'phone' => 'required|string|unique:labs,phone,' . $lab->id,
+            'password' => 'nullable|string|min:6|confirmed', // جديد - اختياري في التحديث
             'license_number' => 'nullable|string|unique:labs,license_number,' . $lab->id,
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+            'password.confirmed' => 'كلمة المرور غير متطابقة',
         ]);
 
         try {
@@ -121,6 +133,10 @@ class LabController extends Controller
                 'address', 'description', 'activate'
             ]);
 
+            // Update password only if provided
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->password);
+            }
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
