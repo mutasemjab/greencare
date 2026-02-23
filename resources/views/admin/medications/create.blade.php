@@ -157,30 +157,14 @@ template {
                             <div class="col-md-9">
                                 <div class="form-group">
                                     <label for="notes">{{ __('messages.medication_notes') }}</label>
-                                    <textarea name="notes" 
-                                              id="notes" 
-                                              class="form-control @error('notes') is-invalid @enderror" 
-                                              rows="3" 
+                                    <textarea name="notes"
+                                              id="notes"
+                                              class="form-control @error('notes') is-invalid @enderror"
+                                              rows="3"
                                               placeholder="{{ __('messages.enter_medication_notes') }}">{{ old('notes') }}</textarea>
                                     @error('notes')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>&nbsp;</label>
-                                    <div class="form-check">
-                                        <input type="checkbox" 
-                                               name="active" 
-                                               id="active" 
-                                               class="form-check-input" 
-                                               value="1" 
-                                               {{ old('active', true) ? 'checked' : '' }}>
-                                        <label for="active" class="form-check-label">
-                                            {{ __('messages.active_medication') }}
-                                        </label>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -268,6 +252,9 @@ $(document).ready(function() {
         placeholder: '{{ __("messages.search_and_select_patient") }}',
         allowClear: true,
         width: '100%',
+        escapeMarkup: function(markup) {
+            return markup;
+        },
         ajax: {
             url: '{{ route("api.patients.search") }}',
             dataType: 'json',

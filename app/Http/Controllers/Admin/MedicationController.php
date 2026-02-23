@@ -53,11 +53,6 @@ class MedicationController extends Controller
             });
         }
 
-        // Filter by active status
-        if ($request->has('active') && $request->active !== '') {
-            $query->where('active', $request->active);
-        }
-
         $medications = $query->orderBy('created_at', 'desc')->paginate(15);
         $rooms = Room::orderBy('title')->get();
         $patients = User::where('user_type', 'patient')->orderBy('name')->get();
@@ -99,7 +94,6 @@ class MedicationController extends Controller
             'dosage' => 'nullable|string|max:100',
             'quantity' => 'nullable|integer|min:1',
             'notes' => 'nullable|string',
-            'active' => 'boolean',
             'schedules' => 'required|array|min:1',
             'schedules.*.time' => 'required|date_format:H:i',
             'schedules.*.frequency' => 'required|in:daily,weekly,monthly'
@@ -121,7 +115,6 @@ class MedicationController extends Controller
                 'dosage' => $request->dosage,
                 'quantity' => $request->quantity,
                 'notes' => $request->notes,
-                'active' => $request->has('active')
             ]);
 
             // Create schedules
@@ -142,8 +135,10 @@ class MedicationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            \Log::error('Error creating medication: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
-                ->with('error', __('messages.error_creating_medication'))
+                ->with('error', __('messages.error_creating_medication') . ' - ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -198,7 +193,6 @@ class MedicationController extends Controller
             'dosage' => 'nullable|string|max:100',
             'quantity' => 'nullable|integer|min:1',
             'notes' => 'nullable|string',
-            'active' => 'boolean',
             'schedules' => 'required|array|min:1',
             'schedules.*.time' => 'required|date_format:H:i',
             'schedules.*.frequency' => 'required|in:daily,weekly,monthly'
@@ -220,7 +214,6 @@ class MedicationController extends Controller
                 'dosage' => $request->dosage,
                 'quantity' => $request->quantity,
                 'notes' => $request->notes,
-                'active' => $request->has('active')
             ]);
 
             // Delete existing schedules
@@ -446,24 +439,5 @@ class MedicationController extends Controller
         
         // Generate new logs
         $this->generateMedicationLogs($medication);
-    }
-
-    /**
-     * Toggle medication active status
-     */
-    public function toggleActive(Medication $medication)
-    {
-        try {
-            $medication->update([
-                'active' => !$medication->active
-            ]);
-
-            $status = $medication->active ? __('messages.activated') : __('messages.deactivated');
-            return redirect()->back()
-                ->with('success', __('messages.medication_status_updated', ['status' => $status]));
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', __('messages.error_updating_status'));
-        }
     }
 }

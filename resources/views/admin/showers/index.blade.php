@@ -10,7 +10,7 @@
             <i class="fas fa-shower me-2"></i>
             {{ __('messages.shower_appointments') }}
         </h2>
-        <a href="{{ route('showers.create') }}" class="btn btn-primary">
+        <a href="{{ route('admin.showers.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>
             {{ __('messages.new_appointment') }}
         </a>
@@ -105,7 +105,7 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('showers.index') }}">
+            <form method="GET" action="{{ route('admin.showers.index') }}">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">{{ __('messages.from_date') }}</label>
@@ -148,7 +148,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search me-2"></i>{{ __('messages.search') }}
                         </button>
-                        <a href="{{ route('showers.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.showers.index') }}" class="btn btn-secondary">
                             <i class="fas fa-redo me-2"></i>{{ __('messages.reset') }}
                         </a>
                     </div>
@@ -237,17 +237,17 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('showers.show', $shower->id) }}" 
+                                    <a href="{{ route('admin.showers.show', $shower->id) }}" 
                                        class="btn btn-sm btn-info" 
                                        title="{{ __('messages.view') }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('showers.edit', $shower->id) }}" 
+                                    <a href="{{ route('admin.showers.edit', $shower->id) }}" 
                                        class="btn btn-sm btn-warning" 
                                        title="{{ __('messages.edit') }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('showers.destroy', $shower->id) }}" 
+                                    <form action="{{ route('admin.showers.destroy', $shower->id) }}" 
                                           method="POST" 
                                           class="d-inline" 
                                           onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">

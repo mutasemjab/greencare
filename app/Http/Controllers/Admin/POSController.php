@@ -3,11 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Complaint;
-use App\Models\User;
-use App\Models\Driver;
-use App\Models\Order;
-use Illuminate\Support\Facades\Validator;
 
 use App\Models\POS;
 use Illuminate\Http\Request;
@@ -63,7 +58,7 @@ class POSController extends Controller
      */
     public function show(POS $po)
     {
-        return view('pos.show', compact('po'));
+        return view('admin.pos.show', compact('po'));
     }
 
     /**

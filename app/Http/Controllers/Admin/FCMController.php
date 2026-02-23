@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Helpers\AppSetting;
 use App\Models\User;
-use App\Models\Provider;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
 use Google\Client as GoogleClient;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class FCMController extends BaseController
 {
@@ -24,7 +22,7 @@ class FCMController extends BaseController
     public static function sendMessage($title, $body, $fcmToken, $userId, $screen = "order")
     {
         if (!$fcmToken) {
-            \Log::error("FCM Error: No FCM token provided for user ID $userId");
+            Log::error("FCM Error: No FCM token provided for user ID $userId");
             return false;
         }
 
@@ -39,7 +37,7 @@ class FCMController extends BaseController
             $tokenResponse = $client->getAccessToken();
 
             $access_token = $tokenResponse['access_token'];
-            \Log::info("FCM Access Token for user ID $userId: " . $access_token);
+            Log::info("FCM Access Token for user ID $userId: " . $access_token);
 
             $headers = [
                 "Authorization: Bearer $access_token",
@@ -79,24 +77,24 @@ class FCMController extends BaseController
             curl_close($ch);
 
             if ($result === false || $err) {
-                \Log::error("FCM Error for user ID $userId: cURL Error: " . $err);
+                Log::error("FCM Error for user ID $userId: cURL Error: " . $err);
                 return false;
             } else {
                 $response = json_decode($result, true);
-                \Log::info("FCM Response for user ID $userId: " . json_encode($response));
+                Log::info("FCM Response for user ID $userId: " . json_encode($response));
                 if (isset($response['name'])) {
                     return true;
                 } else {
-                    \Log::error("FCM Error for user ID $userId: " . json_encode($response));
+                    Log::error("FCM Error for user ID $userId: " . json_encode($response));
                     if (isset($response['error']['details'][0]['errorCode']) && $response['error']['details'][0]['errorCode'] === 'UNREGISTERED') {
-                        \Log::info("FCM token cleanup for user ID $userId");
+                        Log::info("FCM token cleanup for user ID $userId");
                         User::where('id', $userId)->update(['fcm_token' => null]);
                     }
                     return false;
                 }
             }
         } catch (\Exception $e) {
-            \Log::error("FCM Error for user ID $userId: " . $e->getMessage());
+            Log::error("FCM Error for user ID $userId: " . $e->getMessage());
             return false;
         }
     }
@@ -107,7 +105,7 @@ class FCMController extends BaseController
         $users = User::whereNotNull('fcm_token')->get();
         
         if ($users->isEmpty()) {
-            \Log::warning("No users with FCM tokens found");
+            Log::warning("No users with FCM tokens found");
             return false;
         }
 
@@ -123,7 +121,7 @@ class FCMController extends BaseController
             }
         }
 
-        \Log::info("FCM Bulk Send - Success: $successCount, Failed: $failCount");
+        Log::info("FCM Bulk Send - Success: $successCount, Failed: $failCount");
         
         return $successCount > 0; // Return true if at least one notification was sent
     }
@@ -134,7 +132,7 @@ class FCMController extends BaseController
         $user = User::find($userId);
         
         if (!$user || !$user->fcm_token) {
-            \Log::error("User not found or no FCM token for user ID: $userId");
+            Log::error("User not found or no FCM token for user ID: $userId");
             return false;
         }
 

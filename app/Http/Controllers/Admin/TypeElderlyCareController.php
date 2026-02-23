@@ -84,6 +84,14 @@ class TypeElderlyCareController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(TypeElderlyCare $elderlyCare)
+    {
+        return view('admin.elderly-cares.show', compact('elderlyCare'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(TypeElderlyCare $elderlyCare)

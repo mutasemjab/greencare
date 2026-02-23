@@ -132,19 +132,6 @@ template { display: none; }
                                         rows="3">{{ old('notes', $medication->notes) }}</textarea>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>&nbsp;</label>
-                                    <div class="form-check">
-                                        <input type="checkbox" name="active" id="active" value="1"
-                                            class="form-check-input"
-                                            {{ old('active', $medication->active) ? 'checked' : '' }}>
-                                        <label for="active" class="form-check-label">
-                                            {{ __('messages.active_medication') }}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <hr>
@@ -173,8 +160,8 @@ template { display: none; }
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
-                                                <input type="time" name="schedules[{{ $i }}][time]" 
-                                                    value="{{ $schedule->time }}"
+                                                <input type="time" name="schedules[{{ $i }}][time]"
+                                                    value="{{ $schedule->time_for_input }}"
                                                     class="form-control schedule-time" required>
                                             </div>
                                         </div>
