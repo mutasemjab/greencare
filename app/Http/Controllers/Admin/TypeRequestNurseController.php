@@ -80,15 +80,15 @@ class TypeRequestNurseController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(TypeRequestNurse $requestNurses)
+    public function edit(TypeRequestNurse $requestNurse)
     {
-        return view('admin.request-nurses.edit', compact('requestNurses'));
+        return view('admin.request-nurses.edit', compact('requestNurse'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, TypeRequestNurse $requestNurses)
+    public function update(Request $request, TypeRequestNurse $requestNurse)
     {
         $validator = Validator::make($request->all(), [
             'type_of_service' => 'required|in:hour,day,sleep,number_of_days',
@@ -101,7 +101,7 @@ class TypeRequestNurseController extends Controller
                 ->withInput();
         }
 
-        $requestNurses->update($request->all());
+        $requestNurse->update($request->all());
 
         return redirect()->route('request-nurses.index')
             ->with('success', __('messages.request_nurse_updated_successfully'));
@@ -110,9 +110,9 @@ class TypeRequestNurseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(TypeRequestNurse $requestNurses)
+    public function destroy(TypeRequestNurse $requestNurse)
     {
-        $requestNurses->delete();
+        $requestNurse->delete();
 
         return redirect()->route('request-nurses.index')
             ->with('success', __('messages.request_nurse_deleted_successfully'));

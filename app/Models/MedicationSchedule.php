@@ -10,9 +10,17 @@ class MedicationSchedule extends Model
     use HasFactory;
     protected $guarded = [];
 
-        protected $casts = [
-        'time' => 'datetime:H:i'
+    protected $casts = [
+        'time' => 'datetime:H:i:s'
     ];
+
+    /**
+     * Get the time in H:i format for input value
+     */
+    public function getTimeForInputAttribute()
+    {
+        return $this->time ? $this->time->format('H:i') : '';
+    }
 
     /**
      * Get the medication this schedule belongs to
@@ -35,6 +43,6 @@ class MedicationSchedule extends Model
      */
     public function getFormattedTimeAttribute()
     {
-        return $this->time->format('H:i');
+        return $this->time;
     }
 }

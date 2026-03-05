@@ -45,43 +45,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="phone" class="form-label">{{ __('messages.Phone') }} <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           class="form-control @error('phone') is-invalid @enderror" 
-                                           id="phone" 
-                                           name="phone" 
-                                           value="{{ old('phone') }}" 
+                                    <input type="text"
+                                           class="form-control @error('phone') is-invalid @enderror"
+                                           id="phone"
+                                           name="phone"
+                                           value="{{ old('phone') }}"
                                            required>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
-                            </div>
-
-                            <!-- Password -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">{{ __('messages.Password') }} <span class="text-danger">*</span></label>
-                                    <input type="password" 
-                                           class="form-control @error('password') is-invalid @enderror" 
-                                           id="password" 
-                                           name="password" 
-                                           required>
-                                    @error('password')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted">{{ __('messages.Minimum_6_Characters') }}</small>
-                                </div>
-                            </div>
-
-                            <!-- Password Confirmation -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="password_confirmation" class="form-label">{{ __('messages.Confirm_Password') }} <span class="text-danger">*</span></label>
-                                    <input type="password" 
-                                           class="form-control" 
-                                           id="password_confirmation" 
-                                           name="password_confirmation" 
-                                           required>
                                 </div>
                             </div>
 

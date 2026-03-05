@@ -45,8 +45,7 @@ class User extends Authenticatable
     /**
      * Get user type text
      */
-
-      public function getUserTypeTextAttribute()
+    public function getUserTypeTextAttribute()
     {
         $types = [
             'patient' => __('messages.patient'),
@@ -56,6 +55,30 @@ class User extends Authenticatable
         ];
 
         return $types[$this->user_type] ?? $this->user_type;
+    }
+
+    /**
+     * Get active status text
+     */
+    public function getActiveStatusTextAttribute()
+    {
+        return $this->activate == 1 ? __('messages.active') : __('messages.inactive');
+    }
+
+    /**
+     * Get doctor type text (alias for user_type)
+     */
+    public function getDoctorTypeTextAttribute()
+    {
+        return $this->user_type_text;
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive()
+    {
+        return $this->activate == 1;
     }
 
     /**
@@ -72,5 +95,21 @@ class User extends Authenticatable
     public function scopeSuperNurses($query)
     {
         return $query->where('user_type', 'super_nurse');
+    }
+
+    /**
+     * Scope for active users
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('activate', 1);
+    }
+
+    /**
+     * Scope for inactive users
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('activate', 2);
     }
 }

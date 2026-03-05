@@ -10,7 +10,7 @@ class Medication extends Model
     use HasFactory;
     protected $guarded = [];
     protected $casts = [
-        'active' => 'boolean'
+        // No casts needed
     ];
 
     /**

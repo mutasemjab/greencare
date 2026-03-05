@@ -79,7 +79,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('families.update', $family) }}" method="POST">
+                <form action="{{ route('families.update', $family) }}" method="POST" id="family-form">
                     @csrf
                     @method('PUT')
                     <div class="card-body">
@@ -152,12 +152,11 @@
                         <div class="row" id="search-method">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <select name="user_ids[]" 
-                                            id="patient_select" 
-                                            class="form-control patient-select-multiple" 
+                                    <select id="patient_select"
+                                            class="form-control patient-select-multiple"
                                             multiple
                                             style="width: 100%;">
-                                        <!-- Pre-selected options will be loaded -->
+                                        <!-- Pre-selected options -->
                                         @foreach($family->users as $member)
                                             <option value="{{ $member->id }}" selected>
                                                 {{ $member->name }} - {{ $member->phone }} ({{ $member->gender_text }})
@@ -191,11 +190,11 @@
                                                 <div class="card h-100 {{ in_array($user->id, $familyUserIds) ? 'border-primary' : '' }}">
                                                     <div class="card-body p-3">
                                                         <div class="form-check">
-                                                            <input type="checkbox" 
-                                                                   name="user_ids_traditional[]" 
-                                                                   value="{{ $user->id }}" 
-                                                                   id="user{{ $user->id }}" 
-                                                                   class="form-check-input"
+                                                            <input type="checkbox"
+                                                                   name="user_ids[]"
+                                                                   value="{{ $user->id }}"
+                                                                   id="user{{ $user->id }}"
+                                                                   class="form-check-input user-checkbox"
                                                                    {{ in_array($user->id, old('user_ids', $familyUserIds)) ? 'checked' : '' }}>
                                                             <label for="user{{ $user->id }}" class="form-check-label w-100">
                                                                 <div class="d-flex align-items-center">
@@ -279,6 +278,9 @@ $(document).ready(function() {
             $('.patient-select-multiple').select2('destroy');
         }
 
+        // Store pre-selected values before initializing Select2
+        const preselectedValues = $('.patient-select-multiple').val() || [];
+
         // Initialize Select2 for multiple patient selection
         $('.patient-select-multiple').select2({
             placeholder: '{{ __("messages.search_and_select_patients") }}',
@@ -296,7 +298,7 @@ $(document).ready(function() {
                 },
                 processResults: function (data, params) {
                     params.page = params.page || 1;
-                    
+
                     return {
                         results: data.data.map(function(patient) {
                             return {
@@ -319,6 +321,11 @@ $(document).ready(function() {
                 return markup;
             }
         });
+
+        // Re-apply pre-selected values after initialization
+        if (preselectedValues.length > 0) {
+            $('.patient-select-multiple').val(preselectedValues).trigger('change');
+        }
 
         // Handle selection changes
         $('.patient-select-multiple').on('change', function() {
@@ -429,21 +436,26 @@ $(document).ready(function() {
         const traditionalMethod = $('#traditional-method');
         const toggleText = $('#toggle-text');
         const preview = $('#selected-patients-preview');
-        
+
         if (isTraditionalMode) {
             // Switch to search method
             searchMethod.show();
             traditionalMethod.hide();
             preview.show();
             toggleText.text('{{ __("messages.switch_to_traditional") }}');
-            
-            // Clear traditional checkboxes and update names
-            $('input[name="user_ids_traditional[]"]').prop('checked', false);
-            $('input[name="user_ids_traditional[]"]').attr('name', 'user_ids[]');
-            
+
+            // Sync checked checkboxes to select2
+            const checkedValues = [];
+            $('.user-checkbox:checked').each(function() {
+                checkedValues.push($(this).val());
+            });
+            if (checkedValues.length > 0) {
+                $('.patient-select-multiple').val(checkedValues).trigger('change');
+            }
+
             // Reinitialize Select2
             initializePatientSelect2();
-            
+
             isTraditionalMode = false;
         } else {
             // Switch to traditional method
@@ -451,17 +463,13 @@ $(document).ready(function() {
             traditionalMethod.show();
             preview.hide();
             toggleText.text('{{ __("messages.switch_to_search") }}');
-            
-            // Sync current Select2 selections to checkboxes
-            const selectedValues = $('.patient-select-multiple').val() || [];
-            $('input[name="user_ids[]"]').each(function() {
-                $(this).prop('checked', selectedValues.includes($(this).val()));
+
+            // Sync select2 to checkboxes
+            const selectedIds = $('.patient-select-multiple').val() || [];
+            $('.user-checkbox').each(function() {
+                $(this).prop('checked', selectedIds.includes($(this).val()));
             });
-            
-            // Clear select2 and update names
-            $('.patient-select-multiple').val(null).trigger('change');
-            $('input[name="user_ids[]"]').attr('name', 'user_ids_traditional[]');
-            
+
             isTraditionalMode = true;
         }
     };
@@ -469,26 +477,56 @@ $(document).ready(function() {
     // Traditional method functions
     window.selectAll = function() {
         if (isTraditionalMode) {
-            document.querySelectorAll('input[name="user_ids_traditional[]"]').forEach(checkbox => {
-                checkbox.checked = true;
-            });
+            $('.user-checkbox').prop('checked', true);
         }
     };
 
     window.deselectAll = function() {
         if (isTraditionalMode) {
-            document.querySelectorAll('input[name="user_ids_traditional[]"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
+            $('.user-checkbox').prop('checked', false);
         }
     };
 
-    // Form submission handler
-    $('form').on('submit', function() {
+    // Form submission handler - collect user IDs and prevent duplicates
+    $('#family-form').on('submit', function(e) {
+        // Remove any previous hidden user_ids inputs
+        $('input[type="hidden"][name="user_ids[]"]').remove();
+
+        let selectedIds = [];
+
         if (isTraditionalMode) {
-            // Rename traditional inputs back to user_ids[]
-            $('input[name="user_ids_traditional[]"]').attr('name', 'user_ids[]');
+            // Get IDs from checkboxes
+            $('.user-checkbox:checked').each(function() {
+                const id = $(this).val();
+                if (id && String(id).trim() !== '' && String(id) !== 'undefined') {
+                    selectedIds.push(id);
+                }
+            });
+        } else {
+            // Get IDs from Select2
+            const select2Data = $('.patient-select-multiple').val();
+            if (Array.isArray(select2Data)) {
+                select2Data.forEach(function(id) {
+                    if (id && String(id).trim() !== '' && String(id) !== 'undefined') {
+                        selectedIds.push(id);
+                    }
+                });
+            }
         }
+
+        // Remove duplicates and convert to integers
+        selectedIds = Array.from(new Set(selectedIds))
+            .map(id => parseInt(id, 10))
+            .filter(id => !isNaN(id) && id > 0);
+
+        // Create hidden inputs for each selected ID
+        selectedIds.forEach(function(id) {
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'user_ids[]',
+                value: id
+            }).appendTo('#family-form');
+        });
     });
 
     // Auto-hide alerts

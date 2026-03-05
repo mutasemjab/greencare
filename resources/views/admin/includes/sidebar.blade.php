@@ -128,8 +128,8 @@
                             @endcanany
                             @canany(['shower-table', 'shower-add', 'shower-edit', 'shower-delete'])
                                 <li class="nav-item">
-                                    <a href="{{ route('showers.index') }}"
-                                        class="nav-link {{ request()->routeIs('showers.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.showers.index') }}"
+                                        class="nav-link {{ request()->routeIs('admin.showers.*') ? 'active' : '' }}">
                                         <i class="fas fa-shower nav-icon"></i>
                                         <p>{{ __('messages.shower_appointments') }}</p>
                                     </a>

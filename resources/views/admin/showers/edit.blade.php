@@ -12,7 +12,7 @@
                     <i class="fas fa-edit me-2"></i>
                     {{ __('messages.edit_appointment') }}
                 </h2>
-                <a href="{{ route('showers.index') }}" class="btn btn-secondary">
+                <a href="{{ route('admin.showers.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-right me-2"></i>
                     {{ __('messages.back') }}
                 </a>
@@ -20,7 +20,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('showers.update', $shower->id) }}" method="POST" id="showerForm">
+                    <form action="{{ route('admin.showers.update', $shower->id) }}" method="POST" id="showerForm">
                         @csrf
                         @method('PUT')
 
@@ -179,7 +179,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-2"></i>{{ __('messages.update_appointment') }}
                                 </button>
-                                <a href="{{ route('showers.index') }}" class="btn btn-secondary">
+                                <a href="{{ route('admin.showers.index') }}" class="btn btn-secondary">
                                     <i class="fas fa-times me-2"></i>{{ __('messages.cancel') }}
                                 </a>
                             </div>

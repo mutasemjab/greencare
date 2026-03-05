@@ -15,10 +15,10 @@ class EmployeeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:employee-table', ['only' => ['index']]);
+        $this->middleware('permission:employee-table', ['only' => ['index', 'show']]);
         $this->middleware('permission:employee-add', ['only' => ['create', 'store']]);
         $this->middleware('permission:employee-edit', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:employee-delete', ['only' => ['show', 'destroy']]);
+        $this->middleware('permission:employee-delete', ['only' => ['destroy']]);
     }
 
     public function index(Request $request)
@@ -99,17 +99,13 @@ class EmployeeController extends Controller
      */
     public function show($id)
     {
-        DB::beginTransaction();
         try {
-            Admin::find($id)->delete();
-            DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
-            DB::commit();
-            return redirect()->route('admin.employee.index')
-                ->with('success', 'Admin deleted successfully');
+            $admin = Admin::findOrFail($id);
+            $roles = $admin->roles;
+            return view('admin.employee.show', compact('admin', 'roles'));
         } catch (Exception $e) {
-            DB::rollback();
             return redirect()->route('admin.employee.index')
-                ->with('error', 'Something Error');
+                ->with('error', 'Employee not found');
         }
     }
 
@@ -184,12 +180,12 @@ class EmployeeController extends Controller
             Admin::find($id)->delete();
             DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
             DB::commit();
-            return redirect()->route('admins.index')
-                ->with('success', 'Admin deleted successfully');
+            return redirect()->route('admin.employee.index')
+                ->with('success', 'Employee deleted successfully');
         } catch (Exception $e) {
             DB::rollback();
-            return redirect()->route('admins.index')
-                ->with('error', 'Something Error');
+            return redirect()->route('admin.employee.index')
+                ->with('error', 'Something went wrong');
         }
     }
 }

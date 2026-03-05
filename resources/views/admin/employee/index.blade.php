@@ -66,15 +66,27 @@
                                                 <td><span class="font-weight-bold">{{ $value->name }}</span></td>
                                                 <td><span class="font-weight-bold">{{ $value->username }}</span></td>
                                                 <td>
+                                                    @can('employee-table')
+                                                        <a class="btn btn-sm btn-outline-info"
+                                                            href="{{ route("admin.employee.show", $value->id) }}">
+                                                            <i class="mdi mdi-eye"></i> Show
+                                                        </a>
+                                                    @endcan
                                                     @can('employee-edit')
                                                         <a class="btn btn-sm btn-outline-info"
-                                                            href="{{ route("admin.employee.edit", $value->id) }}"><i
-                                                                class="mdi mdi-pencil-box"></i>Edit</a>
+                                                            href="{{ route("admin.employee.edit", $value->id) }}">
+                                                            <i class="mdi mdi-pencil-box"></i> Edit
+                                                        </a>
                                                     @endcan
                                                     @can('employee-delete')
-                                                        <a class="btn btn-sm btn-outline-danger"
-                                                            href="{{ route("admin.employee.destroy", $value->id) }}"><i
-                                                                class="mdi mdi-trash-can"></i>Delete</a>
+                                                        <form action="{{ route("admin.employee.destroy", $value->id) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                    onclick="return confirm('Are you sure you want to delete this employee?');">
+                                                                <i class="mdi mdi-trash-can"></i> Delete
+                                                            </button>
+                                                        </form>
                                                     @endcan
 
                                                 </td>

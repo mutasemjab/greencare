@@ -81,7 +81,36 @@ class AppointmentProvider extends Model
     }
 
     /**
+     * Get status text alias for compatibility
+     */
+    public function getStatusTextAttribute()
+    {
+        return $this->status_name;
+    }
+
+    /**
      * Get status badge class for UI
+     */
+    public function getStatusBadgeAttribute()
+    {
+        switch ($this->status) {
+            case self::STATUS_PENDING:
+                return 'warning';
+            case self::STATUS_ACCEPTED:
+                return 'info';
+            case self::STATUS_ON_THE_WAY:
+                return 'primary';
+            case self::STATUS_DELIVERED:
+                return 'success';
+            case self::STATUS_CANCELED:
+                return 'danger';
+            default:
+                return 'secondary';
+        }
+    }
+
+    /**
+     * Get status badge class for UI (with bg- prefix)
      */
     public function getStatusBadgeClassAttribute()
     {

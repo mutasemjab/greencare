@@ -152,7 +152,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         // Medication management routes
         Route::resource('medications', MedicationController::class);
-        Route::post('medications/{medication}/toggle-active', [MedicationController::class, 'toggleActive'])->name('medications.toggle-active');
         Route::post('medication-logs/{log}/mark-taken', [MedicationController::class, 'markTaken'])->name('medication-logs.mark-taken');
         Route::post('medication-logs/{log}/mark-missed', [MedicationController::class, 'markMissed'])->name('medication-logs.mark-missed');
         Route::get('medications/{medication}/calendar', [MedicationController::class, 'getCalendarData'])->name('medications.calendar');
@@ -241,8 +240,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
 
 
-        Route::resource('showers', ShowerController::class);
-        Route::get('showers/card-price/{id}', [ShowerController::class, 'getCardPrice'])->name('showers.card-price');
+        Route::resource('showers', ShowerController::class, ['as' => 'admin']);
+        Route::get('showers/card-price/{id}', [ShowerController::class, 'getCardPrice'])->name('admin.showers.card-price');
     });
 });
 

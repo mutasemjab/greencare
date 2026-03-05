@@ -47,14 +47,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <select name="active" class="form-control">
-                                    <option value="">{{ __('messages.all_status') }}</option>
-                                    <option value="1" {{ request('active') === '1' ? 'selected' : '' }}>{{ __('messages.active') }}</option>
-                                    <option value="0" {{ request('active') === '0' ? 'selected' : '' }}>{{ __('messages.inactive') }}</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <div class="btn-group" role="group">
                                     <button type="submit" class="btn btn-outline-primary">
                                         <i class="fas fa-search"></i> {{ __('messages.search') }}
@@ -78,7 +71,6 @@
                                     <th>{{ __('messages.dosage') }}</th>
                                     <th>{{ __('messages.schedules') }}</th>
                                     <th>{{ __('messages.compliance_rate') }}</th>
-                                    <th>{{ __('messages.status') }}</th>
                                     <th>{{ __('messages.actions') }}</th>
                                 </tr>
                             </thead>
@@ -145,22 +137,6 @@
                                             <span class="badge badge-{{ $class }}">{{ $rate }}%</span>
                                         </td>
                                         <td>
-                                            @can('medication-edit')
-                                                <form action="{{ route('medications.toggle-active', $medication) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" 
-                                                            class="btn btn-sm btn-{{ $medication->active ? 'success' : 'secondary' }} btn-toggle-status"
-                                                            title="{{ $medication->active ? __('messages.active') : __('messages.inactive') }}">
-                                                        <i class="fas fa-{{ $medication->active ? 'toggle-on' : 'toggle-off' }}"></i>
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="badge badge-{{ $medication->active ? 'success' : 'secondary' }}">
-                                                    {{ $medication->active ? __('messages.active') : __('messages.inactive') }}
-                                                </span>
-                                            @endcan
-                                        </td>
-                                        <td>
                                             <div class="btn-group" role="group">
                                                 @can('medication-table')
                                                     <a href="{{ route('medications.show', $medication) }}" 
@@ -220,7 +196,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center">
+                                        <td colspan="8" class="text-center">
                                             <div class="py-4">
                                                 <i class="fas fa-pills fa-3x text-muted mb-3"></i>
                                                 <p class="text-muted">{{ __('messages.no_medications_found') }}</p>
@@ -257,18 +233,6 @@ $(document).ready(function() {
     setTimeout(function() {
         $('.alert').fadeOut('slow');
     }, 5000);
-
-    // Confirm status toggle
-    $('.btn-toggle-status').on('click', function(e) {
-        e.preventDefault();
-        var form = $(this).closest('form');
-        var isActive = $(this).hasClass('btn-success');
-        var action = isActive ? '{{ __("messages.deactivate") }}' : '{{ __("messages.activate") }}';
-        
-        if (confirm('{{ __("messages.are_you_sure") }} ' + action.toLowerCase() + ' {{ __("messages.this_medication") }}?')) {
-            form.submit();
-        }
-    });
 });
 </script>
 @endpush

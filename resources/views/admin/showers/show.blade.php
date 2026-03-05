@@ -13,11 +13,11 @@
                     {{ __('messages.appointment_details') }}
                 </h2>
                 <div>
-                    <a href="{{ route('showers.edit', $shower->id) }}" class="btn btn-warning">
+                    <a href="{{ route('admin.showers.edit', $shower->id) }}" class="btn btn-warning">
                         <i class="fas fa-edit me-2"></i>
                         {{ __('messages.edit') }}
                     </a>
-                    <a href="{{ route('showers.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.showers.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-right me-2"></i>
                         {{ __('messages.back') }}
                     </a>
@@ -308,13 +308,13 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <a href="{{ route('showers.edit', $shower->id) }}" class="btn btn-warning">
+                                    <a href="{{ route('admin.showers.edit', $shower->id) }}" class="btn btn-warning">
                                         <i class="fas fa-edit me-2"></i>
                                         {{ __('messages.edit') }}
                                     </a>
                                 </div>
                                 <div>
-                                    <form action="{{ route('showers.destroy', $shower->id) }}" 
+                                    <form action="{{ route('admin.showers.destroy', $shower->id) }}" 
                                           method="POST" 
                                           class="d-inline"
                                           onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">

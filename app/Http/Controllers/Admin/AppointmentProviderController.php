@@ -125,7 +125,7 @@ class AppointmentProviderController extends Controller
         try {
             AppointmentProvider::create($request->all());
 
-            return redirect()->route('admin.appointment-providers.index')
+            return redirect()->route('appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_created_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -190,7 +190,7 @@ class AppointmentProviderController extends Controller
         try {
             $appointment->update($request->all());
 
-            return redirect()->route('admin.appointment-providers.index')
+            return redirect()->route('appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_updated_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -209,7 +209,7 @@ class AppointmentProviderController extends Controller
             $appointment = AppointmentProvider::findOrFail($id);
             $appointment->delete();
 
-            return redirect()->route('admin.appointment-providers.index')
+            return redirect()->route('appointment-providers.index')
                 ->with('success', __('messages.appointment_provider_deleted_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()
