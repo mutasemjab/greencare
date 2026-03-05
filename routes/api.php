@@ -31,7 +31,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //Route unAuth
 Route::group(['prefix' => 'v1/user'], function () {
 
-    Route::get('appointment-service-types', [AppointmentApiController::class, 'getServiceTypes']);
+    Route::get('/flagForAppStore', [AuthController::class, 'flagForAppStore']);
+    Route::get('/appointment-service-types', [AppointmentApiController::class, 'getServiceTypes']);
     Route::get('/pages/{type}', [PageController::class, 'index']);
 
     Route::get('/banners', [BannerController::class, 'index']); // Done

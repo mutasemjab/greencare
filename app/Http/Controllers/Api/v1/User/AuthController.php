@@ -25,6 +25,16 @@ class AuthController extends Controller
         $this->otpService = $otpService;
     }
 
+    public function flagForAppstore()
+    {
+        $flag = 2;
+        return response()->json([
+            'status' => true,
+            'message' => $flag == 1 ? 'الميزات مرئية' : 'الميزات مخفية',
+            'data' => $flag,
+        ]);
+    }
+
       /**
      * Send OTP to phone number
      */
