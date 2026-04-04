@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1\User;
 
+use App\Http\Controllers\Admin\FCMController;
 use App\Http\Controllers\Controller;
 use App\Models\SpecialMedicalForm;
 use App\Models\SpecialMedicalFormReply;
@@ -151,6 +152,15 @@ class SpecialMedicalFormApiController extends Controller
             ]);
 
             $form->load(['creator', 'replies']);
+
+            // Notify all room users except the creator
+            $this->notifyRoomUsers(
+                $request->room_id,
+                $user->id,
+                __('messages.new_form_notification_title'),
+                __('messages.new_form_notification_body', ['name' => $user->name, 'title' => $form->title]),
+                'special_medical_form'
+            );
 
             return $this->success_response(
                 __('messages.form_created_successfully'),
@@ -326,6 +336,15 @@ class SpecialMedicalFormApiController extends Controller
 
             $reply->load('user');
 
+            // Notify all room users except the replier
+            $this->notifyRoomUsers(
+                $form->room_id,
+                $user->id,
+                __('messages.new_reply_notification_title'),
+                __('messages.new_reply_notification_body', ['name' => $user->name, 'title' => $form->title]),
+                'special_medical_form'
+            );
+
             return $this->success_response(
                 __('messages.reply_added_successfully'),
                 [
@@ -388,6 +407,15 @@ class SpecialMedicalFormApiController extends Controller
             }
 
             $form->update(['status' => $request->status]);
+
+            // Notify all room users except the updater
+            $this->notifyRoomUsers(
+                $form->room_id,
+                $user->id,
+                __('messages.form_status_notification_title'),
+                __('messages.form_status_notification_body', ['title' => $form->title, 'status' => __('messages.form_status_' . $form->status)]),
+                'special_medical_form'
+            );
 
             return $this->success_response(
                 __('messages.form_status_updated_successfully'),
@@ -459,6 +487,23 @@ class SpecialMedicalFormApiController extends Controller
                 __('messages.error_occurred'),
                 ['error' => $e->getMessage()]
             );
+        }
+    }
+
+    /**
+     * Send FCM notification to all users in a room, excluding a specific user
+     */
+    private function notifyRoomUsers($roomId, $excludeUserId, $title, $body, $screen = 'special_medical_form')
+    {
+        $roomUsers = RoomUser::with('user')
+            ->where('room_id', $roomId)
+            ->where('user_id', '!=', $excludeUserId)
+            ->get();
+
+        foreach ($roomUsers as $roomUser) {
+            if ($roomUser->user && $roomUser->user->fcm_token) {
+                FCMController::sendMessage($title, $body, $roomUser->user->fcm_token, $roomUser->user->id, $screen);
+            }
         }
     }
 }

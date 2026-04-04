@@ -109,6 +109,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
             ->name('rooms.change-template');
         Route::get('rooms/{room}/template-history', [RoomController::class, 'templateHistory'])
             ->name('rooms.template-history');
+        Route::get('rooms/{room}/reports/{report}', [RoomController::class, 'showReport'])
+            ->name('rooms.reports.show');
 
         Route::resource('super-nurses', SuperNurseController::class);
         Route::post('super-nurses/{superNurse}/toggle-status', [SuperNurseController::class, 'toggleStatus'])

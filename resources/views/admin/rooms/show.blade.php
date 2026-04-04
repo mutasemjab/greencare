@@ -545,7 +545,7 @@
                                             </td>
                                             <td>{{ $report->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
-                                                <a href="#" class="btn btn-sm btn-info" title="{{ __('messages.view') }}">
+                                                <a href="{{ route('rooms.reports.show', [$room, $report]) }}" class="btn btn-sm btn-info" title="{{ __('messages.view') }}">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>

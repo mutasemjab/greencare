@@ -558,6 +558,25 @@ class RoomController extends Controller
     }
 
     /**
+     * Show a single filled report with its answers
+     */
+    public function showReport(Room $room, Report $report)
+    {
+        abort_if($report->room_id !== $room->id, 404);
+
+        $report->load([
+            'template.sections.fields.options',
+            'creator',
+            'answers.field',
+        ]);
+
+        // Group answers by section
+        $answersBySection = $report->answers->keyBy('report_field_id');
+
+        return view('admin.rooms.report-show', compact('room', 'report', 'answersBySection'));
+    }
+
+    /**
      * View template history
      */
    public function templateHistory(Room $room)
