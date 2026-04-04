@@ -23,6 +23,14 @@ class PledgeForm extends Model
     }
 
     /**
+     * Get the nurse who submitted this form.
+     */
+    public function nurse()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Check if this is an authorization form
      */
     public function isAuthorizationForm()

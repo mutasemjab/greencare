@@ -716,10 +716,15 @@ class RoomReportController extends Controller
                 ->get();
         }
 
+        // Pre-fetch room IDs where THIS nurse has submitted a pledge form (avoids N+1)
+        $completedRoomIds = \App\Models\PledgeForm::where('user_id', $currentUser->id)
+            ->pluck('room_id')
+            ->flip();
+
         // Add is_complete flag and user_ids to each room
-        $roomsWithStatus = $rooms->map(function ($room) {
-            // Check if there are any pledge forms for this room
-            $hasPledgeForm = \App\Models\PledgeForm::where('room_id', $room->id)->exists();
+        $roomsWithStatus = $rooms->map(function ($room) use ($completedRoomIds) {
+            // true only if THIS nurse has submitted a pledge form for this room
+            $hasPledgeForm = isset($completedRoomIds[$room->id]);
 
             // Get user IDs in this room
             $userIds = $room->users->pluck('id')->toArray();
@@ -733,7 +738,7 @@ class RoomReportController extends Controller
                 'created_at' => $room->created_at,
                 'updated_at' => $room->updated_at,
                 'is_complete' => $hasPledgeForm,
-                'user_ids' => $userIds, // ← إضافة IDs المستخدمين
+                'user_ids' => $userIds,
             ];
         });
 

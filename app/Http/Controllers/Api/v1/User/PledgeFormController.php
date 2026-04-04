@@ -7,6 +7,7 @@ use App\Models\PledgeForm;
 use App\Models\Room;
 use App\Traits\Responses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -124,6 +125,9 @@ class PledgeFormController extends Controller
                     $data[$field] = $path;
                 }
             }
+
+            // Attach the authenticated nurse's user_id
+            $data['user_id'] = Auth::id();
 
             // Create the pledge form
             $pledgeForm = PledgeForm::create($data);
