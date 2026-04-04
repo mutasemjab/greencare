@@ -309,6 +309,7 @@ class RoomReportController extends Controller
         if ($userType === 'doctor') {
             $rules['date'] = 'required|date_format:Y-m-d';
         } else if ($userType === 'nurse') {
+            $rules['date'] = 'required|date_format:Y-m-d';
             $rules['hour'] = 'required|date_format:H:i';
         }
 
@@ -349,13 +350,14 @@ class RoomReportController extends Controller
                     return $this->error_response('A report for this date already exists for doctor', null);
                 }
             } else if ($userType === 'nurse') {
-                $reportDatetime = now()->format('Y-m-d') . ' ' . $request->hour . ':00';
+                $reportDatetime = $request->date . ' ' . $request->hour . ':00';
+                $reportHour = (int) explode(':', $request->hour)[0];
 
-                // Prevent duplicate reports in the same hour
+                // Prevent duplicate: same room, same template, same date+hour
                 $existingReport = Report::where('room_id', $request->room_id)
                     ->where('report_template_id', $request->template_id)
-                    ->whereDate('report_datetime', now()->format('Y-m-d'))
-                    ->whereRaw('HOUR(report_datetime) = ?', [date('H', strtotime($reportDatetime))])
+                    ->whereDate('report_datetime', $request->date)
+                    ->whereRaw('HOUR(report_datetime) = ?', [$reportHour])
                     ->exists();
 
                 if ($existingReport) {
