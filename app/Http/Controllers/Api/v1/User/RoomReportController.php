@@ -461,7 +461,7 @@ class RoomReportController extends Controller
         $validator = Validator::make($request->all(), [
             'room_id' => 'required|exists:rooms,id',
             'date' => 'required|date_format:Y-m-d',
-            'hour' => 'nullable|date_format:H',
+            'hour' => 'nullable|integer|min:0|max:23',
             'report_type' => 'nullable|in:doctor,nurse,all',
         ]);
 
@@ -480,9 +480,9 @@ class RoomReportController extends Controller
         // Filter by date
         $query->whereDate('report_datetime', $request->date);
 
-        // Optionally filter by hour if provided
-        if ($request->filled('hour')) {
-            $query->whereRaw('HOUR(report_datetime) = ?', [$request->hour]);
+        // Optionally filter by hour if provided (use has() not filled() so hour=0 is not skipped)
+        if ($request->has('hour') && !is_null($request->hour)) {
+            $query->whereRaw('HOUR(report_datetime) = ?', [(int) $request->hour]);
         }
 
         // Optionally filter by report creator type
