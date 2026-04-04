@@ -565,6 +565,93 @@
         </div>
     </div>
 
+    <!-- Pledge & Authorization Forms Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-purple" style="border-color: #6f42c1 !important;">
+                <div class="card-header text-white" style="background-color: #6f42c1;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-signature"></i> {{ __('messages.pledge_authorization_forms') }}
+                        <span class="badge badge-light ml-2">{{ $pledgeForms->flatten()->count() }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if($pledgeForms->isEmpty())
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-signature fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">{{ __('messages.no_pledge_forms_found') }}</p>
+                        </div>
+                    @else
+                        @foreach($pledgeForms as $userId => $nurseForms)
+                            @php $nurse = $nurseForms->first()->nurse; @endphp
+                            <div class="card mb-3 border-left" style="border-left: 4px solid #6f42c1;">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                    <div>
+                                        <i class="fas fa-user-nurse mr-2 text-purple" style="color:#6f42c1;"></i>
+                                        <strong>{{ $nurse ? $nurse->name : __('messages.unknown_nurse') }}</strong>
+                                        @if($nurse)
+                                            <small class="text-muted ml-2">{{ $nurse->phone }}</small>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        @foreach($nurseForms as $form)
+                                            <span class="badge {{ $form->type === 'pledge_form' ? 'badge-primary' : 'badge-warning' }} mr-1">
+                                                {{ __('messages.form_type_' . $form->type) }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>{{ __('messages.form_type') }}</th>
+                                                    <th>{{ __('messages.name_of_patient') }}</th>
+                                                    <th>{{ __('messages.identity_number') }}</th>
+                                                    <th>{{ __('messages.date_of_pledge') }}</th>
+                                                    <th>{{ __('messages.signatures') }}</th>
+                                                    <th>{{ __('messages.created_at') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($nurseForms as $form)
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge {{ $form->type === 'pledge_form' ? 'badge-primary' : 'badge-warning' }}">
+                                                                {{ __('messages.form_type_' . $form->type) }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $form->name_of_patient }}</td>
+                                                        <td>{{ $form->identity_number_of_patient }}</td>
+                                                        <td>{{ $form->date_of_pledge ? $form->date_of_pledge->format('Y-m-d') : '-' }}</td>
+                                                        <td>
+                                                            @foreach(['signature_one','signature_two','signature_three','signature_four'] as $sig)
+                                                                @if($form->$sig)
+                                                                    <a href="{{ asset('assets/admin/uploads/' . $form->$sig) }}" target="_blank">
+                                                                        <img src="{{ asset('assets/admin/uploads/' . $form->$sig) }}"
+                                                                             width="36" height="36"
+                                                                             class="rounded border mr-1"
+                                                                             style="object-fit:cover;">
+                                                                    </a>
+                                                                @endif
+                                                            @endforeach
+                                                        </td>
+                                                        <td><small>{{ $form->created_at->format('Y-m-d H:i') }}</small></td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Medications Section -->
     <div class="row mb-4">
         <div class="col-12">

@@ -9,6 +9,7 @@ use App\Models\RoomUser;
 use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\Medication;
+use App\Models\PledgeForm;
 use App\Models\User;
 use App\Models\ReportTemplate;
 use App\Models\Report;
@@ -234,7 +235,14 @@ class RoomController extends Controller
 
         $reportTemplates = ReportTemplate::orderBy('title_en')->get();
 
-        return view('admin.rooms.show', compact('room', 'reportTemplates'));
+        // Pledge & authorization forms for this room, grouped by nurse
+        $pledgeForms = PledgeForm::with('nurse')
+            ->where('room_id', $room->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('user_id');
+
+        return view('admin.rooms.show', compact('room', 'reportTemplates', 'pledgeForms'));
     }
 
     /**

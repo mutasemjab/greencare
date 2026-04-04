@@ -91,7 +91,7 @@
                 @endcanany
 
                 <!-- Medical Services -->
-                @canany(['appointment-table', 'appointmentProvider-table', 'shower-table', 'transferPatient-table', 'typeRequestNurse-table', 'typeElderlyCare-table', 'typeHomeXray-table', 'typeMedicalTest-table', 'room-table', 'report-template-table', 'pledgeForm-table', 'specialMedicalForm-table'])
+                @canany(['appointment-table', 'appointmentProvider-table', 'shower-table', 'transferPatient-table', 'typeRequestNurse-table', 'typeElderlyCare-table', 'typeHomeXray-table', 'typeMedicalTest-table', 'room-table', 'report-template-table', 'specialMedicalForm-table'])
                     <li class="nav-header">{{ __('messages.medical_services') }}</li>
                 @endcanany
 
@@ -244,28 +244,7 @@
                 @endcanany
 
                 <!-- Medical Forms -->
-                @canany(['pledgeForm-table', 'specialMedicalForm-table'])
-                    <li
-                        class="nav-item {{ request()->is('pledge-forms*') || request()->is('special-medical-forms*') ? 'menu-open' : '' }}">
-                        <a href="#"
-                            class="nav-link {{ request()->is('pledge-forms*') || request()->is('special-medical-forms*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-file-contract"></i>
-                            <p>
-                                {{ __('messages.medical_forms') }}
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            @canany(['pledgeForm-table', 'pledgeForm-add', 'pledgeForm-edit', 'pledgeForm-delete'])
-                                <li class="nav-item">
-                                    <a href="{{ route('pledge-forms.index') }}"
-                                        class="nav-link {{ request()->routeIs('pledge-forms.*') ? 'active' : '' }}">
-                                        <i class="fas fa-file-signature nav-icon"></i>
-                                        <p>{{ __('messages.pledge_forms') }}</p>
-                                    </a>
-                                </li>
-                            @endcanany
-                            @canany(['specialMedicalForm-table', 'specialMedicalForm-add', 'specialMedicalForm-edit', 'specialMedicalForm-delete'])
+               @canany(['specialMedicalForm-table', 'specialMedicalForm-add', 'specialMedicalForm-edit', 'specialMedicalForm-delete'])
                                 <li class="nav-item">
                                     <a href="{{ route('special-medical-forms.index') }}"
                                         class="nav-link {{ request()->routeIs('special-medical-forms.*') ? 'active' : '' }}">
@@ -273,11 +252,7 @@
                                         <p>{{ __('messages.special_medical_forms') }}</p>
                                     </a>
                                 </li>
-                            @endcanany
-                        </ul>
-                    </li>
                 @endcanany
-
                 <!-- E-Commerce -->
                 @canany(['brand-table', 'category-table', 'product-table', 'delivery-table', 'type-table', 'providerCategory-table', 'provider-table', 'order-table'])
                     <li class="nav-header">{{ __('messages.ecommerce') }}</li>
