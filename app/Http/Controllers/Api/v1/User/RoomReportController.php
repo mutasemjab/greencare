@@ -59,7 +59,7 @@ class RoomReportController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'discount' => 'required',
+            'discount' => 'nullable',
             'family_id' => 'nullable|exists:families,id',
             'patient_id' => 'required|exists:users,id',
             'report_templates' => 'nullable|array',
@@ -97,7 +97,7 @@ class RoomReportController extends Controller
             $room = Room::create([
                 'title' => $request->title,
                 'description' => $request->description,
-                'discount' => $request->discount,
+                'discount' => $request->discount ?? 0,
                 'family_id' => $request->family_id,
             ]);
 
