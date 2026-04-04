@@ -461,7 +461,7 @@ class RoomReportController extends Controller
         $validator = Validator::make($request->all(), [
             'room_id' => 'required|exists:rooms,id',
             'date' => 'required|date_format:Y-m-d',
-            'hour' => 'nullable|regex:/^(0?[0-9]|1[0-9]|2[0-3])$/',
+            'hour' => 'nullable|numeric|min:0|max:23',
             'report_type' => 'nullable|in:doctor,nurse,all',
         ]);
 
