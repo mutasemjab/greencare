@@ -103,13 +103,13 @@ class SpecialMedicalFormApiController extends Controller
         try {
             $user = Auth::user();
 
-            // Only doctors and nurses can create forms
-            if (!in_array($user->user_type, ['doctor', 'nurse'])) {
-                return $this->error_response(
-                    __('messages.unauthorized_action'),
-                    []
-                );
-            }
+            // // Only doctors and nurses can create forms
+            // if (!in_array($user->user_type, ['doctor', 'nurse'])) {
+            //     return $this->error_response(
+            //         __('messages.unauthorized_action'),
+            //         []
+            //     );
+            // }
 
             $validator = Validator::make($request->all(), [
                 'room_id' => 'required|exists:rooms,id',
@@ -125,18 +125,18 @@ class SpecialMedicalFormApiController extends Controller
                 );
             }
 
-            // Check if user has access to this room
-            $hasAccess = RoomUser::where('room_id', $request->room_id)
-                ->where('user_id', $user->id)
-                ->whereIn('role', ['doctor', 'nurse'])
-                ->exists();
+            // // Check if user has access to this room
+            // $hasAccess = RoomUser::where('room_id', $request->room_id)
+            //     ->where('user_id', $user->id)
+            //     ->whereIn('role', ['doctor', 'nurse'])
+            //     ->exists();
 
-            if (!$hasAccess) {
-                return $this->error_response(
-                    __('messages.no_access_to_room'),
-                    []
-                );
-            }
+            // if (!$hasAccess) {
+            //     return $this->error_response(
+            //         __('messages.no_access_to_room'),
+            //         []
+            //     );
+            // }
 
             // Upload signature
             $signaturePath = uploadImage('assets/admin/uploads', $request->signature);
@@ -209,17 +209,17 @@ class SpecialMedicalFormApiController extends Controller
                 );
             }
 
-            // Check if user has access to this room
-            $hasAccess = RoomUser::where('room_id', $form->room_id)
-                ->where('user_id', $user->id)
-                ->exists();
+            // // Check if user has access to this room
+            // $hasAccess = RoomUser::where('room_id', $form->room_id)
+            //     ->where('user_id', $user->id)
+            //     ->exists();
 
-            if (!$hasAccess) {
-                return $this->error_response(
-                    __('messages.no_access_to_room'),
-                    []
-                );
-            }
+            // if (!$hasAccess) {
+            //     return $this->error_response(
+            //         __('messages.no_access_to_room'),
+            //         []
+            //     );
+            // }
 
             $formData = [
                 'id' => $form->id,
@@ -273,13 +273,13 @@ class SpecialMedicalFormApiController extends Controller
         try {
             $user = Auth::user();
 
-            // Only doctors and nurses can reply
-            if (!in_array($user->user_type, ['doctor', 'nurse'])) {
-                return $this->error_response(
-                    __('messages.unauthorized_action'),
-                    []
-                );
-            }
+            // // Only doctors and nurses can reply
+            // if (!in_array($user->user_type, ['doctor', 'nurse'])) {
+            //     return $this->error_response(
+            //         __('messages.unauthorized_action'),
+            //         []
+            //     );
+            // }
 
             $form = SpecialMedicalForm::find($formId);
 
@@ -298,18 +298,18 @@ class SpecialMedicalFormApiController extends Controller
                 );
             }
 
-            // Check if user has access to this room
-            $hasAccess = RoomUser::where('room_id', $form->room_id)
-                ->where('user_id', $user->id)
-                ->whereIn('role', ['doctor', 'nurse'])
-                ->exists();
+            // // Check if user has access to this room
+            // $hasAccess = RoomUser::where('room_id', $form->room_id)
+            //     ->where('user_id', $user->id)
+            //     ->whereIn('role', ['doctor', 'nurse'])
+            //     ->exists();
 
-            if (!$hasAccess) {
-                return $this->error_response(
-                    __('messages.no_access_to_room'),
-                    []
-                );
-            }
+            // if (!$hasAccess) {
+            //     return $this->error_response(
+            //         __('messages.no_access_to_room'),
+            //         []
+            //     );
+            // }
 
             $validator = Validator::make($request->all(), [
                 'note' => 'required|string',
