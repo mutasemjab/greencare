@@ -473,7 +473,7 @@ class RoomReportController extends Controller
             'room_id' => 'required|exists:rooms,id',
             'date' => 'required|date_format:' . $dateFormat,
             'hour' => 'nullable|numeric|min:0|max:23',
-            'report_type' => 'nullable|in:doctor,nurse,all',
+            'report_type' => 'nullable|in:doctor,nurse,super_nurse,all',
         ]);
 
         if ($validator->fails()) {
