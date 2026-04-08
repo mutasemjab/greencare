@@ -45,6 +45,7 @@ class LabController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:labs,email',
             'phone' => 'required|string|unique:labs,phone',
+            'password' => 'required|string|min:6|confirmed',
             'license_number' => 'nullable|string|unique:labs,license_number',
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
@@ -59,6 +60,8 @@ class LabController extends Controller
                 'name', 'email', 'phone', 'license_number',
                 'address', 'description', 'activate'
             ]);
+
+            $data['password'] = bcrypt($request->password);
 
             // Handle photo upload
             if ($request->hasFile('photo')) {
@@ -106,6 +109,7 @@ class LabController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:labs,email,' . $lab->id,
             'phone' => 'required|string|unique:labs,phone,' . $lab->id,
+            'password' => 'nullable|string|min:6|confirmed',
             'license_number' => 'nullable|string|unique:labs,license_number,' . $lab->id,
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
@@ -120,6 +124,10 @@ class LabController extends Controller
                 'name', 'email', 'phone', 'license_number',
                 'address', 'description', 'activate'
             ]);
+
+            if ($request->filled('password')) {
+                $data['password'] = bcrypt($request->password);
+            }
 
             // Handle photo upload
             if ($request->hasFile('photo')) {

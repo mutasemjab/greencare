@@ -14,6 +14,7 @@ class Lab extends Authenticatable
     protected $guarded = [];
 
     protected $hidden = [
+        'password',
         'remember_token',
     ];
 
