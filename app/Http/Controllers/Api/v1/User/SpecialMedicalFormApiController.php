@@ -24,17 +24,17 @@ class SpecialMedicalFormApiController extends Controller
         try {
             $user = Auth::user();
 
-            // Check if user has access to this room
-            $hasAccess = RoomUser::where('room_id', $roomId)
-                ->where('user_id', $user->id)
-                ->exists();
+            // // Check if user has access to this room
+            // $hasAccess = RoomUser::where('room_id', $roomId)
+            //     ->where('user_id', $user->id)
+            //     ->exists();
 
-            if (!$hasAccess) {
-                return $this->error_response(
-                    __('messages.no_access_to_room'),
-                    []
-                );
-            }
+            // if (!$hasAccess) {
+            //     return $this->error_response(
+            //         __('messages.no_access_to_room'),
+            //         []
+            //     );
+            // }
 
             $forms = SpecialMedicalForm::with([
                 'creator',
