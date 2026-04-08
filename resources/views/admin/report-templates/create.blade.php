@@ -247,7 +247,6 @@
                         <option value="select">{{ __('messages.input_type_select') }}</option>
                         <option value="radio">{{ __('messages.input_type_radio') }}</option>
                         <option value="checkbox">{{ __('messages.input_type_checkbox') }}</option>
-                        <option value="boolean">{{ __('messages.input_type_boolean') }}</option>
                         <option value="gender">{{ __('messages.input_type_gender') }}</option>
                         <option value="photo">{{ __('messages.input_type_photo') }}</option>
                         <option value="pdf">{{ __('messages.input_type_pdf') }}</option>

@@ -224,7 +224,6 @@
                                                                         <option value="select" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'select' ? 'selected' : '' }}>{{ __('messages.input_type_select') }}</option>
                                                                         <option value="radio" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'radio' ? 'selected' : '' }}>{{ __('messages.input_type_radio') }}</option>
                                                                         <option value="checkbox" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'checkbox' ? 'selected' : '' }}>{{ __('messages.input_type_checkbox') }}</option>
-                                                                        <option value="boolean" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'boolean' ? 'selected' : '' }}>{{ __('messages.input_type_boolean') }}</option>
                                                                         <option value="gender" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'gender' ? 'selected' : '' }}>{{ __('messages.input_type_gender') }}</option>
                                                                         <option value="photo" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'photo' ? 'selected' : '' }}>{{ __('messages.input_type_photo') }}</option>
                                                                         <option value="pdf" {{ old('sections.' . $sectionIndex . '.fields.' . $fieldIndex . '.input_type', $field->input_type) == 'pdf' ? 'selected' : '' }}>{{ __('messages.input_type_pdf') }}</option>
@@ -410,7 +409,6 @@
                         <option value="select">{{ __('messages.input_type_select') }}</option>
                         <option value="radio">{{ __('messages.input_type_radio') }}</option>
                         <option value="checkbox">{{ __('messages.input_type_checkbox') }}</option>
-                        <option value="boolean">{{ __('messages.input_type_boolean') }}</option>
                         <option value="gender">{{ __('messages.input_type_gender') }}</option>
                         <option value="photo">{{ __('messages.input_type_photo') }}</option>
                         <option value="pdf">{{ __('messages.input_type_pdf') }}</option>
