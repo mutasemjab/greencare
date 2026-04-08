@@ -86,7 +86,7 @@ class PledgeFormController extends Controller
                 'signature_three' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'signature_four' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'type' => 'required|in:pledge_form,authorization_form',
-                'room_id' => 'nullable|exists:rooms,id',
+                'room_id' => 'nullable',
             ];
 
             // Add authorization form specific validation rules
