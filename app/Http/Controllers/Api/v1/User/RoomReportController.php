@@ -457,10 +457,21 @@ class RoomReportController extends Controller
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
 
+        $hasHour = $request->has('hour') && !is_null($request->hour);
+
+        // Date format depends on user type:
+        // - doctor: Y-m (monthly report)
+        // - nurse: Y-m-d (daily report)
+        // - super_nurse without hour → doctor report → Y-m
+        // - super_nurse with hour    → nurse report  → Y-m-d
+        $isMonthlyDate = ($userType === 'doctor') ||
+                         ($userType === 'super_nurse' && !$hasHour);
+        $dateFormat = $isMonthlyDate ? 'Y-m' : 'Y-m-d';
+
         // Validate request
         $validator = Validator::make($request->all(), [
             'room_id' => 'required|exists:rooms,id',
-            'date' => 'required|date_format:Y-m',
+            'date' => 'required|date_format:' . $dateFormat,
             'hour' => 'nullable|numeric|min:0|max:23',
             'report_type' => 'nullable|in:doctor,nurse,all',
         ]);
@@ -477,24 +488,21 @@ class RoomReportController extends Controller
             ->where('room_id', $request->room_id)
             ->whereNotNull('report_datetime');
 
-        // Parse year and month from Y-m input
-        [$year, $month] = explode('-', $request->date);
-
-        $hasHour = $request->has('hour') && !is_null($request->hour);
-
-        // For super_nurse without hour → doctor report (once/month): filter by year+month only
-        if ($userType === 'super_nurse' && !$hasHour && !$request->filled('report_type')) {
+        // Apply date filter based on format
+        if ($isMonthlyDate) {
+            [$year, $month] = explode('-', $request->date);
             $query->whereYear('report_datetime', $year)
                   ->whereMonth('report_datetime', $month);
+        } else {
+            $query->whereDate('report_datetime', $request->date);
+        }
 
+        // For super_nurse without hour → doctor report (once/month)
+        if ($userType === 'super_nurse' && !$hasHour && !$request->filled('report_type')) {
             $query->whereHas('creator', function ($q) {
                 $q->where('user_type', 'doctor');
             });
         } else {
-            // For all other cases: filter by year+month
-            $query->whereYear('report_datetime', $year)
-                  ->whereMonth('report_datetime', $month);
-
             // Optionally filter by hour
             if ($hasHour) {
                 $query->whereRaw('HOUR(report_datetime) = ?', [(int) $request->hour]);
