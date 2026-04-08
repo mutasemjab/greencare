@@ -308,7 +308,7 @@ class RoomReportController extends Controller
         // Add date/hour validation based on user type
         if ($userType === 'doctor') {
             $rules['date'] = 'required|date_format:Y-m-d';
-        } else if ($userType === 'nurse') {
+        } else if ($userType === 'nurse' || $userType === 'super_nurse') {
             $rules['date'] = 'required|date_format:Y-m-d';
             $rules['hour'] = 'required|date_format:H:i';
         }
@@ -349,7 +349,7 @@ class RoomReportController extends Controller
                 if ($existingReport) {
                     return $this->error_response('A report for this date already exists for doctor', null);
                 }
-            } else if ($userType === 'nurse') {
+            } else if ($userType === 'nurse' || $userType === 'super_nurse') {
                 $reportDatetime = $request->date . ' ' . $request->hour . ':00';
                 $reportHour = (int) explode(':', $request->hour)[0];
 
