@@ -40,7 +40,7 @@ class SpecialMedicalFormApiController extends Controller
                 'creator',
                 'replies' => function ($query) {
                     $query->whereHas('user', function ($q) {
-                        $q->where('user_type', 'nurse'); // Filter only nurse replies
+                        $q->whereIn('user_type', ['nurse', 'super_nurse']);
                     });
                 },
                 'replies.user'
