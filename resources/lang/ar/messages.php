@@ -2138,5 +2138,19 @@ return [
 
   "" => "",
 
+  // PDF Documents
+  'pdf_documents'             => 'مستندات PDF',
+  'contract_pdf'              => 'ملف العقد',
+  'pledge_form_pdf'           => 'ملف نموذج التعهد',
+  'authorization_form_pdf'    => 'ملف نموذج التفويض',
+  'view_pdf'                  => 'عرض الملف',
+  'no_pdf_uploaded'           => 'لم يتم رفع ملف بعد',
+  'choose_pdf'                => 'اختر ملف PDF...',
+  'upload'                    => 'رفع',
+  'confirm_delete_pdf'        => 'هل أنت متأكد من حذف هذا الملف؟',
+  'pdf_uploaded_successfully' => 'تم رفع الملف بنجاح',
+  'pdf_deleted_successfully'  => 'تم حذف الملف بنجاح',
+  'error_uploading_pdf'       => 'حدث خطأ أثناء رفع الملف',
+  'error_deleting_pdf'        => 'حدث خطأ أثناء حذف الملف',
 
 ];

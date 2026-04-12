@@ -2186,4 +2186,19 @@ return [
 
   "" => "",
 
+  // PDF Documents
+  'pdf_documents'             => 'PDF Documents',
+  'contract_pdf'              => 'Contract PDF',
+  'pledge_form_pdf'           => 'Pledge Form PDF',
+  'authorization_form_pdf'    => 'Authorization Form PDF',
+  'view_pdf'                  => 'View PDF',
+  'no_pdf_uploaded'           => 'No file uploaded yet',
+  'choose_pdf'                => 'Choose PDF...',
+  'upload'                    => 'Upload',
+  'confirm_delete_pdf'        => 'Are you sure you want to delete this PDF?',
+  'pdf_uploaded_successfully' => 'PDF uploaded successfully',
+  'pdf_deleted_successfully'  => 'PDF deleted successfully',
+  'error_uploading_pdf'       => 'Error uploading PDF',
+  'error_deleting_pdf'        => 'Error deleting PDF',
+
 ];

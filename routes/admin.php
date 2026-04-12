@@ -151,6 +151,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('rooms/{room}/remove-user', [RoomController::class, 'removeUser'])->name('rooms.remove-user');
         Route::get('api/rooms', [RoomController::class, 'getRooms'])->name('api.rooms');
         Route::get('rooms/{room}/stats', [RoomController::class, 'getStats'])->name('rooms.stats');
+        Route::post('rooms/{room}/upload-pdf', [RoomController::class, 'uploadPdf'])->name('rooms.upload-pdf');
+        Route::post('rooms/{room}/delete-pdf', [RoomController::class, 'deletePdf'])->name('rooms.delete-pdf');
 
         // Medication management routes
         Route::resource('medications', MedicationController::class);

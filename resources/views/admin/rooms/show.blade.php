@@ -652,6 +652,78 @@
         </div>
     </div>
 
+    <!-- PDF Documents Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-pdf"></i> {{ __('messages.pdf_documents') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach([
+                            'contract_pdf'           => __('messages.contract_pdf'),
+                            'pledge_form_pdf'        => __('messages.pledge_form_pdf'),
+                            'authorization_form_pdf' => __('messages.authorization_form_pdf'),
+                        ] as $column => $label)
+                        <div class="col-md-4 mb-3">
+                            <div class="card border">
+                                <div class="card-body text-center">
+                                    <h6 class="font-weight-bold mb-3">{{ $label }}</h6>
+
+                                    @if($room->$column)
+                                        <a href="{{ asset('assets/admin/uploads/pdfs/' . $room->$column) }}"
+                                           target="_blank"
+                                           class="btn btn-sm btn-outline-danger mb-2 d-block">
+                                            <i class="fas fa-file-pdf"></i> {{ __('messages.view_pdf') }}
+                                        </a>
+                                        <form action="{{ route('rooms.delete-pdf', $room) }}"
+                                              method="POST"
+                                              onsubmit="return confirm('{{ __('messages.confirm_delete_pdf') }}')">
+                                            @csrf
+                                            <input type="hidden" name="pdf_type" value="{{ $column }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary btn-block">
+                                                <i class="fas fa-trash"></i> {{ __('messages.delete') }}
+                                            </button>
+                                        </form>
+                                    @else
+                                        <p class="text-muted small">{{ __('messages.no_pdf_uploaded') }}</p>
+                                    @endif
+
+                                    <form action="{{ route('rooms.upload-pdf', $room) }}"
+                                          method="POST"
+                                          enctype="multipart/form-data"
+                                          class="mt-2">
+                                        @csrf
+                                        <input type="hidden" name="pdf_type" value="{{ $column }}">
+                                        <div class="input-group input-group-sm">
+                                            <div class="custom-file">
+                                                <input type="file"
+                                                       class="custom-file-input"
+                                                       name="pdf_file"
+                                                       accept=".pdf"
+                                                       id="pdf_{{ $column }}">
+                                                <label class="custom-file-label" for="pdf_{{ $column }}">
+                                                    {{ __('messages.choose_pdf') }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary btn-block mt-2">
+                                            <i class="fas fa-upload"></i> {{ __('messages.upload') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Medications Section -->
     <div class="row mb-4">
         <div class="col-12">

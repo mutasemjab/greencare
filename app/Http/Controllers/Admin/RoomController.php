@@ -610,4 +610,74 @@ class RoomController extends Controller
 
         return view('admin.rooms.template-history', compact('room', 'history'));
     }
+
+    /**
+     * Upload a PDF file (contract, pledge form, or authorization form) for a room.
+     * Expects: pdf_type (contract_pdf|pledge_form_pdf|authorization_form_pdf), pdf_file
+     */
+    public function uploadPdf(Request $request, Room $room)
+    {
+        $validator = Validator::make($request->all(), [
+            'pdf_type' => 'required|in:contract_pdf,pledge_form_pdf,authorization_form_pdf',
+            'pdf_file' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        try {
+            $file     = $request->file('pdf_file');
+            $filename = time() . '_' . uniqid() . '.pdf';
+            $file->move(base_path('assets/admin/uploads/pdfs'), $filename);
+
+            $column = $request->pdf_type;
+
+            // Delete old file if it exists
+            $oldFile = $room->$column;
+            if ($oldFile && file_exists(base_path('assets/admin/uploads/pdfs/' . $oldFile))) {
+                unlink(base_path('assets/admin/uploads/pdfs/' . $oldFile));
+            }
+
+            $room->update([$column => $filename]);
+
+            return redirect()->back()
+                ->with('success', __('messages.pdf_uploaded_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('messages.error_uploading_pdf'));
+        }
+    }
+
+    /**
+     * Delete a PDF file from a room.
+     * Expects: pdf_type (contract_pdf|pledge_form_pdf|authorization_form_pdf)
+     */
+    public function deletePdf(Request $request, Room $room)
+    {
+        $validator = Validator::make($request->all(), [
+            'pdf_type' => 'required|in:contract_pdf,pledge_form_pdf,authorization_form_pdf',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        try {
+            $column = $request->pdf_type;
+            $oldFile = $room->$column;
+
+            if ($oldFile && file_exists(base_path('assets/admin/uploads/pdfs/' . $oldFile))) {
+                unlink(base_path('assets/admin/uploads/pdfs/' . $oldFile));
+            }
+
+            $room->update([$column => null]);
+
+            return redirect()->back()
+                ->with('success', __('messages.pdf_deleted_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('messages.error_deleting_pdf'));
+        }
+    }
 }

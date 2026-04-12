@@ -164,7 +164,8 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         Route::prefix('pledgeForms')->group(function () {
             Route::get('/', [PledgeFormController::class, 'index']);
-            Route::post('/', [PledgeFormController::class, 'store']);
+            Route::post('/pledge', [PledgeFormController::class, 'storePledgeForm']);
+            Route::post('/authorization', [PledgeFormController::class, 'storeAuthorizationForm']);
         });
 
         // for reminder
