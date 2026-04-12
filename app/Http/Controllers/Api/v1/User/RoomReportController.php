@@ -728,7 +728,7 @@ class RoomReportController extends Controller
 
 
     /**
-     * Get all rooms for the authenticated nurse with completion status
+     * Get all rooms for the authenticated nurse
      */
     public function getNurseRooms(Request $request)
     {
@@ -748,29 +748,16 @@ class RoomReportController extends Controller
                 ->get();
         }
 
-        // Pre-fetch room IDs where THIS user has submitted a pledge form (avoids N+1)
-        $completedRoomIds = \App\Models\PledgeForm::where('user_id', $currentUser->id)
-            ->pluck('room_id')
-            ->map(fn($id) => (int) $id)
-            ->toArray();
-
-        // Add is_complete flag and user_ids to each room
-        $roomsWithStatus = $rooms->map(function ($room) use ($completedRoomIds) {
-            $hasPledgeForm = in_array((int) $room->id, $completedRoomIds);
-
-            // Get user IDs in this room
-            $userIds = $room->users->pluck('id')->toArray();
-
+        $roomsWithStatus = $rooms->map(function ($room) {
             return [
-                'id' => $room->id,
-                'title' => $room->title,
+                'id'          => $room->id,
+                'title'       => $room->title,
                 'description' => $room->description,
-                'discount' => $room->discount,
-                'family_id' => $room->family_id,
-                'created_at' => $room->created_at,
-                'updated_at' => $room->updated_at,
-                'is_complete' => $hasPledgeForm,
-                'user_ids' => $userIds,
+                'discount'    => $room->discount,
+                'family_id'   => $room->family_id,
+                'created_at'  => $room->created_at,
+                'updated_at'  => $room->updated_at,
+                'user_ids'    => $room->users->pluck('id')->toArray(),
             ];
         });
 
