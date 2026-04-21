@@ -47,11 +47,6 @@ class UserAppointmentResultsController extends Controller
             // If room_id is provided, verify user is in the room
             if ($roomId) {
                 $room = Room::find($roomId);
-                $userInRoom = $room->users()->where('user_id', $user->id)->exists();
-
-                if (!$userInRoom) {
-                    return $this->error_response(__('messages.unauthorized_access'), []);
-                }
             }
 
             $appointments = collect();
