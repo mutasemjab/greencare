@@ -43,7 +43,7 @@ class AppointmentResult extends Model
 
         return array_map(function ($file) {
             // Changed from url('storage/' . $file) to match your upload path
-            return asset('assets/admin/uploads/' . $file);
+            return asset('assets/admin/uploads/results/' . $file);
         }, $this->files);
     }
 }

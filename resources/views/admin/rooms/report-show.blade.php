@@ -82,6 +82,9 @@
                                 @php
                                     $answer = $answersBySection->get($field->id);
                                     $value = $answer ? $answer->formatted_value : null;
+                                    if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
+                                        $value = trim($value ?? '', '"');
+                                    }
                                 @endphp
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small mb-1">
