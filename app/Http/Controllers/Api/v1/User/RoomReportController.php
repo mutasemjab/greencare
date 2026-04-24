@@ -277,6 +277,7 @@ class RoomReportController extends Controller
         $templates = ReportTemplate::where('report_type', 'recurring')
             ->where('created_for', $createdFor)
             ->with(['sections.fields.options'])
+            ->latest()
             ->first();
 
         return $this->success_response('Templates retrieved successfully', [
