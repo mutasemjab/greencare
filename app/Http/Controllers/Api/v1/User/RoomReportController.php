@@ -62,6 +62,8 @@ class RoomReportController extends Controller
             'discount' => 'nullable',
             'family_id' => 'nullable|exists:families,id',
             'patient_id' => 'required|exists:users,id',
+            'lat' => 'nullable|numeric|between:-90,90',
+            'lng' => 'nullable|numeric|between:-180,180',
             'report_templates' => 'nullable|array',
             'report_templates.*' => 'exists:report_templates,id',
             // Initial report validation rules
@@ -99,6 +101,8 @@ class RoomReportController extends Controller
                 'description' => $request->description,
                 'discount' => $request->discount ?? 0,
                 'family_id' => $request->family_id,
+                'lat' => $request->lat,
+                'lng' => $request->lng,
             ]);
 
             // Add patient to room

@@ -565,7 +565,8 @@
                     data: function(params) {
                         return {
                             search: params.term,
-                            page: params.page || 1
+                            page: params.page || 1,
+                            exclude_type: 'initial_setup'
                         };
                     },
                     processResults: function(data, params) {

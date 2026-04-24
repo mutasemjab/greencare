@@ -235,14 +235,21 @@ class RoomController extends Controller
 
         $reportTemplates = ReportTemplate::orderBy('title_en')->get();
 
-        // Pledge & authorization forms for this room, grouped by nurse
         $pledgeForms = PledgeForm::with('nurse')
             ->where('room_id', $room->id)
+            ->where('type', 'pledge_form')
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('user_id');
 
-        return view('admin.rooms.show', compact('room', 'reportTemplates', 'pledgeForms'));
+        $authorizationForms = PledgeForm::with('nurse')
+            ->where('room_id', $room->id)
+            ->where('type', 'authorization_form')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('user_id');
+
+        return view('admin.rooms.show', compact('room', 'reportTemplates', 'pledgeForms', 'authorizationForms'));
     }
 
     /**

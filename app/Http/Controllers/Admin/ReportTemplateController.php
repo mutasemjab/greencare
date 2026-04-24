@@ -28,7 +28,11 @@ class ReportTemplateController extends Controller
         $perPage = 10;
 
         $query = ReportTemplate::query();
-        // Search by template title_en or description
+
+        if ($request->filled('exclude_type')) {
+            $query->where('report_type', '!=', $request->exclude_type);
+        }
+
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('title_en', 'LIKE', "%{$search}%")
