@@ -92,7 +92,19 @@
                                     </label>
                                     <div class="answer-value">
                                         @if($value && $value !== '-')
-                                            {{ $value }}
+                                            @if(in_array($field->input_type, ['photo', 'signuture']))
+                                                <a href="{{ asset('assets/admin/uploads/' . $value) }}" target="_blank">
+                                                    <img src="{{ asset('assets/admin/uploads/' . $value) }}"
+                                                         style="max-height:120px; max-width:100%; border-radius:4px; object-fit:contain;"
+                                                         alt="{{ $field->input_type }}">
+                                                </a>
+                                            @elseif($field->input_type === 'pdf')
+                                                <a href="{{ asset('assets/admin/uploads/' . $value) }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-file-pdf mr-1"></i>{{ __('messages.view_pdf') }}
+                                                </a>
+                                            @else
+                                                {{ $value }}
+                                            @endif
                                         @else
                                             <span class="answer-empty">{{ __('messages.no_answer') }}</span>
                                         @endif
