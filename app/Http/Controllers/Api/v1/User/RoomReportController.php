@@ -261,28 +261,27 @@ class RoomReportController extends Controller
      */
     public function getAvailableTemplates(Request $request, $room_id)
     {
-
-        // Verify user has access to the room
         $room = Room::find($room_id);
-        $userInRoom = $room->users()->where('user_id', Auth::id())->first();
-
-        // Get user type from users table directly
         $currentUser = Auth::user();
         $userType = $currentUser->user_type;
-
-        // Map user_type to created_for field in templates
         $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
 
-        // Get recurring templates for this user type
-        $templates = ReportTemplate::where('report_type', 'recurring')
-            ->where('created_for', $createdFor)
-            ->with(['sections.fields.options'])
-            ->latest()
+        // Get the active template assigned to this specific room for this user type
+        $history = RoomReportTemplateHistory::where('room_id', $room_id)
+            ->where('is_active', true)
+            ->whereHas('template', function ($q) use ($createdFor) {
+                $q->where('report_type', 'recurring')
+                  ->where('created_for', $createdFor);
+            })
+            ->with(['template.sections.fields.options'])
+            ->latest('assigned_at')
             ->first();
+
+        $template = $history ? $history->template : null;
 
         return $this->success_response('Templates retrieved successfully', [
             'user_type' => $userType,
-            'template' => $templates
+            'template' => $template
         ]);
     }
 
