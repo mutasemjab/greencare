@@ -34,7 +34,7 @@ class RoomReportController extends Controller
     public function getReportTemplates(Request $request)
     {
         try {
-            $query = ReportTemplate::query();
+            $query = ReportTemplate::where('report_type','initial_setup')->query();
 
             // Optional: Filter by user type if needed
             if ($request->has('created_for')) {
