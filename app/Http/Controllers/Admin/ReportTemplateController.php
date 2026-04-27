@@ -33,6 +33,14 @@ class ReportTemplateController extends Controller
             $query->where('report_type', '!=', $request->exclude_type);
         }
 
+        if ($request->filled('report_type')) {
+            $query->where('report_type', $request->report_type);
+        }
+
+        if ($request->filled('created_for')) {
+            $query->where('created_for', $request->created_for);
+        }
+
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('title_en', 'LIKE', "%{$search}%")

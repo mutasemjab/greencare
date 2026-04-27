@@ -2202,9 +2202,15 @@ return [
   'error_deleting_pdf'        => 'Error deleting PDF',
 
   // Room Reports
-  'initial_setup_reports' => 'Initial Setup Reports',
-  'doctor_reports'        => 'Doctor Reports',
-  'nurse_reports'         => 'Nurse Reports',
-  'report_date'           => 'Report Date',
+  'initial_setup_reports'      => 'Initial Setup Reports',
+  'doctor_reports'             => 'Doctor Reports',
+  'nurse_reports'              => 'Nurse Reports',
+  'report_date'                => 'Report Date',
+  'doctor_report_template'     => 'Doctor Report Template',
+  'nurse_report_template'      => 'Nurse Report Template',
+  'current_template'           => 'Current Template',
+  'change_doctor_template'     => 'Change Doctor Template',
+  'change_nurse_template'      => 'Change Nurse Template',
+  'leave_empty_to_keep_current' => 'Leave empty to keep current template',
 
 ];

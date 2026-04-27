@@ -257,59 +257,82 @@
                                 </div>
                             </div>
 
-                            <!-- Report Templates -->
+                            <!-- Doctor Report Template -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <div class="card border-danger">
-                                        <div class="card-header bg-danger text-white">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
                                             <h6 class="mb-0">
-                                                <i class="fas fa-file-medical-alt mr-2"></i>
-                                                {{ __('messages.report_templates') }}
+                                                <i class="fas fa-user-md mr-2"></i>
+                                                {{ __('messages.doctor_report_template') }}
                                             </h6>
                                         </div>
                                         <div class="card-body">
-                                            <!-- Current Active Templates -->
-                                            @if ($room->templateHistory()->where('is_active', true)->exists())
+                                            @if ($activeDoctorTemplate)
                                                 <div class="alert alert-info mb-3">
-                                                    <h6 class="alert-heading">{{ __('messages.current_templates') }}:</h6>
-                                                    <ul class="mb-0">
-                                                        @foreach ($room->templateHistory()->where('is_active', true)->with('template')->get() as $history)
-                                                            <li>
-                                                                <strong>{{ $history->template->title }}</strong>
-                                                                <small class="text-muted">
-                                                                    ({{ __('messages.assigned_at') }}:
-                                                                    {{ $history->assigned_at->format('Y-m-d H:i') }})
-                                                                </small>
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                    <a href="{{ route('rooms.template-history', $room) }}"
-                                                        class="btn btn-sm btn-outline-primary mt-2">
-                                                        <i class="fas fa-history"></i>
-                                                        {{ __('messages.view_full_history') }}
-                                                    </a>
+                                                    <strong>{{ __('messages.current_template') }}:</strong>
+                                                    {{ $activeDoctorTemplate->template->title }}
+                                                    <small class="text-muted d-block">
+                                                        {{ __('messages.assigned_at') }}: {{ $activeDoctorTemplate->assigned_at->format('Y-m-d H:i') }}
+                                                    </small>
                                                 </div>
                                             @endif
 
-                                            <!-- Add/Change Template -->
                                             <div class="form-group">
-                                                <label
-                                                    for="report_templates_select">{{ __('messages.add_or_change_templates') }}</label>
-                                                <select name="report_templates[]" id="report_templates_select"
-                                                    class="form-control report-templates-select" multiple
+                                                <label for="doctor_report_template_select">{{ __('messages.change_doctor_template') }}</label>
+                                                <select name="doctor_report_template" id="doctor_report_template_select"
+                                                    class="form-control doctor-template-select"
                                                     style="width: 100%;">
+                                                    <option value=""></option>
                                                 </select>
-                                                <small
-                                                    class="form-text text-muted">{{ __('messages.search_report_templates_help') }}</small>
+                                                <small class="form-text text-muted">{{ __('messages.leave_empty_to_keep_current') }}</small>
                                             </div>
 
-                                            <!-- Notes for template change -->
                                             <div class="form-group">
-                                                <label for="template_notes">{{ __('messages.change_notes') }}</label>
-                                                <textarea name="template_notes" id="template_notes" class="form-control" rows="2"
+                                                <label for="doctor_template_notes">{{ __('messages.change_notes') }}</label>
+                                                <textarea name="doctor_template_notes" id="doctor_template_notes" class="form-control" rows="2"
                                                     placeholder="{{ __('messages.enter_reason_for_template_change') }}"></textarea>
-                                                <small
-                                                    class="form-text text-muted">{{ __('messages.optional_notes_help') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nurse Report Template -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-user-nurse mr-2"></i>
+                                                {{ __('messages.nurse_report_template') }}
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            @if ($activeNurseTemplate)
+                                                <div class="alert alert-info mb-3">
+                                                    <strong>{{ __('messages.current_template') }}:</strong>
+                                                    {{ $activeNurseTemplate->template->title }}
+                                                    <small class="text-muted d-block">
+                                                        {{ __('messages.assigned_at') }}: {{ $activeNurseTemplate->assigned_at->format('Y-m-d H:i') }}
+                                                    </small>
+                                                </div>
+                                            @endif
+
+                                            <div class="form-group">
+                                                <label for="nurse_report_template_select">{{ __('messages.change_nurse_template') }}</label>
+                                                <select name="nurse_report_template" id="nurse_report_template_select"
+                                                    class="form-control nurse-template-select"
+                                                    style="width: 100%;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <small class="form-text text-muted">{{ __('messages.leave_empty_to_keep_current') }}</small>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="nurse_template_notes">{{ __('messages.change_notes') }}</label>
+                                                <textarea name="nurse_template_notes" id="nurse_template_notes" class="form-control" rows="2"
+                                                    placeholder="{{ __('messages.enter_reason_for_template_change') }}"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -553,8 +576,24 @@
                 }
             });
 
-            // Initialize Select2 for report templates
-            $('.report-templates-select').select2({
+            var locale = '{{ App::getLocale() }}';
+
+            function formatReportTemplate(template) {
+                if (template.loading) return '{{ __('messages.searching') }}...';
+                if (!template.template) return template.text;
+                var t = template.template;
+                var title = (locale === 'ar' && t.title_ar) ? t.title_ar : t.title_en;
+                return '<div class="py-1"><div class="font-weight-bold">' + title + '</div></div>';
+            }
+
+            function formatReportTemplateSelection(template) {
+                if (!template.template) return template.text || template.id;
+                var t = template.template;
+                return (locale === 'ar' && t.title_ar) ? t.title_ar : t.title_en;
+            }
+
+            // Initialize Select2 for doctor report template
+            $('.doctor-template-select').select2({
                 placeholder: '{{ __('messages.search_and_select_report_templates') }}',
                 allowClear: true,
                 width: '100%',
@@ -566,69 +605,56 @@
                         return {
                             search: params.term,
                             page: params.page || 1,
-                            exclude_type: 'initial_setup'
+                            report_type: 'recurring',
+                            created_for: 'doctor'
                         };
                     },
-                    processResults: function(data, params) {
+                    processResults: function(data) {
                         return {
-                            results: data.data.map(function(template) {
-                                return {
-                                    id: template.id,
-                                    text: template.title_en,
-                                    template: template
-                                };
+                            results: data.data.map(function(t) {
+                                return { id: t.id, text: t.title_en, template: t };
                             }),
-                            pagination: {
-                                more: data.current_page < data.last_page
-                            }
+                            pagination: { more: data.current_page < data.last_page }
                         };
                     }
                 },
-                minimumInputLength: 2,
+                minimumInputLength: 1,
                 templateResult: formatReportTemplate,
                 templateSelection: formatReportTemplateSelection,
-                escapeMarkup: function(markup) {
-                    return markup;
-                }
+                escapeMarkup: function(m) { return m; }
             });
 
-            // Format report template display in dropdown
-            function formatReportTemplate(template) {
-                if (template.loading) {
-                    return '{{ __('messages.searching') }}...';
-                }
-
-                if (!template.template) {
-                    return template.text;
-                }
-
-                var templateData = template.template;
-                var displayTitle = templateData.title_{{ App::getLocale() }} || templateData.title_en;
-
-                return '<div class="py-2">' +
-                    '<div class="d-flex align-items-center">' +
-                    '<div class="mr-2">' +
-                    '<div class="rounded-circle d-flex align-items-center justify-content-center bg-danger text-white" style="width: 35px; height: 35px; font-size: 0.9rem;">' +
-                    '<i class="fas fa-file-medical-alt"></i>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="flex-grow-1">' +
-                    '<div class="font-weight-bold">' + displayTitle + '</div>' +
-                    '<small class="text-muted">' + templateData.report_type + '</small>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>';
-            }
-
-            // Format selected report template
-            function formatReportTemplateSelection(template) {
-                if (!template.template) {
-                    return template.text || template.id;
-                }
-
-                var displayTitle = template.template.title_{{ App::getLocale() }} || template.template.title_en;
-                return displayTitle;
-            }
+            // Initialize Select2 for nurse report template
+            $('.nurse-template-select').select2({
+                placeholder: '{{ __('messages.search_and_select_report_templates') }}',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '{{ route('api.report-templates.search') }}',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function(params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1,
+                            report_type: 'recurring',
+                            created_for: 'nurse'
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.data.map(function(t) {
+                                return { id: t.id, text: t.title_en, template: t };
+                            }),
+                            pagination: { more: data.current_page < data.last_page }
+                        };
+                    }
+                },
+                minimumInputLength: 1,
+                templateResult: formatReportTemplate,
+                templateSelection: formatReportTemplateSelection,
+                escapeMarkup: function(m) { return m; }
+            });
 
             // Initialize Select2 for family members (if present)
             if ($('.family-members-individual-select').length) {

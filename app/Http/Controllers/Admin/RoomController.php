@@ -277,7 +277,21 @@ class RoomController extends Controller
         $room->load(['patients', 'doctors', 'nurses', 'familyMembers']);
         $families = Family::orderBy('name')->get();
 
-        return view('admin.rooms.edit', compact('room', 'families'));
+        $activeDoctorTemplate = $room->templateHistory()
+            ->where('is_active', true)
+            ->whereHas('template', fn($q) => $q->where('created_for', 'doctor'))
+            ->with('template')
+            ->latest('assigned_at')
+            ->first();
+
+        $activeNurseTemplate = $room->templateHistory()
+            ->where('is_active', true)
+            ->whereHas('template', fn($q) => $q->where('created_for', 'nurse'))
+            ->with('template')
+            ->latest('assigned_at')
+            ->first();
+
+        return view('admin.rooms.edit', compact('room', 'families', 'activeDoctorTemplate', 'activeNurseTemplate'));
     }
 
     /**
@@ -300,9 +314,10 @@ class RoomController extends Controller
             'super_nurses.*' => 'exists:users,id',
             'family_members' => 'nullable|array',
             'family_members.*' => 'exists:users,id',
-            'report_templates' => 'nullable|array',
-            'report_templates.*' => 'exists:report_templates,id',
-            'template_notes' => 'nullable|string|max:500',
+            'doctor_report_template' => 'nullable|exists:report_templates,id',
+            'nurse_report_template' => 'nullable|exists:report_templates,id',
+            'doctor_template_notes' => 'nullable|string|max:500',
+            'nurse_template_notes' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
@@ -377,36 +392,38 @@ class RoomController extends Controller
                 }
             }
 
-            // ✅ Handle template changes
-            if ($request->has('report_templates') && !empty($request->report_templates)) {
-                // Deactivate current active templates
+            // Handle doctor template change
+            if ($request->filled('doctor_report_template')) {
                 RoomReportTemplateHistory::where('room_id', $room->id)
                     ->where('is_active', true)
-                    ->update([
-                        'is_active' => false,
-                        'replaced_at' => now(),
-                    ]);
+                    ->whereHas('template', fn($q) => $q->where('created_for', 'doctor'))
+                    ->update(['is_active' => false, 'replaced_at' => now()]);
 
-                // Add new templates
-                foreach ($request->report_templates as $templateId) {
-                    // Create history entry
-                    RoomReportTemplateHistory::create([
-                        'room_id' => $room->id,
-                        'report_template_id' => $templateId,
-                        'assigned_at' => now(),
-                        'assigned_by' => auth()->id(),
-                        'is_active' => true,
-                        'notes' => $request->template_notes,
-                    ]);
+                RoomReportTemplateHistory::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $request->doctor_report_template,
+                    'assigned_at' => now(),
+                    'assigned_by' => auth()->id(),
+                    'is_active' => true,
+                    'notes' => $request->doctor_template_notes,
+                ]);
+            }
 
-                    // Create new empty report for this template
-                    Report::create([
-                        'room_id' => $room->id,
-                        'report_template_id' => $templateId,
-                        'created_by' => auth()->id(),
-                        'report_datetime' => now(),
-                    ]);
-                }
+            // Handle nurse template change
+            if ($request->filled('nurse_report_template')) {
+                RoomReportTemplateHistory::where('room_id', $room->id)
+                    ->where('is_active', true)
+                    ->whereHas('template', fn($q) => $q->where('created_for', 'nurse'))
+                    ->update(['is_active' => false, 'replaced_at' => now()]);
+
+                RoomReportTemplateHistory::create([
+                    'room_id' => $room->id,
+                    'report_template_id' => $request->nurse_report_template,
+                    'assigned_at' => now(),
+                    'assigned_by' => auth()->id(),
+                    'is_active' => true,
+                    'notes' => $request->nurse_template_notes,
+                ]);
             }
 
             // Sync updated room to Firestore

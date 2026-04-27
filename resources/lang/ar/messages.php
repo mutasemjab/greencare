@@ -2154,9 +2154,15 @@ return [
   'error_deleting_pdf'        => 'حدث خطأ أثناء حذف الملف',
 
   // Room Reports
-  'initial_setup_reports' => 'تقارير الإعداد الأولي',
-  'doctor_reports'        => 'تقارير الأطباء',
-  'nurse_reports'         => 'تقارير التمريض',
-  'report_date'           => 'تاريخ التقرير',
+  'initial_setup_reports'      => 'تقارير الإعداد الأولي',
+  'doctor_reports'             => 'تقارير الأطباء',
+  'nurse_reports'              => 'تقارير التمريض',
+  'report_date'                => 'تاريخ التقرير',
+  'doctor_report_template'     => 'قالب تقرير الطبيب',
+  'nurse_report_template'      => 'قالب تقرير الممرض',
+  'current_template'           => 'القالب الحالي',
+  'change_doctor_template'     => 'تغيير قالب الطبيب',
+  'change_nurse_template'      => 'تغيير قالب الممرض',
+  'leave_empty_to_keep_current' => 'اتركه فارغاً للإبقاء على القالب الحالي',
 
 ];
