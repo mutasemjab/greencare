@@ -496,7 +496,7 @@ class RoomReportController extends Controller
                 if ($reportType === 'doctor') {
                     $q->where('user_type', 'doctor');
                 } elseif ($reportType === 'nurse') {
-                    $q->where('user_type', 'nurse');
+                    $q->whereIn('user_type', ['nurse', 'super_nurse']);
                 } elseif ($reportType === 'super_nurse') {
                     if (!$hasHour) {
                         // super_nurse without hour → fetch doctor reports (monthly)
