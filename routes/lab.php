@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Lab\Auth\LoginController;
 use App\Http\Controllers\Lab\DashboardController;
 use App\Http\Controllers\Lab\AppointmentController;
+use App\Http\Controllers\Lab\TypeMedicalTestController;
 
 Route::prefix('lab')->name('lab.')->group(function () {
     
@@ -18,6 +19,11 @@ Route::prefix('lab')->name('lab.')->group(function () {
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
+        // Medical Test Types (CRUD)
+        Route::resource('type-medical-tests', TypeMedicalTestController::class)
+            ->except(['show'])
+            ->names('type-medical-tests');
+
         // Appointments Routes
         Route::prefix('appointments')->name('appointments.')->group(function () {
             Route::get('/', [AppointmentController::class, 'index'])->name('index');
