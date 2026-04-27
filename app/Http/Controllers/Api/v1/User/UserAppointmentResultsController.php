@@ -27,9 +27,10 @@ class UserAppointmentResultsController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'room_id' => 'nullable|exists:rooms,id',
+                'user_id' => 'nullable|exists:users,id',
                 'type' => 'nullable|in:medical_test,home_xray,all',
                 'status' => 'nullable|in:pending,confirmed,processing,finished,cancelled',
-                'with_room' => 'nullable|boolean', // Include room details (only used when room_id is not provided)
+                'with_room' => 'nullable|boolean',
             ]);
 
             if ($validator->fails()) {
@@ -40,6 +41,7 @@ class UserAppointmentResultsController extends Controller
             }
 
             $roomId = $request->get('room_id');
+            $targetUserId = $request->get('user_id', $user->id);
             $type = $request->get('type', 'all');
             $status = $request->get('status');
             $withRoom = $request->get('with_room', true);
@@ -58,7 +60,7 @@ class UserAppointmentResultsController extends Controller
                 if ($roomId) {
                     $medicalTestsQuery->where('room_id', $roomId);
                 } else {
-                    $medicalTestsQuery->where('user_id', $user->id);
+                    $medicalTestsQuery->where('user_id', $targetUserId);
                     if ($withRoom) {
                         $medicalTestsQuery->with('room:id,title,code');
                     }
@@ -85,7 +87,7 @@ class UserAppointmentResultsController extends Controller
                 if ($roomId) {
                     $homeXraysQuery->where('room_id', $roomId);
                 } else {
-                    $homeXraysQuery->where('user_id', $user->id);
+                    $homeXraysQuery->where('user_id', $targetUserId);
                     if ($withRoom) {
                         $homeXraysQuery->with('room:id,title,code');
                     }
