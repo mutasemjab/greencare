@@ -512,10 +512,10 @@ class RoomReportController extends Controller
                 $query->whereRaw('HOUR(report_datetime) = ?', [(int) $request->hour]);
             }
 
-            // For super_nurse with hour → nurse reports
+            // For super_nurse with hour → nurse + super_nurse reports
             if ($userType === 'super_nurse' && $hasHour && !$request->filled('report_type')) {
                 $query->whereHas('creator', function ($q) {
-                    $q->where('user_type', 'nurse');
+                    $q->whereIn('user_type', ['nurse', 'super_nurse']);
                 });
             }
             // Optionally filter by report creator type
