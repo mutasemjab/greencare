@@ -53,15 +53,15 @@ class UserAppointmentResultsController extends Controller
 
             // Get Medical Tests
             if ($type === 'all' || $type === 'medical_test') {
-                $medicalTestsQuery = MedicalTest::with(['typeMedicalTest', 'lab', 'result'])
-                    ->where('user_id', $user->id);
+                $medicalTestsQuery = MedicalTest::with(['typeMedicalTest', 'lab', 'result']);
 
-                // Filter by room if room_id provided
                 if ($roomId) {
                     $medicalTestsQuery->where('room_id', $roomId);
-                } elseif ($withRoom) {
-                    // Include room details if requested and no specific room
-                    $medicalTestsQuery->with('room:id,title,code');
+                } else {
+                    $medicalTestsQuery->where('user_id', $user->id);
+                    if ($withRoom) {
+                        $medicalTestsQuery->with('room:id,title,code');
+                    }
                 }
 
                 $medicalTests = $medicalTestsQuery
@@ -80,15 +80,15 @@ class UserAppointmentResultsController extends Controller
 
             // Get Home X-rays
             if ($type === 'all' || $type === 'home_xray') {
-                $homeXraysQuery = HomeXray::with(['typeHomeXray', 'lab', 'result'])
-                    ->where('user_id', $user->id);
+                $homeXraysQuery = HomeXray::with(['typeHomeXray', 'lab', 'result']);
 
-                // Filter by room if room_id provided
                 if ($roomId) {
                     $homeXraysQuery->where('room_id', $roomId);
-                } elseif ($withRoom) {
-                    // Include room details if requested and no specific room
-                    $homeXraysQuery->with('room:id,title,code');
+                } else {
+                    $homeXraysQuery->where('user_id', $user->id);
+                    if ($withRoom) {
+                        $homeXraysQuery->with('room:id,title,code');
+                    }
                 }
 
                 $homeXrays = $homeXraysQuery
