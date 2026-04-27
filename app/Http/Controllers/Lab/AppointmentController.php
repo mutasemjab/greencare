@@ -8,6 +8,7 @@ use App\Models\HomeXray;
 use App\Models\AppointmentResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class AppointmentController extends Controller
 {
@@ -125,34 +126,40 @@ class AppointmentController extends Controller
      */
     public function updateStatus(Request $request, $type, $id)
     {
+        if (!in_array($type, ['medical_test', 'home_xray'])) {
+            return redirect()->route('lab.appointments.index')->with('error', 'نوع الموعد غير صحيح');
+        }
+
         $lab = auth('lab')->user();
-        
-        $request->validate([
-            'status' => 'required|in:confirmed,processing,finished,cancelled',
-            'cancellation_reason' => 'required_if:status,cancelled|string|max:500',
+
+        $validator = Validator::make($request->all(), [
+            'status'              => 'required|in:confirmed,processing,finished,cancelled',
+            'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:500',
         ], [
-            'status.required' => 'الحالة مطلوبة',
-            'status.in' => 'الحالة غير صحيحة',
+            'status.required'               => 'الحالة مطلوبة',
+            'status.in'                     => 'الحالة غير صحيحة',
             'cancellation_reason.required_if' => 'سبب الإلغاء مطلوب عند إلغاء الموعد',
         ]);
-        
-        if (!in_array($type, ['medical_test', 'home_xray'])) {
-            return back()->with('error', 'نوع الموعد غير صحيح');
+
+        if ($validator->fails()) {
+            return redirect()->route('lab.appointments.show', ['type' => $type, 'id' => $id])
+                ->withErrors($validator)
+                ->withInput();
         }
-        
+
         if ($type === 'medical_test') {
             $appointment = MedicalTest::where('lab_id', $lab->id)->findOrFail($id);
         } else {
             $appointment = HomeXray::where('lab_id', $lab->id)->findOrFail($id);
         }
-        
+
         $updateData = ['status' => $request->status];
-        
+
         if ($request->status === 'cancelled' && $request->cancellation_reason) {
             $updateData['note'] = ($appointment->note ? $appointment->note . "\n\n" : '') .
-                "سبب الإلغاء: " . $request->cancellation_reason;
+                'سبب الإلغاء: ' . $request->cancellation_reason;
         }
-        
+
         $appointment->update($updateData);
 
         return redirect()->route('lab.appointments.show', ['type' => $type, 'id' => $id])
