@@ -458,25 +458,21 @@ class RoomReportController extends Controller
      */
     public function getReportsByTime(Request $request)
     {
-        $currentUser = Auth::user();
-        $userType = $currentUser->user_type;
+        $reportType = $request->get('report_type');
+        $hasHour    = $request->has('hour') && !is_null($request->hour);
 
-        $hasHour = $request->has('hour') && !is_null($request->hour);
-
-        // Date format depends on user type:
-        // - doctor: Y-m (monthly report)
-        // - nurse: Y-m-d (daily report)
-        // - super_nurse without hour → doctor report → Y-m
-        // - super_nurse with hour    → nurse report  → Y-m-d
-        $isMonthlyDate = ($userType === 'doctor') ||
-                         ($userType === 'super_nurse' && !$hasHour);
+        // Date format depends on report_type:
+        // - doctor: Y-m (monthly)
+        // - super_nurse without hour → doctor reports → Y-m
+        // - everything else → Y-m-d (daily)
+        $isMonthlyDate = ($reportType === 'doctor') ||
+                         ($reportType === 'super_nurse' && !$hasHour);
         $dateFormat = $isMonthlyDate ? 'Y-m' : 'Y-m-d';
 
-        // Validate request
         $validator = Validator::make($request->all(), [
-            'room_id' => 'required|exists:rooms,id',
-            'date' => 'required|date_format:' . $dateFormat,
-            'hour' => 'nullable|numeric|min:0|max:23',
+            'room_id'     => 'required|exists:rooms,id',
+            'date'        => 'required|date_format:' . $dateFormat,
+            'hour'        => 'nullable|numeric|min:0|max:23',
             'report_type' => 'nullable|in:doctor,nurse,super_nurse,all',
         ]);
 
@@ -484,15 +480,11 @@ class RoomReportController extends Controller
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Verify user has access to the room
-        $room = Room::find($request->room_id);
-
-        // Build query - accessible to all user types
         $query = Report::with(['template.sections.fields.options', 'answers', 'creator'])
             ->where('room_id', $request->room_id)
             ->whereNotNull('report_datetime');
 
-        // Apply date filter based on format
+        // Apply date filter
         if ($isMonthlyDate) {
             [$year, $month] = explode('-', $request->date);
             $query->whereYear('report_datetime', $year)
@@ -501,33 +493,28 @@ class RoomReportController extends Controller
             $query->whereDate('report_datetime', $request->date);
         }
 
-        // For super_nurse without hour → doctor report (once/month)
-        if ($userType === 'super_nurse' && !$hasHour && !$request->filled('report_type')) {
-            $query->whereHas('creator', function ($q) {
-                $q->where('user_type', 'doctor');
-            });
-        } else {
-            // Optionally filter by hour
-            if ($hasHour) {
-                $query->whereRaw('HOUR(report_datetime) = ?', [(int) $request->hour]);
-            }
+        // Apply hour filter
+        if ($hasHour) {
+            $query->whereRaw('HOUR(report_datetime) = ?', [(int) $request->hour]);
+        }
 
-            // For super_nurse with hour → nurse + super_nurse reports
-            if ($userType === 'super_nurse' && $hasHour && !$request->filled('report_type')) {
-                $query->whereHas('creator', function ($q) {
-                    $q->whereIn('user_type', ['nurse', 'super_nurse']);
-                });
-            }
-            // Optionally filter by report creator type
-            elseif ($request->filled('report_type') && $request->report_type !== 'all') {
-                $query->whereHas('creator', function ($q) use ($request) {
-                    if ($request->report_type === 'super_nurse') {
-                        $q->whereIn('user_type', ['nurse', 'super_nurse']);
+        // Apply report_type filter
+        if ($reportType && $reportType !== 'all') {
+            $query->whereHas('creator', function ($q) use ($reportType, $hasHour) {
+                if ($reportType === 'doctor') {
+                    $q->where('user_type', 'doctor');
+                } elseif ($reportType === 'nurse') {
+                    $q->where('user_type', 'nurse');
+                } elseif ($reportType === 'super_nurse') {
+                    if (!$hasHour) {
+                        // super_nurse without hour → fetch doctor reports (monthly)
+                        $q->where('user_type', 'doctor');
                     } else {
-                        $q->where('user_type', $request->report_type);
+                        // super_nurse with hour → fetch nurse + super_nurse reports
+                        $q->whereIn('user_type', ['nurse', 'super_nurse']);
                     }
-                });
-            }
+                }
+            });
         }
 
         $reports = $query->orderBy('report_datetime', 'desc')->get();
