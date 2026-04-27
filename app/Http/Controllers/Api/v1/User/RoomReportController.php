@@ -521,7 +521,11 @@ class RoomReportController extends Controller
             // Optionally filter by report creator type
             elseif ($request->filled('report_type') && $request->report_type !== 'all') {
                 $query->whereHas('creator', function ($q) use ($request) {
-                    $q->where('user_type', $request->report_type);
+                    if ($request->report_type === 'super_nurse') {
+                        $q->whereIn('user_type', ['nurse', 'super_nurse']);
+                    } else {
+                        $q->where('user_type', $request->report_type);
+                    }
                 });
             }
         }
