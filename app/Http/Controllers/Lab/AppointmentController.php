@@ -154,8 +154,9 @@ class AppointmentController extends Controller
         }
         
         $appointment->update($updateData);
-        
-        return back()->with('success', 'تم تحديث حالة الموعد بنجاح');
+
+        return redirect()->route('lab.appointments.show', ['type' => $type, 'id' => $id])
+            ->with('success', 'تم تحديث حالة الموعد بنجاح');
     }
     
     /**
@@ -222,8 +223,9 @@ class AppointmentController extends Controller
         
         // تحديث حالة الموعد إلى منتهي
         $appointment->update(['status' => 'finished']);
-        
-        return back()->with('success', 'تم رفع النتائج بنجاح');
+
+        return redirect()->route('lab.appointments.show', ['type' => $type, 'id' => $id])
+            ->with('success', 'تم رفع النتائج بنجاح');
     }
     
     /**
