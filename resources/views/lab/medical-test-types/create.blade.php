@@ -47,7 +47,7 @@
                                     <div class="input-group">
                                         <input type="number" name="price" id="price"
                                                class="form-control @error('price') is-invalid @enderror"
-                                               value="{{ old('price') }}" step="0.01" min="0"
+                                               value="{{ old('price') }}" step="any" min="0"
                                                placeholder="0.00" required>
                                         <span class="input-group-text">د.ك</span>
                                         @error('price')

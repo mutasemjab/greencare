@@ -50,8 +50,8 @@
                                         <input type="number" name="price" id="price"
                                                class="form-control @error('price') is-invalid @enderror"
                                                value="{{ old('price', $typeMedicalTest->price) }}"
-                                               step="0.01" min="0" placeholder="0.00" required>
-                                        <span class="input-group-text">د.ك</span>
+                                               step="any" min="0" placeholder="0.00" required>
+                                        <span class="input-group-text">د.أ</span>
                                         @error('price')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
