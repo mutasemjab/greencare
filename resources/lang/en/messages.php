@@ -2201,4 +2201,10 @@ return [
   'error_uploading_pdf'       => 'Error uploading PDF',
   'error_deleting_pdf'        => 'Error deleting PDF',
 
+  // Room Reports
+  'initial_setup_reports' => 'Initial Setup Reports',
+  'doctor_reports'        => 'Doctor Reports',
+  'nurse_reports'         => 'Nurse Reports',
+  'report_date'           => 'Report Date',
+
 ];

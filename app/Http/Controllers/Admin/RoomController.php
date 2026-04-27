@@ -249,7 +249,24 @@ class RoomController extends Controller
             ->get()
             ->groupBy('user_id');
 
-        return view('admin.rooms.show', compact('room', 'reportTemplates', 'pledgeForms', 'authorizationForms'));
+        $initialReports = $room->reports
+            ->filter(fn($r) => $r->template && $r->template->report_type === 'initial_setup')
+            ->sortByDesc('created_at');
+
+        $doctorReports = $room->reports
+            ->filter(fn($r) => $r->template && $r->template->report_type === 'recurring'
+                             && $r->creator && $r->creator->user_type === 'doctor')
+            ->sortByDesc('report_datetime');
+
+        $nurseReports = $room->reports
+            ->filter(fn($r) => $r->template && $r->template->report_type === 'recurring'
+                             && $r->creator && in_array($r->creator->user_type, ['nurse', 'super_nurse']))
+            ->sortByDesc('report_datetime');
+
+        return view('admin.rooms.show', compact(
+            'room', 'reportTemplates', 'pledgeForms', 'authorizationForms',
+            'initialReports', 'doctorReports', 'nurseReports'
+        ));
     }
 
     /**

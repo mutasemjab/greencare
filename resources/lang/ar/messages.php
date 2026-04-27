@@ -2153,4 +2153,10 @@ return [
   'error_uploading_pdf'       => 'حدث خطأ أثناء رفع الملف',
   'error_deleting_pdf'        => 'حدث خطأ أثناء حذف الملف',
 
+  // Room Reports
+  'initial_setup_reports' => 'تقارير الإعداد الأولي',
+  'doctor_reports'        => 'تقارير الأطباء',
+  'nurse_reports'         => 'تقارير التمريض',
+  'report_date'           => 'تاريخ التقرير',
+
 ];

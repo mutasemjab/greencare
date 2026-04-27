@@ -503,49 +503,38 @@
         @endif
     </div>
 
-    <!-- Reports Section -->
+    {{-- ───────────────── Initial Setup Reports ───────────────── --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
+            <div class="card border-secondary">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-file-medical-alt"></i> {{ __('messages.reports') }}
-                        <span class="badge badge-light ml-2">{{ $room->reports->count() }}</span>
+                        <i class="fas fa-clipboard-list"></i> {{ __('messages.initial_setup_reports') }}
+                        <span class="badge badge-light ml-2">{{ $initialReports->count() }}</span>
                     </h5>
                 </div>
-                <div class="card-body">
-                    @if($room->reports->count() > 0)
+                <div class="card-body p-0">
+                    @if($initialReports->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
                                     <tr>
                                         <th>#</th>
                                         <th>{{ __('messages.template') }}</th>
                                         <th>{{ __('messages.created_by') }}</th>
-                                        <th>{{ __('messages.report_datetime') }}</th>
                                         <th>{{ __('messages.created_at') }}</th>
                                         <th>{{ __('messages.actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($room->reports as $report)
+                                    @foreach($initialReports as $report)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>
-                                                <strong>{{ $report->template->title }}</strong>
-                                                <br><small class="text-muted">{{ ucfirst($report->template->report_type) }}</small>
-                                            </td>
-                                            <td>{{ $report->creator->name }}</td>
-                                            <td>
-                                                @if($report->report_datetime)
-                                                    {{ $report->report_datetime->format('Y-m-d H:i') }}
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
+                                            <td><strong>{{ $report->template->title }}</strong></td>
+                                            <td>{{ $report->creator->name ?? '-' }}</td>
                                             <td>{{ $report->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
-                                                <a href="{{ route('rooms.reports.show', [$room, $report]) }}" class="btn btn-sm btn-info" title="{{ __('messages.view') }}">
+                                                <a href="{{ route('rooms.reports.show', [$room, $report]) }}" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>
@@ -556,8 +545,114 @@
                         </div>
                     @else
                         <div class="text-center py-4">
-                            <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">{{ __('messages.no_reports_found') }}</p>
+                            <i class="fas fa-file-medical fa-3x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">{{ __('messages.no_reports_found') }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ───────────────── Doctor Reports ───────────────── --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-md"></i> {{ __('messages.doctor_reports') }}
+                        <span class="badge badge-light ml-2">{{ $doctorReports->count() }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if($doctorReports->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{{ __('messages.template') }}</th>
+                                        <th>{{ __('messages.created_by') }}</th>
+                                        <th>{{ __('messages.report_date') }}</th>
+                                        <th>{{ __('messages.actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($doctorReports as $report)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td><strong>{{ $report->template->title }}</strong></td>
+                                            <td>{{ $report->creator->name ?? '-' }}</td>
+                                            <td>
+                                                {{ $report->report_datetime ? $report->report_datetime->format('Y-m-d') : '-' }}
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('rooms.reports.show', [$room, $report]) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-medical fa-3x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">{{ __('messages.no_reports_found') }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ───────────────── Nurse Reports ───────────────── --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-nurse"></i> {{ __('messages.nurse_reports') }}
+                        <span class="badge badge-light ml-2">{{ $nurseReports->count() }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if($nurseReports->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{{ __('messages.template') }}</th>
+                                        <th>{{ __('messages.created_by') }}</th>
+                                        <th>{{ __('messages.report_datetime') }}</th>
+                                        <th>{{ __('messages.actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($nurseReports as $report)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td><strong>{{ $report->template->title }}</strong></td>
+                                            <td>{{ $report->creator->name ?? '-' }}</td>
+                                            <td>
+                                                {{ $report->report_datetime ? $report->report_datetime->format('Y-m-d H:i') : '-' }}
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('rooms.reports.show', [$room, $report]) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-medical fa-3x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">{{ __('messages.no_reports_found') }}</p>
                         </div>
                     @endif
                 </div>

@@ -265,12 +265,16 @@ class RoomReportController extends Controller
      */
     public function getAvailableTemplates(Request $request, $room_id)
     {
-        $room = Room::find($room_id);
-        $currentUser = Auth::user();
-        $userType = $currentUser->user_type;
-        $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
+        $validator = Validator::make($request->all(), [
+            'report_type' => 'required|in:doctor,nurse',
+        ]);
 
-        // Get the active template assigned to this specific room for this user type
+        if ($validator->fails()) {
+            return $this->error_response('Validation failed', $validator->errors());
+        }
+
+        $createdFor = $request->report_type; // 'doctor' or 'nurse'
+
         $history = RoomReportTemplateHistory::where('room_id', $room_id)
             ->where('is_active', true)
             ->whereHas('template', function ($q) use ($createdFor) {
@@ -281,11 +285,9 @@ class RoomReportController extends Controller
             ->latest('assigned_at')
             ->first();
 
-        $template = $history ? $history->template : null;
-
         return $this->success_response('Templates retrieved successfully', [
-            'user_type' => $userType,
-            'template' => $template
+            'report_type' => $createdFor,
+            'template'    => $history ? $history->template : null,
         ]);
     }
 
@@ -297,23 +299,21 @@ class RoomReportController extends Controller
 
     public function submitRecurringReport(Request $request)
     {
-        $currentUser = Auth::user();
-        $userType = $currentUser->user_type;
+        // Resolve report_type before full validation so we know which date rules to apply
+        $reportType = $request->get('report_type'); // 'doctor' or 'nurse'
 
-        // Dynamic validation based on user type
         $rules = [
-            'room_id' => 'required|exists:rooms,id',
-            'template_id' => 'required|exists:report_templates,id',
-            'answers' => 'required|array',
+            'room_id'            => 'required|exists:rooms,id',
+            'template_id'        => 'required|exists:report_templates,id',
+            'report_type'        => 'required|in:doctor,nurse',
+            'date'               => 'required|date_format:Y-m-d',
+            'answers'            => 'required|array',
             'answers.*.field_id' => 'required|exists:report_fields,id',
-            'answers.*.value' => 'required',
+            'answers.*.value'    => 'required',
         ];
 
-        // Add date/hour validation based on user type
-        if ($userType === 'doctor') {
-            $rules['date'] = 'required|date_format:Y-m-d';
-        } else if ($userType === 'nurse' || $userType === 'super_nurse') {
-            $rules['date'] = 'required|date_format:Y-m-d';
+        // Nurse requires hour; doctor does not
+        if ($reportType === 'nurse') {
             $rules['hour'] = 'required|date_format:H:i';
         }
 
@@ -323,41 +323,33 @@ class RoomReportController extends Controller
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Verify user has access to the room
-        $room = Room::find($request->room_id);
-        $userInRoom = $room->users()->where('user_id', Auth::id())->first();
-
-        // Verify template is recurring type and matches user type
+        // Verify template is recurring and belongs to the correct role
         $template = ReportTemplate::find($request->template_id);
         if ($template->report_type !== 'recurring') {
             return $this->error_response('Invalid template', 'Only recurring templates are allowed');
         }
-
-        // Map user_type to created_for field in templates
-        $createdFor = ($userType === 'doctor') ? 'doctor' : 'nurse';
+        if ($template->created_for !== $reportType) {
+            return $this->error_response('Template mismatch', "This template is for '{$template->created_for}', not '{$reportType}'");
+        }
 
         DB::beginTransaction();
         try {
-            // Prepare report datetime based on user type
-            $reportDatetime = null;
-
-            if ($userType === 'doctor') {
+            // Build datetime and run duplicate check based on report_type
+            if ($reportType === 'doctor') {
                 $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
 
-                // Prevent duplicate report in the same day (doctor)
                 $existingReport = Report::where('room_id', $request->room_id)
                     ->where('report_template_id', $request->template_id)
                     ->whereDate('report_datetime', $request->date)
                     ->exists();
 
                 if ($existingReport) {
-                    return $this->error_response('A report for this date already exists for doctor', null);
+                    return $this->error_response('A report for this date already exists', null);
                 }
-            } else if ($userType === 'nurse' || $userType === 'super_nurse') {
+            } else { // nurse
                 $reportDatetime = $request->date . ' ' . $request->hour . ':00';
-                $reportHour = (int) explode(':', $request->hour)[0];
+                $reportHour     = (int) explode(':', $request->hour)[0];
 
-                // Prevent duplicate: same room, same template, same date+hour
                 $existingReport = Report::where('room_id', $request->room_id)
                     ->where('report_template_id', $request->template_id)
                     ->whereDate('report_datetime', $request->date)

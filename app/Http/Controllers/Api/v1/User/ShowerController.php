@@ -144,7 +144,7 @@ class ShowerController extends Controller
                 }
 
                 // Check if card is sold
-                if ($cardNumber->sell != 1) {
+                if ($cardNumber->sell == 1) {
                     return $this->error_response(
                         __('messages.card_not_sold_yet'),
                         []
