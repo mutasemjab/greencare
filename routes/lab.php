@@ -5,6 +5,7 @@ use App\Http\Controllers\Lab\Auth\LoginController;
 use App\Http\Controllers\Lab\DashboardController;
 use App\Http\Controllers\Lab\AppointmentController;
 use App\Http\Controllers\Lab\TypeMedicalTestController;
+use App\Http\Controllers\Lab\LabNotificationController;
 
 Route::prefix('lab')->name('lab.')->group(function () {
     
@@ -23,6 +24,17 @@ Route::prefix('lab')->name('lab.')->group(function () {
         Route::resource('type-medical-tests', TypeMedicalTestController::class)
             ->except(['show'])
             ->names('type-medical-tests');
+
+        // Notification Routes
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/',                  [LabNotificationController::class, 'index'])->name('index');
+            Route::post('/{id}/mark-read',   [LabNotificationController::class, 'markAsRead'])->name('markAsRead');
+            Route::post('/mark-all-read',    [LabNotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+            Route::get('/unread-count',      [LabNotificationController::class, 'getUnreadCount'])->name('unreadCount');
+            Route::get('/latest',            [LabNotificationController::class, 'getLatest'])->name('latest');
+            Route::delete('/{id}',           [LabNotificationController::class, 'destroy'])->name('destroy');
+            Route::delete('/read/all',       [LabNotificationController::class, 'deleteAllRead'])->name('deleteAllRead');
+        });
 
         // Appointments Routes
         Route::prefix('appointments')->name('appointments.')->group(function () {

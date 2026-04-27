@@ -4,18 +4,22 @@ namespace App\Observers;
 
 use App\Models\HomeXray;
 use App\Services\AdminNotificationService;
+use App\Services\LabNotificationService;
 
 class HomeXrayObserver
 {
-    protected $notificationService;
+    protected $adminNotificationService;
+    protected $labNotificationService;
 
-    public function __construct(AdminNotificationService $notificationService)
+    public function __construct(AdminNotificationService $adminNotificationService, LabNotificationService $labNotificationService)
     {
-        $this->notificationService = $notificationService;
+        $this->adminNotificationService = $adminNotificationService;
+        $this->labNotificationService   = $labNotificationService;
     }
 
     public function created(HomeXray $appointment)
     {
-        $this->notificationService->notifyNewAppointment($appointment, 'home_xray');
+        $this->adminNotificationService->notifyNewAppointment($appointment, 'home_xray');
+        $this->labNotificationService->notifyNewHomeXray($appointment);
     }
 }
