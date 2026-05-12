@@ -16,15 +16,6 @@
         <form method="GET" action="{{ route('lab.appointments.index') }}">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">نوع الخدمة</label>
-                    <select name="type" class="form-select">
-                        <option value="all" {{ $type == 'all' ? 'selected' : '' }}>الكل</option>
-                        <option value="medical_test" {{ $type == 'medical_test' ? 'selected' : '' }}>فحوصات طبية</option>
-                        <option value="home_xray" {{ $type == 'home_xray' ? 'selected' : '' }}>أشعة منزلية</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-3">
                     <label class="form-label">الحالة</label>
                     <select name="status" class="form-select">
                         <option value="">الكل</option>
@@ -96,7 +87,6 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>النوع</th>
                             <th>المريض</th>
                             <th>الهاتف</th>
                             <th>الخدمة</th>
@@ -110,22 +100,9 @@
                         @foreach($appointments as $appointment)
                             <tr>
                                 <td>{{ $appointment->id }}</td>
-                                <td>
-                                    @if($appointment->appointment_type == 'medical_test')
-                                        <span class="badge bg-info">فحص طبي</span>
-                                    @else
-                                        <span class="badge bg-success">أشعة منزلية</span>
-                                    @endif
-                                </td>
                                 <td>{{ $appointment->user->name }}</td>
                                 <td>{{ $appointment->user->phone }}</td>
-                                <td>
-                                    @if($appointment->appointment_type == 'medical_test')
-                                        {{ $appointment->typeMedicalTest->name }}
-                                    @else
-                                        {{ $appointment->typeHomeXray->name }}
-                                    @endif
-                                </td>
+                                <td>{{ $appointment->typeMedicalTest->name }}</td>
                                 <td>{{ $appointment->date_of_appointment->format('Y-m-d') }}</td>
                                 <td>
                                     @if($appointment->time_of_appointment)
