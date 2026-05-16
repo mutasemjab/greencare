@@ -88,6 +88,7 @@
                         <tr>
                             <th>#</th>
                             <th>المريض</th>
+                            <th>تاريخ ميلاد المريض</th>
                             <th>الهاتف</th>
                             <th>الخدمة</th>
                             <th>التاريخ</th>
@@ -101,6 +102,7 @@
                             <tr>
                                 <td>{{ $appointment->id }}</td>
                                 <td>{{ $appointment->user->name }}</td>
+                                <td>{{ $appointment->user->date_of_birth->format('Y-m-d') }}</td>
                                 <td>{{ $appointment->user->phone }}</td>
                                 <td>{{ $appointment->typeMedicalTest->name }}</td>
                                 <td>{{ $appointment->date_of_appointment->format('Y-m-d') }}</td>

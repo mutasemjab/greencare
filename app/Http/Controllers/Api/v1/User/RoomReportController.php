@@ -596,7 +596,12 @@ class RoomReportController extends Controller
             });
         }
 
-        $reports = $query->latest()->get();
+        // Reports WITH answers come first so they are preferred over empty placeholders;
+        // within each group, newest first.
+        $reports = $query
+            ->orderByRaw('CASE WHEN EXISTS(SELECT 1 FROM report_answers WHERE report_id = reports.id) THEN 0 ELSE 1 END')
+            ->latest()
+            ->get();
 
         // Build templates → sections → fields (with answers)
         $templates = [];
@@ -604,15 +609,17 @@ class RoomReportController extends Controller
         foreach ($reports as $report) {
             $template = $report->template;
 
-            // Skip if already added
-            if (!isset($templates[$template->id])) {
-                $templates[$template->id] = [
-                    'id' => $template->id,
-                    'title' => $template->{'title_' . $lang},
-                    'report_type' => $template->report_type,
-                    'sections' => [],
-                ];
+            // Only process the first (best) report per template — skip duplicates
+            if (isset($templates[$template->id])) {
+                continue;
             }
+
+            $templateData = [
+                'id' => $template->id,
+                'title' => $template->{'title_' . $lang},
+                'report_type' => $template->report_type,
+                'sections' => [],
+            ];
 
             // Map sections
             foreach ($template->sections as $section) {
@@ -623,7 +630,6 @@ class RoomReportController extends Controller
                 ];
 
                 foreach ($section->fields as $field) {
-                    // Find the answer for this field in the current report
                     $answer = $report->answers->firstWhere('report_field_id', $field->id);
 
                     $answerValue = null;
@@ -631,7 +637,6 @@ class RoomReportController extends Controller
                     if ($answer) {
                         $decodedValue = json_decode($answer->value, true);
 
-                        // ✅ FIX: Handle photo, pdf, and signature fields properly
                         if (in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
                             if (is_string($decodedValue)) {
                                 $answerValue = $decodedValue;
@@ -639,9 +644,8 @@ class RoomReportController extends Controller
                                 $answerValue = $answer->value;
                             }
 
-                            // Ensure it's a full URL
                             if ($answerValue && !filter_var($answerValue, FILTER_VALIDATE_URL)) {
-                                $answerValue = $answerValue;
+                                $answerValue = url($answerValue);
                             }
                         } else {
                             $answerValue = $decodedValue;
@@ -656,8 +660,10 @@ class RoomReportController extends Controller
                     ];
                 }
 
-                $templates[$template->id]['sections'][] = $sectionData;
+                $templateData['sections'][] = $sectionData;
             }
+
+            $templates[$template->id] = $templateData;
         }
 
         // Re-index array
