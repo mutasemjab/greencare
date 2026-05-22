@@ -27,7 +27,7 @@ class AuthController extends Controller
 
     public function flagForAppstore()
     {
-        $flag = 1;
+        $flag = 2;
         return response()->json([
             'status' => true,
             'message' => $flag == 1 ? 'الميزات مرئية' : 'الميزات مخفية',
