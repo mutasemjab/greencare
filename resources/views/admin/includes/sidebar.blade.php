@@ -356,11 +356,17 @@
                 @endcanany
 
                 @canany(['order-table', 'order-add', 'order-edit', 'order-delete'])
+                    @php $pendingOrdersCount = \App\Models\Order::where('order_status', 1)->count(); @endphp
                     <li class="nav-item">
                         <a href="{{ route('orders.index') }}"
                             class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                             <i class="fas fa-shopping-cart nav-icon"></i>
-                            <p>{{ __('messages.orders') }}</p>
+                            <p>
+                                {{ __('messages.orders') }}
+                                @if($pendingOrdersCount > 0)
+                                    <span class="badge badge-danger right">{{ $pendingOrdersCount }}</span>
+                                @endif
+                            </p>
                         </a>
                     </li>
                 @endcanany

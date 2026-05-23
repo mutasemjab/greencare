@@ -29,8 +29,26 @@ class Order extends Model
         return $this->belongsTo(UserAddress::class);
     }
 
-    public function orderProducts() 
+    public function orderProducts()
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    public function getStatusColorAttribute()
+    {
+        $colors = [
+            1 => 'warning',
+            2 => 'info',
+            3 => 'primary',
+            4 => 'success',
+            5 => 'danger',
+            6 => 'secondary',
+        ];
+        return $colors[$this->order_status] ?? 'secondary';
+    }
+
+    public function getTotalItemsAttribute()
+    {
+        return $this->orderProducts->sum('quantity');
     }
 }
