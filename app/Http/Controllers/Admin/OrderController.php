@@ -97,7 +97,7 @@ class OrderController extends Controller
     {
         try {
             $order = Order::with([
-                'user:id,name,phone,email,',
+                'user:id,name,phone,email',
                 'address',
                 'orderProducts.product'
             ])->findOrFail($id);
@@ -125,7 +125,10 @@ class OrderController extends Controller
             ])->findOrFail($id);
 
             $users = User::where('activate', 1)->get(['id', 'name', 'phone', 'email']);
-            
+
+            $order->order_status_label = $this->getOrderStatusLabel($order->order_status);
+            $order->payment_status_label = $this->getPaymentStatusLabel($order->payment_status);
+
             return view('admin.orders.edit', compact('order', 'users'));
 
         } catch (\Exception $e) {
