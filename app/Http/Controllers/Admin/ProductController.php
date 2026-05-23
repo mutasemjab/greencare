@@ -34,7 +34,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::where('category_id',null)->all();
+        $categories = Category::where('category_id',null)->get();
         $brands = Brand::all();
         
         return view('admin.products.create', compact('categories', 'brands',));
@@ -106,7 +106,7 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::where('category_id',null)->all();
+        $categories = Category::where('category_id',null)->get();
         $brands = Brand::all();
    
         
