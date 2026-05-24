@@ -292,37 +292,47 @@
                 <h5 class="mb-0">معلومات المريض</h5>
             </div>
             <div class="card-body">
+                @php $patient = $appointment->patient; @endphp
                 <div class="text-center mb-3">
-                    @if($appointment->user->photo)
-                        <img src="{{ asset($appointment->user->photo) }}" 
-                             alt="{{ $appointment->user->name }}" 
-                             class="rounded-circle" 
+                    @if($patient?->photo)
+                        <img src="{{ asset('assets/admin/uploads/' . $patient->photo) }}"
+                             alt="{{ $patient->name }}"
+                             class="rounded-circle"
                              style="width: 100px; height: 100px; object-fit: cover;">
                     @else
-                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white" 
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white"
                              style="width: 100px; height: 100px; font-size: 40px;">
-                            {{ substr($appointment->user->name, 0, 1) }}
+                            {{ $patient ? substr($patient->name, 0, 1) : '?' }}
                         </div>
                     @endif
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>الاسم:</strong>
-                    <p class="mb-0">{{ $appointment->user->name }}</p>
+                    <p class="mb-0">{{ $patient->name ?? '-' }}</p>
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>الهاتف:</strong>
                     <p class="mb-0">
-                        <a href="tel:{{ $appointment->user->phone }}">{{ $appointment->user->phone }}</a>
+                        @if($patient?->phone)
+                            <a href="tel:{{ $patient->phone }}">{{ $patient->phone }}</a>
+                        @else
+                            -
+                        @endif
                     </p>
                 </div>
-                
-                @if($appointment->user->email)
+
+                <div class="mb-2">
+                    <strong>تاريخ الميلاد:</strong>
+                    <p class="mb-0">{{ $patient?->date_of_birth ? $patient->date_of_birth->format('Y-m-d') : '-' }}</p>
+                </div>
+
+                @if($patient?->email)
                     <div class="mb-2">
                         <strong>البريد الإلكتروني:</strong>
                         <p class="mb-0">
-                            <a href="mailto:{{ $appointment->user->email }}">{{ $appointment->user->email }}</a>
+                            <a href="mailto:{{ $patient->email }}">{{ $patient->email }}</a>
                         </p>
                     </div>
                 @endif

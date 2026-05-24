@@ -101,9 +101,9 @@
                         @foreach($appointments as $appointment)
                             <tr>
                                 <td>{{ $appointment->id }}</td>
-                                <td>{{ $appointment->user->name }}</td>
-                                <td>{{ $appointment->user->date_of_birth->format('Y-m-d') }}</td>
-                                <td>{{ $appointment->user->phone }}</td>
+                                <td>{{ $appointment->patient->name ?? '-' }}</td>
+                                <td>{{ $appointment->patient->date_of_birth ? $appointment->patient->date_of_birth->format('Y-m-d') : '-' }}</td>
+                                <td>{{ $appointment->patient->phone ?? '-' }}</td>
                                 <td>{{ $appointment->typeMedicalTest->name }}</td>
                                 <td>{{ $appointment->date_of_appointment->format('Y-m-d') }}</td>
                                 <td>

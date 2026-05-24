@@ -19,20 +19,24 @@ class AppointmentController extends Controller
         $dateTo   = $request->get('date_to');
         $search   = $request->get('search');
 
-        $appointments = MedicalTest::with(['user', 'typeMedicalTest', 'room', 'result'])
+        $appointments = MedicalTest::with(['user', 'typeMedicalTest', 'room.users', 'result'])
             ->where('lab_id', $lab->id)
             ->when($status, fn($q) => $q->where('status', $status))
             ->when($dateFrom, fn($q) => $q->whereDate('date_of_appointment', '>=', $dateFrom))
             ->when($dateTo, fn($q) => $q->whereDate('date_of_appointment', '<=', $dateTo))
             ->when($search, function ($q) use ($search) {
                 $q->whereHas('user', fn($u) => $u->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('phone', 'like', '%' . $search . '%'));
+                    ->orWhere('phone', 'like', '%' . $search . '%'))
+                  ->orWhereHas('room.users', fn($u) => $u->where('role', 'patient')
+                    ->where(fn($u2) => $u2->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('phone', 'like', '%' . $search . '%')));
             })
             ->orderBy('date_of_appointment', 'desc')
             ->orderBy('time_of_appointment', 'desc')
             ->get()
             ->map(function ($item) {
                 $item->appointment_type = 'medical_test';
+                $item->patient = $this->resolvePatient($item);
                 return $item;
             });
 
@@ -47,11 +51,12 @@ class AppointmentController extends Controller
             abort(404);
         }
 
-        $appointment = MedicalTest::with(['user', 'typeMedicalTest', 'room', 'result.lab'])
+        $appointment = MedicalTest::with(['user', 'typeMedicalTest', 'room.users', 'result.lab'])
             ->where('lab_id', $lab->id)
             ->findOrFail($id);
 
         $appointment->appointment_type = 'medical_test';
+        $appointment->patient = $this->resolvePatient($appointment);
 
         return view('lab.appointments.show', compact('lab', 'appointment', 'type'));
     }
@@ -184,5 +189,30 @@ class AppointmentController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+    }
+
+    /**
+     * Return the patient for an appointment.
+     * If the creator is not a patient (e.g. a doctor), look up the patient
+     * from the linked room. Falls back to the creator if no patient is found.
+     */
+    private function resolvePatient($appointment)
+    {
+        $user = $appointment->user;
+
+        if ($user && $user->user_type === 'patient') {
+            return $user;
+        }
+
+        if ($appointment->room) {
+            $patient = $appointment->room->users
+                ->first(fn($u) => optional($u->pivot)->role === 'patient');
+
+            if ($patient) {
+                return $patient;
+            }
+        }
+
+        return $user;
     }
 }
