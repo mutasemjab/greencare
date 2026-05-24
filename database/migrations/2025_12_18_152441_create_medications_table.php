@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('diagnosis_id')->nullable()->constrained('patient_diagnoses')->onDelete('cascade');
             $table->string('name'); // اسم الدواء
             $table->string('dosage')->nullable(); // مثلاً 500mg
-            $table->integer('quantity')->nullable(); // الكمية في كل مرة
+            $table->string('quantity')->nullable(); // الكمية في كل مرة
             $table->text('notes')->nullable(); // ملاحظات إضافية من الطبيب
             $table->timestamps();
         });
