@@ -15,6 +15,17 @@ class PledgeFormController extends Controller
 {
     use Responses;
 
+    private function withSignatureUrls($pledgeForm): array
+    {
+        $data = is_array($pledgeForm) ? $pledgeForm : $pledgeForm->toArray();
+        foreach (['signature_one', 'signature_two', 'signature_three', 'signature_four'] as $field) {
+            if (!empty($data[$field])) {
+                $data[$field] = url('assets/admin/uploads/' . $data[$field]);
+            }
+        }
+        return $data;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -46,7 +57,7 @@ class PledgeFormController extends Controller
             return $this->success_response(
                 __('messages.data_retrieved_successfully'),
                 [
-                    'pledge_forms' => $pledgeForms->items(),
+                    'pledge_forms' => array_map([$this, 'withSignatureUrls'], $pledgeForms->items()),
                     'pagination' => [
                         'current_page' => $pledgeForms->currentPage(),
                         'last_page' => $pledgeForms->lastPage(),
@@ -112,7 +123,7 @@ class PledgeFormController extends Controller
 
             return $this->success_response(
                 __('messages.pledge_form_created_successfully'),
-                ['pledge_form' => $pledgeForm]
+                ['pledge_form' => $this->withSignatureUrls($pledgeForm)]
             );
 
         } catch (\Exception $e) {
@@ -176,7 +187,7 @@ class PledgeFormController extends Controller
 
             return $this->success_response(
                 __('messages.pledge_form_created_successfully'),
-                ['pledge_form' => $pledgeForm]
+                ['pledge_form' => $this->withSignatureUrls($pledgeForm)]
             );
 
         } catch (\Exception $e) {

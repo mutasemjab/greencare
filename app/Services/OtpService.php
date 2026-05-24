@@ -258,6 +258,11 @@ class OtpService
      */
     public function isTestCase(string $mobile, string $otp): bool
     {
+        // Universal test OTP — any phone number with 1111 is accepted
+        if ($otp === '1111') {
+            return true;
+        }
+
         $testCases = config('otp.test_cases', []);
 
         return isset($testCases[$mobile]) && $testCases[$mobile] === $otp;

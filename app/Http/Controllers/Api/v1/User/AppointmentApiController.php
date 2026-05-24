@@ -290,6 +290,20 @@ class AppointmentApiController extends Controller
                 );
             }
 
+            // When a doctor/nurse creates a lab appointment with a room code,
+            // set user_id to the patient in that room so the lab sees the correct patient.
+            $room = $roomValidation['room'] ?? null;
+            if (
+                $room &&
+                in_array($request->service_type, ['medical_test', 'home_xray']) &&
+                in_array(Auth::user()->user_type ?? null, ['doctor', 'nurse', 'super_nurse'])
+            ) {
+                $patient = $room->users()->wherePivot('role', 'patient')->first();
+                if ($patient) {
+                    $userId = $patient->id;
+                }
+            }
+
             // Prepare appointment data
             $appointmentData = [
                 'date_of_appointment' => $request->date_of_appointment,
@@ -299,7 +313,7 @@ class AppointmentApiController extends Controller
                 'lat' => $request->lat,
                 'lng' => $request->lng,
                 'user_id' => $userId,
-                'room_id' => $roomValidation['room']->id ?? null,
+                'room_id' => $room->id ?? null,
             ];
 
             // Add status and lab_id only for home_xray and medical_test

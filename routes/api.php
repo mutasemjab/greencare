@@ -214,3 +214,21 @@ Route::group(['prefix' => 'v1/user'], function () {
     });
 });
 
+// ─── Lab API ─────────────────────────────────────────────────────────────────
+Route::group(['prefix' => 'v1/lab'], function () {
+
+    // Public: login
+    Route::post('/login', [LabAuthController::class, 'login']);
+
+    // Protected
+    Route::middleware('auth:lab-api')->group(function () {
+        Route::post('/logout',  [LabAuthController::class, 'logout']);
+        Route::get('/profile',  [LabAuthController::class, 'profile']);
+
+        // Appointments (medical tests + home xrays)
+        Route::get('/appointments',                         [LabAppointmentController::class, 'index']);
+        Route::patch('/appointments/{id}/status',           [LabAppointmentController::class, 'updateStatus']);
+        Route::post('/appointments/{id}/result',            [LabAppointmentController::class, 'uploadResult']);
+    });
+});
+
