@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Lab;
 
+use App\Http\Controllers\Admin\FCMController;
 use App\Http\Controllers\Controller;
-use App\Models\MedicalTest;
 use App\Models\AppointmentResult;
+use App\Models\MedicalTest;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -155,6 +157,9 @@ class AppointmentController extends Controller
 
         $appointment->update(['status' => 'finished']);
 
+        // Send push notification to all users in the room
+        $this->notifyRoomUsersResultReady($appointment);
+
         return redirect()->route('lab.appointments.show', ['type' => $type, 'id' => $id])
             ->with('success', 'تم رفع النتائج بنجاح');
     }
@@ -189,6 +194,53 @@ class AppointmentController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'الملف غير موجود'], 404);
+    }
+
+    /**
+     * Send a push notification + DB record to every user in the appointment's room
+     * (or just the appointment user if no room is linked) when lab results are uploaded.
+     */
+    private function notifyRoomUsersResultReady(MedicalTest $appointment): void
+    {
+        try {
+            $lab  = auth('lab')->user();
+            $title = '🔬 نتائج الفحص جاهزة';
+            $body  = 'تم رفع نتائج فحصك من المختبر. يمكنك الاطلاع عليها الآن.';
+
+            // Collect users to notify
+            if ($appointment->room) {
+                $users = $appointment->room->users()->get();
+            } else {
+                // No room — notify only the appointment owner
+                $users = $appointment->user ? collect([$appointment->user]) : collect();
+            }
+
+            foreach ($users as $user) {
+                // DB notification
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title'   => $title,
+                    'body'    => $body,
+                ]);
+
+                // Push notification (fire-and-forget; failures are logged, not thrown)
+                if ($user->fcm_token) {
+                    FCMController::sendMessage(
+                        $title,
+                        $body,
+                        $user->fcm_token,
+                        $user->id,
+                        'appointment_result'
+                    );
+                }
+            }
+
+            \Log::info("Lab result notifications sent for MedicalTest #{$appointment->id}", [
+                'notified_users' => $users->pluck('id'),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send lab result notifications: ' . $e->getMessage());
+        }
     }
 
     /**
