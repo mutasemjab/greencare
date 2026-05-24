@@ -31,18 +31,33 @@ class ReportAnswer extends Model
     }
 
     /**
-     * Get formatted value for display
+     * Get formatted value for display.
+     *
+     * Values are stored via json_encode() in the controller AND the model has a
+     * 'json' cast, causing double-encoding. This accessor peels both layers so the
+     * view always receives a clean PHP scalar or array.
      */
     public function getFormattedValueAttribute()
     {
-        if (is_null($this->value)) {
+        $val = $this->value; // JSON cast already decoded once
+
+        if (is_null($val)) {
             return '-';
         }
 
-        if (is_array($this->value)) {
-            return implode(', ', $this->value);
+        // If the cast returned a string that is itself valid JSON (i.e. the value
+        // was double-encoded), decode one more time to reach the real value.
+        if (is_string($val)) {
+            $decoded = json_decode($val, true);
+            if (json_last_error() === JSON_ERROR_NONE && $decoded !== $val) {
+                $val = $decoded;
+            }
         }
 
-        return $this->value;
+        if (is_array($val)) {
+            return implode(', ', $val);
+        }
+
+        return (string) $val;
     }
 }
