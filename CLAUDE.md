@@ -4,169 +4,102 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**GreenCare** is a healthcare and service management platform built with Laravel 9. It provides an admin dashboard for managing healthcare services and resources, and a REST API for mobile and external integrations.
+**GreenCare** is a healthcare and service management platform built with Laravel 9 (PHP ^8.0.2). It provides an admin dashboard for managing healthcare services and resources, and a REST API for mobile/external integrations.
 
-## Getting Started
-
-### Installation & Setup
+## Commands
 
 ```bash
-# Install PHP dependencies
-composer install
-
-# Install Node dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-php artisan key:generate
-
-# Database setup
-php artisan migrate
-php artisan seed  # (if seeders exist)
-
-# Build frontend assets
-npm run build
-
-# Run development server
+# Development
 php artisan serve
-```
-
-### Common Development Commands
-
-```bash
-# Frontend development (watch mode)
 npm run dev
 
-# Build frontend for production
+# Build
 npm run build
 
-# Run all tests
+# Testing
 php artisan test
-php artisan test --parallel
-
-# Run specific test file
 php artisan test tests/Feature/SomeTest.php
-
-# Run unit tests only
 php artisan test tests/Unit
 
-# Run feature tests only
-php artisan test tests/Feature
-
-# Code linting/formatting
+# Linting
 ./vendor/bin/pint
 
-# Generate models, migrations, controllers from a single command
-php artisan make:model ModelName -mrc
-
-# Refresh database (warning: destructive)
-php artisan migrate:refresh
-
-# View registered routes
-php artisan route:list
-
-# Tinker shell (interactive exploration)
+# Database
+php artisan migrate
+php artisan migrate:refresh   # destructive
 php artisan tinker
+
+# Scaffolding
+php artisan make:model ModelName -mrc
+php artisan route:list
 ```
 
-## Architecture & High-Level Structure
+## Architecture
 
-### Directory Organization
+### Directory Layout
 
-- **`app/Http/Controllers/Admin`** - Admin panel controllers for managing resources (doctors, patients, products, orders, etc.)
-- **`app/Http/Controllers/Api/v1`** - API v1 endpoints organized by domain (User, Lab, Appointment, etc.)
-- **`app/Models`** - Eloquent models representing database entities
-- **`app/Services`** - Business logic services (OTP, Firebase messaging/rooms, notifications)
-- **`app/Observers`** - Model observers that handle automatic events (e.g., sending notifications when orders are created)
-- **`app/Traits`** - Reusable notification traits (`SendsAppointmentNotifications`, `SendsOrderNotifications`, `SendsRoomNotifications`)
-- **`app/Helpers`** - Global helper functions for common operations (`uploadImage()`, `uploadFile()`)
-- **`routes/api.php`** - API route definitions with versioning
-- **`routes/admin.php`** - Admin panel routes (requires authentication)
-- **`database/migrations`** - Database schema changes
-- **`resources/views`** - Blade templates
+- `app/Http/Controllers/Admin/` — 45+ flat (no sub-namespaces) admin CRUD controllers
+- `app/Http/Controllers/Api/v1/User/` — User-facing API controllers
+- `app/Http/Controllers/Api/v1/Lab/` — Lab-facing API controllers
+- `app/Models/` — 57+ Eloquent models; many use `spatie/laravel-translatable` for multi-language fields
+- `app/Services/` — Business logic: `OtpService`, `AdminNotificationService`, `LabNotificationService`, `FirestoreMessageService`, `FirestoreRoomService`
+- `app/Observers/` — Model side-effects (all registered in `EventServiceProvider::boot()`)
+- `app/Traits/` — `SendsAppointmentNotifications`, `SendsOrderNotifications`, `SendsRoomNotifications`, `Responses` (API response formatting)
+- `app/Helpers/General.php` — `uploadImage()`, `uploadFile()` (auto-loaded via composer)
+- `app/Helpers/AppSetting.php` — Application settings helpers (auto-loaded via composer)
 
-### Authentication & Authorization
+### Authentication Guards
 
-- **Admin users** use the `Admin` model with Spatie permission system
-- **API users** use Sanctum tokens (user-facing) and Passport (optional)
-- All admin routes require `auth:admin` guard
-- Permissions are managed via Spatie's `spatie/laravel-permission` package
-- Use `can()` checks to verify permissions before operations
+Six guards are configured in `config/auth.php`:
 
-### Key Integrations
+| Guard | Driver | Usage |
+|-------|--------|-------|
+| `admin` | session | Admin panel (`auth:admin`) |
+| `user` | session | Web user sessions |
+| `user-api` | passport | API endpoints for patients/users (`auth:user-api`) |
+| `lab` | session | Lab staff web sessions |
+| `lab-api` | passport | API endpoints for labs (`auth:lab-api`) |
+| `web` | session | Default Laravel web guard |
 
-1. **Firebase/Firestore** - Real-time messaging and room management
-   - Services: `FirestoreMessageService`, `FirestoreRoomService`
-   - Used for live updates and notifications
+Admin routes use session auth; all API routes use Laravel Passport tokens. Sanctum is not used — Passport handles all API tokens.
 
-2. **OTP System** - Authentication via one-time passwords
-   - Service: `OtpService`
-   - Used for user registration and login
+### API Routes (`routes/api.php`)
 
-3. **Push Notifications** - Multi-channel notifications
-   - Service: `AdminNotificationService`
-   - Traits: `SendsAppointmentNotifications`, `SendsOrderNotifications`, `SendsRoomNotifications`
-   - Triggered by model observers
+Two main versioned groups under `api/v1/`:
 
-4. **Payment Processing** - KNET payment gateway integration
-   - Package: `asciisd/knet`
+- **`v1/user/*`** — Patient/user endpoints. Public: auth (OTP/login), banners, products, categories. Protected (`auth:user-api`): addresses, cart, orders, appointments, medications, notifications.
+- **`v1/lab/*`** — Lab endpoints. Public: lab login. Protected (`auth:lab-api`): appointments, result uploads.
 
-5. **Multi-Language Support**
-   - Package: `mcamara/laravel-localization`
-   - Language detection via middleware: `SetLocale`
+### Admin Routes (`routes/admin.php`)
 
-6. **Data Export/Import**
-   - Package: `maatwebsite/excel`
-   - Export classes in `app/Exports`, Import classes in `app/Imports`
+All routes require `auth:admin`. Wrapped in `LaravelLocalization::setLocale()` middleware for multi-language URL prefixes. Uses `Route::resource()` throughout with additional custom routes for state toggles and bulk operations.
 
 ### Model Observers Pattern
 
-Models use observers to trigger side effects automatically:
+Observers decouple notification side-effects from controllers. All six are registered explicitly in `EventServiceProvider::boot()`:
 
-```php
-// Example: When an Order is created, send notifications
-OrderObserver::created() -> SendsOrderNotifications trait
-```
+- `OrderObserver` → `Order`
+- `MedicalTestObserver` → `MedicalTest`
+- `HomeXrayObserver` → `HomeXray`
+- `AppointmentProviderObserver` → `AppointmentProvider`
+- `RequestNurseObserver` → `RequestNurse`
+- `ElderlyCareObserver` → `ElderlyCare`
 
-Current observers:
-- `OrderObserver` - Sends order notifications
-- `MedicalTestObserver` - Sends medical test notifications
-- `HomeXrayObserver` - Sends home xray notifications
-- `AppointmentProviderObserver` - Sends appointment notifications
-- `RequestNurseObserver` - Sends nurse request notifications
-- `ElderlyCareObserver` - Sends elderly care notifications
+When adding a model that needs notifications: create an Observer, add the notification logic via the relevant `Sends*Notifications` trait, and register in `EventServiceProvider`.
 
-When adding new models that need notifications, create an observer and register it in a service provider.
+### Key Integrations
 
-### API Versioning
+- **Firebase/Firestore** — `kreait/firebase-php` + `google/cloud-firestore`. `FirestoreRoomService` is registered as a singleton in `AppServiceProvider`. Configure credentials via `FIREBASE_CREDENTIALS` in `.env`.
+- **OTP Auth** — `OtpService` handles OTP generation/validation for user login/registration.
+- **Push Notifications** — `AdminNotificationService` / `LabNotificationService`; triggered by observers via notification traits.
+- **KNET Payments** — `asciisd/knet` package. Requires KNET API keys in `.env`.
+- **Multi-Language** — `mcamara/laravel-localization` + `spatie/laravel-translatable`. `SetLocale` middleware reads locale from URL prefix; model string fields use translatable casts.
+- **Permissions** — `spatie/laravel-permission` (v5) on the `Admin` model. Use `can()` checks before any admin operation.
+- **Excel Export/Import** — `maatwebsite/excel`; export classes in `app/Exports/`, import classes in `app/Imports/`.
 
-API routes are organized under `v1` prefix in `routes/api.php`:
-- Public routes (no auth required)
-- Protected routes (require `auth:api` middleware)
-- Domain-specific namespaces: User, Lab, Appointment, Provider, etc.
+### Testing
 
-When adding new API endpoints, maintain this versioning structure for future compatibility.
-
-### Database Migrations
-
-- Migrations should use descriptive names with timestamps (auto-generated)
-- Always create inverse migrations for `down()` method
-- Check for deleted migrations in git status before creating new ones with similar names
-
-Note: Current git status shows some old migration files marked for deletion. Use `git add` only the new dated migrations.
-
-## Testing Strategy
-
-- **Unit tests** - Test individual components/business logic (in `tests/Unit`)
-- **Feature tests** - Test API endpoints and feature flows (in `tests/Feature`)
-- Test database configuration is in `phpunit.xml`
-- Run with `php artisan test` or PHPUnit directly
-
-## Deployment Considerations
-
-- Always run `composer install --no-dev` on production
-- Always run migrations before deployment: `php artisan migrate --force`
-- Ensure `.env` has correct values (database, API keys, Firebase credentials)
-- Firebase and KNET credentials must be configured in `.env`
-- Clear caches after deployment: `php artisan cache:clear config:cache route:cache`
+- Unit tests: `tests/Unit/` — isolated component logic
+- Feature tests: `tests/Feature/` — API and feature flows
+- Test environment uses in-memory drivers (cache: array, session: array, queue: sync, mail: array)
+- Database for tests is not SQLite in-memory by default — check `phpunit.xml` and `.env.testing` before running
