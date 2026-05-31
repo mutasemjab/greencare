@@ -697,6 +697,7 @@
                                                     <th>{{ __('messages.date_of_pledge') }}</th>
                                                     <th>{{ __('messages.signatures') }}</th>
                                                     <th>{{ __('messages.created_at') }}</th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -718,6 +719,14 @@
                                                             @endforeach
                                                         </td>
                                                         <td><small>{{ $form->created_at->format('Y-m-d H:i') }}</small></td>
+                                                        <td>
+                                                            <a href="{{ route('rooms.pledge-forms.print', [$room, $form]) }}"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-outline-secondary"
+                                                               title="{{ __('messages.print') }}">
+                                                                <i class="fas fa-print"></i>
+                                                            </a>
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -774,6 +783,7 @@
                                                     <th>{{ __('messages.full_name_of_commissioner') }}</th>
                                                     <th>{{ __('messages.signatures') }}</th>
                                                     <th>{{ __('messages.created_at') }}</th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -805,6 +815,14 @@
                                                             @endforeach
                                                         </td>
                                                         <td><small>{{ $form->created_at->format('Y-m-d H:i') }}</small></td>
+                                                        <td>
+                                                            <a href="{{ route('rooms.pledge-forms.print', [$room, $form]) }}"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-outline-secondary"
+                                                               title="{{ __('messages.print') }}">
+                                                                <i class="fas fa-print"></i>
+                                                            </a>
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>

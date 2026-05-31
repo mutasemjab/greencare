@@ -721,4 +721,9 @@ class RoomController extends Controller
                 ->with('error', __('messages.error_deleting_pdf'));
         }
     }
+
+    public function printPledgeForm(Room $room, PledgeForm $pledgeForm)
+    {
+        return view('admin.rooms.pledge-form-print', compact('room', 'pledgeForm'));
+    }
 }
