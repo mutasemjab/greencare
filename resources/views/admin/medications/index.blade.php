@@ -70,7 +70,6 @@
                                     <th>{{ __('messages.room') }}</th>
                                     <th>{{ __('messages.dosage') }}</th>
                                     <th>{{ __('messages.schedules') }}</th>
-                                    <th>{{ __('messages.compliance_rate') }}</th>
                                     <th>{{ __('messages.actions') }}</th>
                                 </tr>
                             </thead>
@@ -87,7 +86,7 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if($medication->patient->photo)
-                                                    <img src="{{ asset('storage/' . $medication->patient->photo) }}" 
+                                                    <img src="{{ asset('assets/admin/uploads/' . $medication->patient->photo) }}" 
                                                          class="rounded-circle mr-2" 
                                                          width="30" height="30"
                                                          alt="{{ $medication->patient->name }}">
@@ -119,7 +118,6 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary">{{ $medication->schedules->count() }} {{ __('messages.times') }}</span>
                                             <div class="mt-1">
                                                 @foreach($medication->schedules->take(2) as $schedule)
                                                     <small class="d-block text-muted">{{ $schedule->formatted_time }} ({{ $schedule->frequency_text }})</small>
@@ -129,13 +127,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td>
-                                            @php
-                                                $rate = $medication->compliance_rate;
-                                                $rateClass = $rate >= 80 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
-                                            @endphp
-                                            <span class="badge bg-{{ $rateClass }}">{{ $rate }}%</span>
-                                        </td>
+                                        
                                         <td>
                                             <div class="btn-group" role="group">
                                                 @can('medication-table')
