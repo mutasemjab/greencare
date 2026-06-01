@@ -46,14 +46,14 @@ class MedicationLog extends Model
     public function getStatusBadgeClassAttribute()
     {
         if ($this->taken) {
-            return 'badge-success';
+            return 'success';
         }
-        
+
         if ($this->scheduled_time < now()) {
-            return 'badge-danger';
+            return 'danger';
         }
-        
-        return 'badge-warning';
+
+        return 'warning';
     }
 
     /**

@@ -105,21 +105,21 @@
                                         </td>
                                         <td>
                                             @if($medication->room)
-                                                <span class="badge badge-info">{{ $medication->room->title }}</span>
+                                                <span class="badge bg-info">{{ $medication->room->title }}</span>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($medication->dosage)
-                                                <span class="badge badge-secondary">{{ $medication->dosage }}</span>
+                                                <span class="badge bg-secondary">{{ $medication->dosage }}</span>
                                             @endif
                                             @if($medication->quantity)
                                                 <br><small class="text-muted">{{ $medication->quantity }} {{ __('messages.per_dose') }}</small>
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="badge badge-primary">{{ $medication->schedules->count() }} {{ __('messages.times') }}</span>
+                                            <span class="badge bg-primary">{{ $medication->schedules->count() }} {{ __('messages.times') }}</span>
                                             <div class="mt-1">
                                                 @foreach($medication->schedules->take(2) as $schedule)
                                                     <small class="d-block text-muted">{{ $schedule->formatted_time }} ({{ $schedule->frequency_text }})</small>
@@ -132,9 +132,9 @@
                                         <td>
                                             @php
                                                 $rate = $medication->compliance_rate;
-                                                $class = $rate >= 80 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
+                                                $rateClass = $rate >= 80 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
                                             @endphp
-                                            <span class="badge badge-{{ $class }}">{{ $rate }}%</span>
+                                            <span class="badge bg-{{ $rateClass }}">{{ $rate }}%</span>
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
@@ -151,11 +151,11 @@
                                                     </a>
                                                 @endcan
                                                 @can('medication-delete')
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-danger" 
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-danger"
                                                             title="{{ __('messages.delete') }}"
-                                                            data-toggle="modal" 
-                                                            data-target="#deleteModal{{ $medication->id }}">
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteModal{{ $medication->id }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 @endcan
@@ -163,21 +163,20 @@
 
                                             @can('medication-delete')
                                                 <!-- Delete Modal -->
-                                                <div class="modal fade" id="deleteModal{{ $medication->id }}" tabindex="-1" role="dialog">
-                                                    <div class="modal-dialog" role="document">
+                                                <div class="modal fade" id="deleteModal{{ $medication->id }}" tabindex="-1">
+                                                    <div class="modal-dialog">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">{{ __('messages.confirm_delete') }}</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                {{ __('messages.are_you_sure_delete_medication') }} "<strong>{{ $medication->name }}</strong>" {{ __('messages.for_patient') }} "<strong>{{ $medication->patient->name }}</strong>"?
+                                                                {{ __('messages.are_you_sure_delete_medication') }} "<strong>{{ $medication->name }}</strong>"
+                                                                @if($medication->patient) {{ __('messages.for_patient') }} "<strong>{{ $medication->patient->name }}</strong>" @endif?
                                                                 <br><small class="text-muted">{{ __('messages.delete_medication_warning') }}</small>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                     {{ __('messages.cancel') }}
                                                                 </button>
                                                                 <form action="{{ route('medications.destroy', $medication) }}" method="POST" class="d-inline">

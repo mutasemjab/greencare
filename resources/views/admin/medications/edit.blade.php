@@ -197,36 +197,6 @@ template { display: none; }
     </div>
 </div>
 
-<!-- Template for new schedules -->
-<template id="schedule-template">
-    <div class="schedule-item border rounded p-3 mb-3" data-schedule-index="">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="schedule-title">{{ __('messages.schedule') }} <span class="schedule-number"></span></h6>
-            <button type="button" class="btn btn-sm btn-danger" onclick="removeSchedule(this)">
-                <i class="fas fa-trash"></i> {{ __('messages.remove_schedule') }}
-            </button>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
-                    <input type="time" name="schedules[INDEX][time]" class="form-control schedule-time" required>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>{{ __('messages.schedule_frequency') }} <span class="text-danger">*</span></label>
-                    <select name="schedules[INDEX][frequency]" class="form-control schedule-frequency" required>
-                        <option value="">{{ __('messages.select_frequency') }}</option>
-                        <option value="daily">{{ __('messages.frequency_daily') }}</option>
-                        <option value="weekly">{{ __('messages.frequency_weekly') }}</option>
-                        <option value="monthly">{{ __('messages.frequency_monthly') }}</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
 @endsection
 
 @push('scripts')
@@ -282,14 +252,36 @@ $(document).ready(function() {
 });
 
 function addSchedule() {
-    const template = document.getElementById('schedule-template').content.cloneNode(true);
-    const scheduleDiv = template.querySelector('.schedule-item');
-    scheduleDiv.setAttribute('data-schedule-index', scheduleIndex);
-    template.querySelector('.schedule-number').textContent = scheduleIndex + 1;
-    template.querySelectorAll('input, select').forEach(input => {
-        input.name = input.name.replace('INDEX', scheduleIndex);
-    });
-    document.getElementById('schedules-container').appendChild(template);
+    const html = `
+        <div class="schedule-item border rounded p-3 mb-3" data-schedule-index="${scheduleIndex}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="schedule-title">{{ __('messages.schedule') }} <span class="schedule-number">${scheduleIndex + 1}</span></h6>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeSchedule(this)">
+                    <i class="fas fa-trash"></i> {{ __('messages.remove_schedule') }}
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
+                        <input type="time" name="schedules[${scheduleIndex}][time]" class="form-control schedule-time" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.schedule_frequency') }} <span class="text-danger">*</span></label>
+                        <select name="schedules[${scheduleIndex}][frequency]" class="form-control schedule-frequency" required>
+                            <option value="">{{ __('messages.select_frequency') }}</option>
+                            <option value="daily">{{ __('messages.frequency_daily') }}</option>
+                            <option value="weekly">{{ __('messages.frequency_weekly') }}</option>
+                            <option value="monthly">{{ __('messages.frequency_monthly') }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+    document.getElementById('schedules-container').insertAdjacentHTML('beforeend', html);
     scheduleIndex++;
     updateScheduleNumbers();
 }

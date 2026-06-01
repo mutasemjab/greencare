@@ -43,6 +43,6 @@ class MedicationSchedule extends Model
      */
     public function getFormattedTimeAttribute()
     {
-        return $this->time;
+        return $this->time ? $this->time->format('H:i') : '';
     }
 }

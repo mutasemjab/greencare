@@ -61,7 +61,7 @@
                                             <tr>
                                                 <td><strong>{{ __('messages.room') }}:</strong></td>
                                                 <td>
-                                                    <a href="{{ route('rooms.show', $medication->room) }}" class="badge badge-info">
+                                                    <a href="{{ route('rooms.show', $medication->room) }}" class="badge bg-info text-white">
                                                         {{ $medication->room->title }}
                                                     </a>
                                                 </td>
@@ -70,7 +70,7 @@
                                         @if($medication->dosage)
                                             <tr>
                                                 <td><strong>{{ __('messages.dosage') }}:</strong></td>
-                                                <td><span class="badge badge-secondary">{{ $medication->dosage }}</span></td>
+                                                <td><span class="badge bg-secondary">{{ $medication->dosage }}</span></td>
                                             </tr>
                                         @endif
                                         @if($medication->quantity)
@@ -79,14 +79,6 @@
                                                 <td>{{ $medication->quantity }} {{ __('messages.per_dose') }}</td>
                                             </tr>
                                         @endif
-                                        <tr>
-                                            <td><strong>{{ __('messages.status') }}:</strong></td>
-                                            <td>
-                                                <span class="badge badge-{{ $medication->active ? 'success' : 'secondary' }}">
-                                                    {{ $medication->active ? __('messages.active') : __('messages.inactive') }}
-                                                </span>
-                                            </td>
-                                        </tr>
                                         @if($medication->notes)
                                             <tr>
                                                 <td><strong>{{ __('messages.notes') }}:</strong></td>
@@ -112,10 +104,10 @@
                                         </div>
                                         <div class="col-6">
                                             @php
-                                                $rate = $medication->compliance_rate;
-                                                $class = $rate >= 80 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
+                                                $rate = $medication->compliance_rate ?? 0;
+                                                $rateClass = $rate >= 80 ? 'success' : ($rate >= 60 ? 'warning' : 'danger');
                                             @endphp
-                                            <h3 class="text-{{ $class }}">{{ $rate }}%</h3>
+                                            <h3 class="text-{{ $rateClass }}">{{ $rate }}%</h3>
                                             <small class="text-muted">{{ __('messages.compliance') }}</small>
                                         </div>
                                     </div>
@@ -139,7 +131,7 @@
                                                     <div class="card border-success">
                                                         <div class="card-body text-center">
                                                             <h4 class="text-primary">{{ $schedule->formatted_time }}</h4>
-                                                            <span class="badge badge-success">{{ $schedule->frequency_text }}</span>
+                                                            <span class="badge bg-success">{{ $schedule->frequency_text }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -179,16 +171,16 @@
                                                         <tr>
                                                             <td>{{ $log->scheduled_time->format('Y-m-d H:i') }}</td>
                                                             <td>
-                                                                <span class="badge badge-{{ $log->status_badge_class }}">
+                                                                <span class="badge bg-{{ $log->status_badge_class }}">
                                                                     {{ $log->status_text }}
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 @can('medication-edit')
-                                                                    <button type="button" 
-                                                                            class="btn btn-sm btn-success" 
-                                                                            data-toggle="modal" 
-                                                                            data-target="#markTakenModal{{ $log->id }}">
+                                                                    <button type="button"
+                                                                            class="btn btn-sm btn-success"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#markTakenModal{{ $log->id }}">
                                                                         <i class="fas fa-check"></i>
                                                                     </button>
                                                                 @endcan
@@ -196,31 +188,28 @@
                                                         </tr>
 
                                                         @can('medication-edit')
-                                                            <!-- Mark Taken Modal -->
-                                                            <div class="modal fade" id="markTakenModal{{ $log->id }}" tabindex="-1" role="dialog">
-                                                                <div class="modal-dialog" role="document">
+                                                            <div class="modal fade" id="markTakenModal{{ $log->id }}" tabindex="-1">
+                                                                <div class="modal-dialog">
                                                                     <div class="modal-content">
                                                                         <div class="modal-header">
                                                                             <h5 class="modal-title">{{ __('messages.mark_as_taken') }}</h5>
-                                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                                <span>&times;</span>
-                                                                            </button>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                                         </div>
                                                                         <form action="{{ route('medication-logs.mark-taken', $log) }}" method="POST">
                                                                             @csrf
                                                                             <div class="modal-body">
                                                                                 <p>{{ __('messages.mark_medication_taken_confirm') }}</p>
-                                                                                <div class="form-group">
-                                                                                    <label for="notes{{ $log->id }}">{{ __('messages.notes') }}</label>
-                                                                                    <textarea name="notes" 
-                                                                                              id="notes{{ $log->id }}" 
-                                                                                              class="form-control" 
-                                                                                              rows="3" 
+                                                                                <div class="mb-3">
+                                                                                    <label for="notes{{ $log->id }}" class="form-label">{{ __('messages.notes') }}</label>
+                                                                                    <textarea name="notes"
+                                                                                              id="notes{{ $log->id }}"
+                                                                                              class="form-control"
+                                                                                              rows="3"
                                                                                               placeholder="{{ __('messages.optional_notes') }}"></textarea>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                                     {{ __('messages.cancel') }}
                                                                                 </button>
                                                                                 <button type="submit" class="btn btn-success">
@@ -267,16 +256,16 @@
                                                             <td>{{ $log->scheduled_time->diffForHumans() }}</td>
                                                             <td>
                                                                 @can('medication-edit')
-                                                                    <button type="button" 
-                                                                            class="btn btn-sm btn-success" 
-                                                                            data-toggle="modal" 
-                                                                            data-target="#markTakenModal{{ $log->id }}">
+                                                                    <button type="button"
+                                                                            class="btn btn-sm btn-success"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#markTakenModal{{ $log->id }}">
                                                                         <i class="fas fa-check"></i> {{ __('messages.taken') }}
                                                                     </button>
-                                                                    <button type="button" 
-                                                                            class="btn btn-sm btn-warning ml-1" 
-                                                                            data-toggle="modal" 
-                                                                            data-target="#markMissedModal{{ $log->id }}">
+                                                                    <button type="button"
+                                                                            class="btn btn-sm btn-warning ms-1"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#markMissedModal{{ $log->id }}">
                                                                         <i class="fas fa-times"></i> {{ __('messages.missed') }}
                                                                     </button>
                                                                 @endcan
@@ -285,30 +274,28 @@
 
                                                         @can('medication-edit')
                                                             <!-- Mark Missed Modal -->
-                                                            <div class="modal fade" id="markMissedModal{{ $log->id }}" tabindex="-1" role="dialog">
-                                                                <div class="modal-dialog" role="document">
+                                                            <div class="modal fade" id="markMissedModal{{ $log->id }}" tabindex="-1">
+                                                                <div class="modal-dialog">
                                                                     <div class="modal-content">
                                                                         <div class="modal-header">
                                                                             <h5 class="modal-title">{{ __('messages.mark_as_missed') }}</h5>
-                                                                            <button type="button" class="close" data-dismiss="modal">
-                                                                                <span>&times;</span>
-                                                                            </button>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                                         </div>
                                                                         <form action="{{ route('medication-logs.mark-missed', $log) }}" method="POST">
                                                                             @csrf
                                                                             <div class="modal-body">
                                                                                 <p>{{ __('messages.mark_medication_missed_confirm') }}</p>
-                                                                                <div class="form-group">
-                                                                                    <label for="missed_notes{{ $log->id }}">{{ __('messages.reason') }}</label>
-                                                                                    <textarea name="notes" 
-                                                                                              id="missed_notes{{ $log->id }}" 
-                                                                                              class="form-control" 
-                                                                                              rows="3" 
+                                                                                <div class="mb-3">
+                                                                                    <label for="missed_notes{{ $log->id }}" class="form-label">{{ __('messages.reason') }}</label>
+                                                                                    <textarea name="notes"
+                                                                                              id="missed_notes{{ $log->id }}"
+                                                                                              class="form-control"
+                                                                                              rows="3"
                                                                                               placeholder="{{ __('messages.reason_for_missing') }}"></textarea>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                                     {{ __('messages.cancel') }}
                                                                                 </button>
                                                                                 <button type="submit" class="btn btn-warning">
@@ -354,7 +341,7 @@
                                                         <tr>
                                                             <td>{{ $log->scheduled_time->format('Y-m-d H:i') }}</td>
                                                             <td>
-                                                                <span class="badge badge-{{ $log->status_badge_class }}">
+                                                                <span class="badge bg-{{ $log->status_badge_class }}">
                                                                     {{ $log->status_text }}
                                                                 </span>
                                                             </td>

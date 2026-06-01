@@ -3,7 +3,10 @@
     "allow": [
       "Bash(PowerShell -Command \"Select-String -Path 'c:\\\\xampp\\\\htdocs\\\\greencare\\\\resources\\\\views\\\\admin\\\\orders\\\\index.blade.php' -Pattern 'status_color'\")",
       "Bash(PowerShell -Command \"Select-String -Path 'c:\\\\xampp\\\\htdocs\\\\greencare\\\\app\\\\Http\\\\Controllers\\\\Admin\\\\OrderController.php' -Pattern 'order_status_label|getOrderStatusLabel' -Context 2,2\")",
-      "Bash(PowerShell -Command \"Select-String -Path 'c:\\\\xampp\\\\htdocs\\\\greencare\\\\app\\\\Models\\\\Order.php' -Pattern 'Attribute|Accessor|Appends|protected.*appends'\")"
+      "Bash(PowerShell -Command \"Select-String -Path 'c:\\\\xampp\\\\htdocs\\\\greencare\\\\app\\\\Models\\\\Order.php' -Pattern 'Attribute|Accessor|Appends|protected.*appends'\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\greencare\\\\resources\\\\views\\\\admin\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(Format-List)"
     ]
   }
 }
