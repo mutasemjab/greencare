@@ -2280,4 +2280,17 @@ return [
   'searching'                        => 'Searching...',
   'cannot_remove_last_schedule'      => 'Cannot remove the last schedule. At least one schedule is required.',
 
+  // Medication routes & day fields
+  'routes'                           => 'Route',
+  'select_routes'                    => 'Select Route',
+  'route_oral'                       => 'Oral',
+  'route_intravenous'                => 'Intravenous (IV)',
+  'route_intramuscular'              => 'Intramuscular (IM)',
+  'route_subcutaneous'               => 'Subcutaneous (SC)',
+  'route_topical'                    => 'Topical',
+  'route_inhaled'                    => 'Inhaled',
+  'route_other'                      => 'Other',
+  'day_of_week'                      => 'Day of Week',
+  'day_of_month'                     => 'Day of Month',
+
 ];

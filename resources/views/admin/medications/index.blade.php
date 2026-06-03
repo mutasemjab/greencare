@@ -69,6 +69,7 @@
                                     <th>{{ __('messages.patient') }}</th>
                                     <th>{{ __('messages.room') }}</th>
                                     <th>{{ __('messages.dosage') }}</th>
+                                    <th>{{ __('messages.routes') }}</th>
                                     <th>{{ __('messages.schedules') }}</th>
                                     <th>{{ __('messages.actions') }}</th>
                                 </tr>
@@ -118,14 +119,27 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <div class="mt-1">
-                                                @foreach($medication->schedules->take(2) as $schedule)
-                                                    <small class="d-block text-muted">{{ $schedule->formatted_time }} ({{ $schedule->frequency_text }})</small>
-                                                @endforeach
-                                                @if($medication->schedules->count() > 2)
-                                                    <small class="text-muted">+{{ $medication->schedules->count() - 2 }} {{ __('messages.more') }}</small>
-                                                @endif
-                                            </div>
+                                            @if($medication->routes)
+                                                <span class="badge bg-info">{{ __('messages.route_' . $medication->routes) }}</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @foreach($medication->schedules->take(3) as $schedule)
+                                                <small class="d-block text-muted">
+                                                    <i class="fas fa-clock"></i> {{ $schedule->formatted_time }}
+                                                    <span class="badge bg-light text-dark ms-1">{{ $schedule->frequency_text }}</span>
+                                                    @if($schedule->frequency === 'weekly' && $schedule->day_of_week_label)
+                                                        <span class="text-primary">– {{ $schedule->day_of_week_label }}</span>
+                                                    @elseif($schedule->frequency === 'monthly' && $schedule->day_of_month)
+                                                        <span class="text-primary">– Day {{ $schedule->day_of_month }}</span>
+                                                    @endif
+                                                </small>
+                                            @endforeach
+                                            @if($medication->schedules->count() > 3)
+                                                <small class="text-muted">+{{ $medication->schedules->count() - 3 }} {{ __('messages.more') }}</small>
+                                            @endif
                                         </td>
                                         
                                         <td>
