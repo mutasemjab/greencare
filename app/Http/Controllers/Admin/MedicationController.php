@@ -11,6 +11,7 @@ use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -88,15 +89,18 @@ class MedicationController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'patient_id' => 'required|exists:users,id',
-            'room_id' => 'nullable|exists:rooms,id',
-            'name' => 'required|string|max:255',
-            'dosage' => 'nullable|string|max:100',
-            'quantity' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string',
-            'schedules' => 'required|array|min:1',
-            'schedules.*.time' => 'required|date_format:H:i',
-            'schedules.*.frequency' => 'required|in:daily,weekly,monthly'
+            'patient_id'                    => 'required|exists:users,id',
+            'room_id'                       => 'nullable|exists:rooms,id',
+            'name'                          => 'required|string|max:255',
+            'dosage'                        => 'nullable|string|max:100',
+            'routes'                        => 'nullable|string|max:100',
+            'quantity'                      => 'nullable|integer|min:1',
+            'notes'                         => 'nullable|string',
+            'schedules'                     => 'required|array|min:1',
+            'schedules.*.time'              => 'required|date_format:H:i',
+            'schedules.*.frequency'         => 'required|in:daily,weekly,monthly',
+            'schedules.*.day_of_week'       => 'nullable|integer|between:0,6',
+            'schedules.*.day_of_month'      => 'nullable|integer|between:1,31',
         ]);
 
         if ($validator->fails()) {
@@ -107,22 +111,23 @@ class MedicationController extends Controller
 
         DB::beginTransaction();
         try {
-            // Create medication
             $medication = Medication::create([
                 'patient_id' => $request->patient_id,
-                'room_id' => $request->room_id,
-                'name' => $request->name,
-                'dosage' => $request->dosage,
-                'quantity' => $request->quantity,
-                'notes' => $request->notes,
+                'room_id'    => $request->room_id,
+                'name'       => $request->name,
+                'dosage'     => $request->dosage,
+                'routes'     => $request->routes,
+                'quantity'   => $request->quantity,
+                'notes'      => $request->notes,
             ]);
 
-            // Create schedules
             foreach ($request->schedules as $scheduleData) {
                 MedicationSchedule::create([
                     'medication_id' => $medication->id,
-                    'time' => $scheduleData['time'],
-                    'frequency' => $scheduleData['frequency']
+                    'time'          => $scheduleData['time'],
+                    'frequency'     => $scheduleData['frequency'],
+                    'day_of_week'   => $scheduleData['day_of_week'] ?? null,
+                    'day_of_month'  => $scheduleData['day_of_month'] ?? null,
                 ]);
             }
 
@@ -135,8 +140,8 @@ class MedicationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error creating medication: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error creating medication: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
                 ->with('error', __('messages.error_creating_medication') . ' - ' . $e->getMessage())
                 ->withInput();
@@ -187,15 +192,18 @@ class MedicationController extends Controller
     public function update(Request $request, Medication $medication)
     {
         $validator = Validator::make($request->all(), [
-            'patient_id' => 'required|exists:users,id',
-            'room_id' => 'nullable|exists:rooms,id',
-            'name' => 'required|string|max:255',
-            'dosage' => 'nullable|string|max:100',
-            'quantity' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string',
-            'schedules' => 'required|array|min:1',
-            'schedules.*.time' => 'required|date_format:H:i',
-            'schedules.*.frequency' => 'required|in:daily,weekly,monthly'
+            'patient_id'                    => 'required|exists:users,id',
+            'room_id'                       => 'nullable|exists:rooms,id',
+            'name'                          => 'required|string|max:255',
+            'dosage'                        => 'nullable|string|max:100',
+            'routes'                        => 'nullable|string|max:100',
+            'quantity'                      => 'nullable|integer|min:1',
+            'notes'                         => 'nullable|string',
+            'schedules'                     => 'required|array|min:1',
+            'schedules.*.time'              => 'required|date_format:H:i',
+            'schedules.*.frequency'         => 'required|in:daily,weekly,monthly',
+            'schedules.*.day_of_week'       => 'nullable|integer|between:0,6',
+            'schedules.*.day_of_month'      => 'nullable|integer|between:1,31',
         ]);
 
         if ($validator->fails()) {
@@ -206,25 +214,25 @@ class MedicationController extends Controller
 
         DB::beginTransaction();
         try {
-            // Update medication
             $medication->update([
                 'patient_id' => $request->patient_id,
-                'room_id' => $request->room_id,
-                'name' => $request->name,
-                'dosage' => $request->dosage,
-                'quantity' => $request->quantity,
-                'notes' => $request->notes,
+                'room_id'    => $request->room_id,
+                'name'       => $request->name,
+                'dosage'     => $request->dosage,
+                'routes'     => $request->routes,
+                'quantity'   => $request->quantity,
+                'notes'      => $request->notes,
             ]);
 
-            // Delete existing schedules
             $medication->schedules()->delete();
 
-            // Create new schedules
             foreach ($request->schedules as $scheduleData) {
                 MedicationSchedule::create([
                     'medication_id' => $medication->id,
-                    'time' => $scheduleData['time'],
-                    'frequency' => $scheduleData['frequency']
+                    'time'          => $scheduleData['time'],
+                    'frequency'     => $scheduleData['frequency'],
+                    'day_of_week'   => $scheduleData['day_of_week'] ?? null,
+                    'day_of_month'  => $scheduleData['day_of_month'] ?? null,
                 ]);
             }
 
@@ -237,6 +245,7 @@ class MedicationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Error updating medication: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', __('messages.error_updating_medication'))
                 ->withInput();
@@ -253,6 +262,7 @@ class MedicationController extends Controller
             return redirect()->route('medications.index')
                 ->with('success', __('messages.medication_deleted_successfully'));
         } catch (\Exception $e) {
+            Log::error('Error deleting medication: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', __('messages.error_deleting_medication'));
         }
@@ -281,6 +291,7 @@ class MedicationController extends Controller
             return redirect()->back()
                 ->with('success', __('messages.medication_marked_taken'));
         } catch (\Exception $e) {
+            Log::error('Error marking medication taken: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', __('messages.error_marking_medication'));
         }
@@ -308,6 +319,7 @@ class MedicationController extends Controller
             return redirect()->back()
                 ->with('success', __('messages.medication_marked_missed'));
         } catch (\Exception $e) {
+            Log::error('Error marking medication missed: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', __('messages.error_marking_medication'));
         }
@@ -389,56 +401,69 @@ class MedicationController extends Controller
         return response()->json($overdueMedications);
     }
 
-    /**
-     * Generate medication logs for the next 30 days
-     */
-    private function generateMedicationLogs(Medication $medication)
+    private function generateMedicationLogs(Medication $medication): void
     {
         $endDate = now()->addDays(30);
-        $currentDate = now()->startOfDay();
 
         foreach ($medication->schedules as $schedule) {
-            while ($currentDate <= $endDate) {
-                $scheduledTime = $currentDate->copy()->setTimeFromTimeString($schedule->time);
-                
-                if ($scheduledTime > now()) {
-                    MedicationLog::firstOrCreate(
-                        [
-                            'medication_id' => $medication->id,
-                            'scheduled_time' => $scheduledTime,
-                        ],
-                        ['taken' => false]
-                    );
-                }
+            [$hour, $minute] = array_map('intval', explode(':', $schedule->time_for_input));
 
-                // Increment based on frequency
-                switch ($schedule->frequency) {
-                    case 'daily':
-                        $currentDate->addDay();
-                        break;
-                    case 'weekly':
-                        $currentDate->addWeek();
-                        break;
-                    case 'monthly':
-                        $currentDate->addMonth();
-                        break;
-                }
+            switch ($schedule->frequency) {
+                case 'weekly':
+                    if ($schedule->day_of_week === null) break;
+                    $date = now()->copy()->startOfDay();
+                    if ($date->dayOfWeek !== $schedule->day_of_week) {
+                        $date = $date->next($schedule->day_of_week);
+                    }
+                    while ($date <= $endDate) {
+                        $st = $date->copy()->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $date->addWeek();
+                    }
+                    break;
+
+                case 'monthly':
+                    if ($schedule->day_of_month === null) break;
+                    $month = now()->copy()->startOfMonth();
+                    while ($month <= $endDate) {
+                        $actualDay = min($schedule->day_of_month, $month->daysInMonth);
+                        $st = $month->copy()->day($actualDay)->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $month->addMonth();
+                    }
+                    break;
+
+                default: // daily
+                    $date = now()->copy()->startOfDay();
+                    while ($date <= $endDate) {
+                        $st = $date->copy()->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $date->addDay();
+                    }
+                    break;
             }
-            
-            // Reset for next schedule
-            $currentDate = now()->startOfDay();
         }
     }
 
-    /**
-     * Regenerate future logs after schedule changes
-     */
-    private function regenerateFutureLogs(Medication $medication)
+    private function regenerateFutureLogs(Medication $medication): void
     {
-        // Delete future logs
-        $medication->logs()->where('scheduled_time', '>', now())->delete();
-        
-        // Generate new logs
+        $medication->logs()
+            ->where('scheduled_time', '>', now())
+            ->where('taken', false)
+            ->whereNull('notification_sent_at')
+            ->delete();
+
         $this->generateMedicationLogs($medication);
+    }
+
+    private function createLogIfNotExists(int $medicationId, Carbon $scheduledTime): void
+    {
+        if (!MedicationLog::where('medication_id', $medicationId)->where('scheduled_time', $scheduledTime)->exists()) {
+            MedicationLog::create([
+                'medication_id'  => $medicationId,
+                'scheduled_time' => $scheduledTime,
+                'taken'          => false,
+            ]);
+        }
     }
 }

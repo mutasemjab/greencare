@@ -32,14 +32,17 @@ class MedicationController extends Controller
         $patient = Auth::user();
 
         $validated = $request->validate([
-            'room_id'              => 'nullable|exists:rooms,id',
-            'name'                 => 'required|string',
-            'dosage'               => 'nullable|string',
-            'quantity'             => 'nullable',
-            'notes'                => 'nullable|string',
-            'schedules'            => 'nullable|array',
-            'schedules.*.time'     => 'required_with:schedules|date_format:H:i',
-            'schedules.*.frequency' => 'in:daily,weekly,monthly',
+            'room_id'                       => 'nullable|exists:rooms,id',
+            'name'                          => 'required|string',
+            'dosage'                        => 'nullable|string',
+            'routes'                        => 'nullable|string',
+            'quantity'                      => 'nullable|integer|min:1',
+            'notes'                         => 'nullable|string',
+            'schedules'                     => 'nullable|array',
+            'schedules.*.time'              => 'required_with:schedules|date_format:H:i',
+            'schedules.*.frequency'         => 'required_with:schedules|in:daily,weekly,monthly',
+            'schedules.*.day_of_week'       => 'nullable|integer|between:0,6',
+            'schedules.*.day_of_month'      => 'nullable|integer|between:1,31',
         ]);
 
         DB::beginTransaction();
@@ -50,6 +53,7 @@ class MedicationController extends Controller
                 'room_id'    => $validated['room_id'] ?? null,
                 'name'       => $validated['name'],
                 'dosage'     => $validated['dosage'] ?? null,
+                'routes'     => $validated['routes'] ?? null,
                 'quantity'   => $validated['quantity'] ?? null,
                 'notes'      => $validated['notes'] ?? null,
             ]);
@@ -60,13 +64,14 @@ class MedicationController extends Controller
                         'medication_id' => $medication->id,
                         'time'          => $schedule['time'],
                         'frequency'     => $schedule['frequency'] ?? 'daily',
+                        'day_of_week'   => $schedule['day_of_week'] ?? null,
+                        'day_of_month'  => $schedule['day_of_month'] ?? null,
                     ]);
                 }
             }
 
             DB::commit();
 
-            // Generate logs after commit so IDs are stable
             $medication->load('schedules');
             $this->generateMedicationLogs($medication);
 
@@ -82,14 +87,17 @@ class MedicationController extends Controller
         $patient = Auth::user();
 
         $validated = $request->validate([
-            'room_id'              => 'nullable|exists:rooms,id',
-            'name'                 => 'required|string',
-            'dosage'               => 'nullable|string',
-            'quantity'             => 'nullable',
-            'notes'                => 'nullable|string',
-            'schedules'            => 'nullable|array',
-            'schedules.*.time'     => 'required_with:schedules|date_format:H:i',
-            'schedules.*.frequency' => 'in:daily,weekly,monthly',
+            'room_id'                       => 'nullable|exists:rooms,id',
+            'name'                          => 'required|string',
+            'dosage'                        => 'nullable|string',
+            'routes'                        => 'nullable|string',
+            'quantity'                      => 'nullable|integer|min:1',
+            'notes'                         => 'nullable|string',
+            'schedules'                     => 'nullable|array',
+            'schedules.*.time'              => 'required_with:schedules|date_format:H:i',
+            'schedules.*.frequency'         => 'required_with:schedules|in:daily,weekly,monthly',
+            'schedules.*.day_of_week'       => 'nullable|integer|between:0,6',
+            'schedules.*.day_of_month'      => 'nullable|integer|between:1,31',
         ]);
 
         $medication = Medication::where('id', $id)
@@ -107,6 +115,7 @@ class MedicationController extends Controller
                 'room_id'  => $validated['room_id'] ?? null,
                 'name'     => $validated['name'],
                 'dosage'   => $validated['dosage'] ?? null,
+                'routes'   => $validated['routes'] ?? null,
                 'quantity' => $validated['quantity'] ?? null,
                 'notes'    => $validated['notes'] ?? null,
             ]);
@@ -119,6 +128,8 @@ class MedicationController extends Controller
                         'medication_id' => $medication->id,
                         'time'          => $schedule['time'],
                         'frequency'     => $schedule['frequency'] ?? 'daily',
+                        'day_of_week'   => $schedule['day_of_week'] ?? null,
+                        'day_of_month'  => $schedule['day_of_month'] ?? null,
                     ]);
                 }
             }
@@ -149,55 +160,57 @@ class MedicationController extends Controller
 
         try {
             $medication->delete();
-
             return $this->success_response('Medication deleted successfully', null);
         } catch (\Throwable $e) {
             return $this->error_response('Failed to delete medication', $e->getMessage());
         }
     }
 
-    /**
-     * Generate medication logs for the next 30 days.
-     * Skips slots that already exist to avoid duplicates.
-     */
-    private function generateMedicationLogs(Medication $medication)
+    private function generateMedicationLogs(Medication $medication): void
     {
-        $endDate     = now()->addDays(30);
-        $currentDate = now()->startOfDay();
+        $endDate = now()->addDays(30);
 
         foreach ($medication->schedules as $schedule) {
-            $date = $currentDate->copy();
+            [$hour, $minute] = array_map('intval', explode(':', $schedule->time_for_input));
 
-            while ($date <= $endDate) {
-                $scheduledTime = $date->copy()->setTimeFromTimeString($schedule->time_for_input);
-
-                if ($scheduledTime > now()) {
-                    $exists = MedicationLog::where('medication_id', $medication->id)
-                        ->where('scheduled_time', $scheduledTime)
-                        ->exists();
-
-                    if (!$exists) {
-                        MedicationLog::create([
-                            'medication_id'  => $medication->id,
-                            'scheduled_time' => $scheduledTime,
-                            'taken'          => false,
-                        ]);
+            switch ($schedule->frequency) {
+                case 'weekly':
+                    if ($schedule->day_of_week === null) break;
+                    $date = now()->copy()->startOfDay();
+                    if ($date->dayOfWeek !== $schedule->day_of_week) {
+                        $date = $date->next($schedule->day_of_week);
                     }
-                }
+                    while ($date <= $endDate) {
+                        $st = $date->copy()->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $date->addWeek();
+                    }
+                    break;
 
-                switch ($schedule->frequency) {
-                    case 'weekly':  $date->addWeek();  break;
-                    case 'monthly': $date->addMonth(); break;
-                    default:        $date->addDay();   break;
-                }
+                case 'monthly':
+                    if ($schedule->day_of_month === null) break;
+                    $month = now()->copy()->startOfMonth();
+                    while ($month <= $endDate) {
+                        $actualDay = min($schedule->day_of_month, $month->daysInMonth);
+                        $st = $month->copy()->day($actualDay)->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $month->addMonth();
+                    }
+                    break;
+
+                default: // daily
+                    $date = now()->copy()->startOfDay();
+                    while ($date <= $endDate) {
+                        $st = $date->copy()->setTime($hour, $minute);
+                        if ($st > now()) $this->createLogIfNotExists($medication->id, $st);
+                        $date->addDay();
+                    }
+                    break;
             }
         }
     }
 
-    /**
-     * Delete future untaken logs and regenerate from the updated schedules.
-     */
-    private function regenerateFutureLogs(Medication $medication)
+    private function regenerateFutureLogs(Medication $medication): void
     {
         $medication->logs()
             ->where('scheduled_time', '>', now())
@@ -206,5 +219,16 @@ class MedicationController extends Controller
             ->delete();
 
         $this->generateMedicationLogs($medication);
+    }
+
+    private function createLogIfNotExists(int $medicationId, Carbon $scheduledTime): void
+    {
+        if (!MedicationLog::where('medication_id', $medicationId)->where('scheduled_time', $scheduledTime)->exists()) {
+            MedicationLog::create([
+                'medication_id'  => $medicationId,
+                'scheduled_time' => $scheduledTime,
+                'taken'          => false,
+            ]);
+        }
     }
 }

@@ -11,8 +11,12 @@ class MedicationSchedule extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'time' => 'datetime:H:i:s'
+        'time'          => 'datetime:H:i:s',
+        'day_of_week'   => 'integer',
+        'day_of_month'  => 'integer',
     ];
+
+    protected $appends = ['day_of_week_label'];
 
     /**
      * Get the time in H:i format for input value
@@ -44,5 +48,11 @@ class MedicationSchedule extends Model
     public function getFormattedTimeAttribute()
     {
         return $this->time ? $this->time->format('H:i') : '';
+    }
+
+    public function getDayOfWeekLabelAttribute()
+    {
+        $days = [0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
+        return $this->day_of_week !== null ? ($days[$this->day_of_week] ?? null) : null;
     }
 }
