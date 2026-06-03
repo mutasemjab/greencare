@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SpecialMedicalForm;
 use App\Models\SpecialMedicalFormReply;
 use App\Models\RoomUser;
+use App\Services\FirestoreMessageService;
 use App\Traits\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +162,26 @@ class SpecialMedicalFormApiController extends Controller
                 __('messages.new_form_notification_body', ['name' => $user->name, 'title' => $form->title]),
                 'special_medical_form'
             );
+
+            // Send message to Firestore room
+            try {
+                $firestoreMessageService = app(FirestoreMessageService::class);
+
+                $firestoreMessageService->sendFormMessage(
+                    $form->room_id,
+                    [
+                        'form_id'       => $form->id,
+                        'form_title'    => $form->title,
+                        'note'          => $form->note,
+                        'status'        => $form->status,
+                        'sender_avatar' => $user->photo ?? '',
+                    ],
+                    $user->id,
+                    $user->name
+                );
+            } catch (\Exception $e) {
+                \Log::error('Failed to send form message to Firestore: ' . $e->getMessage());
+            }
 
             return $this->success_response(
                 __('messages.form_created_successfully'),

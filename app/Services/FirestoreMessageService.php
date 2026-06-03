@@ -122,6 +122,89 @@ class FirestoreMessageService
     }
 
     /**
+     * Send special medical form message to room
+     */
+    public function sendFormMessage($roomId, $formData, $senderId, $senderName)
+    {
+        try {
+            dispatch(function () use ($roomId, $formData, $senderId, $senderName) {
+                $this->performSendFormMessage($roomId, $formData, $senderId, $senderName);
+            })->afterResponse();
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error("Failed to dispatch form message: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Perform the actual form message send operation
+     */
+    protected function performSendFormMessage($roomId, $formData, $senderId, $senderName)
+    {
+        try {
+            $messageId = Str::random(20);
+
+            $formText = $this->formatFormDetails($formData);
+
+            $messageData = [
+                'fields' => [
+                    'id'             => ['stringValue' => $messageId],
+                    'sender_id'      => ['integerValue' => (string) $senderId],
+                    'sender_name'    => ['stringValue' => $senderName],
+                    'sender_avatar'  => ['stringValue' => $formData['sender_avatar'] ?? ''],
+                    'text'           => ['stringValue' => $formText],
+                    'type'           => ['stringValue' => 'form'],
+                    'form_id'        => ['integerValue' => (string) $formData['form_id']],
+                    'form_title'     => ['stringValue' => $formData['form_title']],
+                    'form_status'    => ['stringValue' => $formData['status'] ?? 'open'],
+                    'is_read'        => ['booleanValue' => false],
+                    'is_delivered'   => ['booleanValue' => false],
+                    'reply_to'       => ['stringValue' => ''],
+                    'media_url'      => ['stringValue' => ''],
+                    'created_at'     => ['timestampValue' => now()->toIso8601String()],
+                ]
+            ];
+
+            $response = Http::timeout(10)->patch(
+                "{$this->baseUrl}/rooms/room_{$roomId}/messages/{$messageId}",
+                $messageData
+            );
+
+            if ($response->successful()) {
+                Log::info("Form message sent to room {$roomId}");
+                $this->updateRoomLastMessage($roomId, $formText);
+            } else {
+                Log::error("Failed to send form message to Firestore", [
+                    'room_id' => $roomId,
+                    'status'  => $response->status(),
+                    'body'    => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to send form message to Firestore: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Format form details into a readable message
+     */
+    protected function formatFormDetails($formData)
+    {
+        $text  = "📋 New Medical Form\n\n";
+        $text .= "Title: {$formData['form_title']}\n";
+
+        if (!empty($formData['note'])) {
+            $text .= "Note: {$formData['note']}\n";
+        }
+
+        $text .= "\nStatus: " . ucfirst($formData['status'] ?? 'open');
+
+        return $text;
+    }
+
+    /**
      * Update room's last message information
      */
     protected function updateRoomLastMessage($roomId, $messageText)
