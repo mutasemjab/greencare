@@ -128,42 +128,47 @@
 
                         <hr>
 
-                        @php $firstSchedule = $medication->schedules->first(); @endphp
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">{{ __('messages.medication_schedules') }}</h5>
+                            <button type="button" class="btn btn-success btn-sm" onclick="addSchedule()">
+                                <i class="fas fa-plus"></i> {{ __('messages.add_schedule') }}
+                            </button>
+                        </div>
 
-                        <h5 class="mb-3">{{ __('messages.medication_schedules') }}</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schedule_time">{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
-                                    <input type="time"
-                                           name="schedules[0][time]"
-                                           id="schedule_time"
-                                           class="form-control @error('schedules.0.time') is-invalid @enderror"
-                                           value="{{ old('schedules.0.time', $firstSchedule?->time_for_input) }}"
-                                           required>
-                                    @error('schedules.0.time')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                        <div id="schedules-container">
+                            @foreach($medication->schedules as $i => $schedule)
+                                <div class="border rounded p-3 mb-3 bg-light" style="border-left: 4px solid #28a745 !important;" data-schedule-index="{{ $i }}">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 text-success">{{ __('messages.schedule') }} <span class="schedule-number">{{ $i + 1 }}</span></h6>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeSchedule(this)">
+                                            <i class="fas fa-trash"></i> {{ __('messages.remove_schedule') }}
+                                        </button>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
+                                                <input type="time"
+                                                       name="schedules[{{ $i }}][time]"
+                                                       class="form-control"
+                                                       value="{{ $schedule->time_for_input }}"
+                                                       required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>{{ __('messages.schedule_frequency') }} <span class="text-danger">*</span></label>
+                                                <select name="schedules[{{ $i }}][frequency]" class="form-control" required>
+                                                    <option value="">{{ __('messages.select_frequency') }}</option>
+                                                    <option value="daily"   {{ $schedule->frequency == 'daily'   ? 'selected' : '' }}>{{ __('messages.frequency_daily') }}</option>
+                                                    <option value="weekly"  {{ $schedule->frequency == 'weekly'  ? 'selected' : '' }}>{{ __('messages.frequency_weekly') }}</option>
+                                                    <option value="monthly" {{ $schedule->frequency == 'monthly' ? 'selected' : '' }}>{{ __('messages.frequency_monthly') }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="schedule_frequency">{{ __('messages.schedule_frequency') }} <span class="text-danger">*</span></label>
-                                    <select name="schedules[0][frequency]"
-                                            id="schedule_frequency"
-                                            class="form-control @error('schedules.0.frequency') is-invalid @enderror"
-                                            required>
-                                        <option value="">{{ __('messages.select_frequency') }}</option>
-                                        @php $currentFrequency = old('schedules.0.frequency', $firstSchedule?->frequency); @endphp
-                                        <option value="daily" {{ $currentFrequency == 'daily' ? 'selected' : '' }}>{{ __('messages.frequency_daily') }}</option>
-                                        <option value="weekly" {{ $currentFrequency == 'weekly' ? 'selected' : '' }}>{{ __('messages.frequency_weekly') }}</option>
-                                        <option value="monthly" {{ $currentFrequency == 'monthly' ? 'selected' : '' }}>{{ __('messages.frequency_monthly') }}</option>
-                                    </select>
-                                    @error('schedules.0.frequency')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
 
@@ -184,6 +189,8 @@
 
 @push('scripts')
 <script>
+let scheduleIndex = {{ $medication->schedules->count() }};
+
 $(document).ready(function() {
     $('#patient_id').select2({
         placeholder: '{{ __("messages.search_and_select_patient") }}',
@@ -191,5 +198,65 @@ $(document).ready(function() {
         width: '100%'
     });
 });
+
+function addSchedule() {
+    const html = `
+        <div class="border rounded p-3 mb-3 bg-light" style="border-left: 4px solid #28a745 !important;" data-schedule-index="${scheduleIndex}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0 text-success">{{ __('messages.schedule') }} <span class="schedule-number">${scheduleIndex + 1}</span></h6>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeSchedule(this)">
+                    <i class="fas fa-trash"></i> {{ __('messages.remove_schedule') }}
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.schedule_time') }} <span class="text-danger">*</span></label>
+                        <input type="time" name="schedules[${scheduleIndex}][time]" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.schedule_frequency') }} <span class="text-danger">*</span></label>
+                        <select name="schedules[${scheduleIndex}][frequency]" class="form-control" required>
+                            <option value="">{{ __('messages.select_frequency') }}</option>
+                            <option value="daily">{{ __('messages.frequency_daily') }}</option>
+                            <option value="weekly">{{ __('messages.frequency_weekly') }}</option>
+                            <option value="monthly">{{ __('messages.frequency_monthly') }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+    document.getElementById('schedules-container').insertAdjacentHTML('beforeend', html);
+    scheduleIndex++;
+    updateScheduleNumbers();
+}
+
+function removeSchedule(button) {
+    if (document.querySelectorAll('#schedules-container > div').length <= 1) {
+        alert('{{ __("messages.cannot_remove_last_schedule") }}');
+        return;
+    }
+    button.closest('[data-schedule-index]').remove();
+    reindexSchedules();
+}
+
+function updateScheduleNumbers() {
+    document.querySelectorAll('#schedules-container > div').forEach((el, i) => {
+        el.querySelector('.schedule-number').textContent = i + 1;
+    });
+}
+
+function reindexSchedules() {
+    document.querySelectorAll('#schedules-container > div').forEach((el, i) => {
+        el.setAttribute('data-schedule-index', i);
+        el.querySelector('.schedule-number').textContent = i + 1;
+        el.querySelectorAll('input, select').forEach(input => {
+            input.name = input.name.replace(/schedules\[\d+\]/, `schedules[${i}]`);
+        });
+    });
+}
 </script>
 @endpush

@@ -705,17 +705,18 @@ class RoomReportController extends Controller
      */
     public function getRoomMedications(Request $request, $room_id)
     {
-
-        // Verify user has access to the room
         $room = Room::find($room_id);
 
+        if (!$room) {
+            return $this->error_response('Room not found', null);
+        }
 
-        $medications = Medication::where('room_id', $request->room_id)
-            ->with(['schedules', 'patient:id,name'])
+        $medications = Medication::where('room_id', $room_id)
+            ->with(['schedules', 'patient:id,name,phone'])
             ->get();
 
         return $this->success_response('Medications retrieved successfully', [
-            'medications' => $medications
+            'medications' => $medications,
         ]);
     }
 
