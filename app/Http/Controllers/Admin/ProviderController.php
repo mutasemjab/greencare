@@ -40,7 +40,7 @@ class ProviderController extends Controller
             'price' => 'required|numeric|min:0',
             'rating' => 'required|numeric|min:0',
             'provider_category_id' => 'required|exists:provider_categories,id',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240'
         ]);
 
         $photoPath = null;
@@ -76,7 +76,7 @@ class ProviderController extends Controller
             'price' => 'required|numeric|min:0',
             'rating' => 'required|numeric|min:0',
             'provider_category_id' => 'required|exists:provider_categories,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
         ]);
 
         $photoPath = $provider->photo;

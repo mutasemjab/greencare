@@ -38,8 +38,8 @@
                                                         <img src="{{ asset('assets/admin/uploads/'.$image->photo) }}" 
                                                              class="img-fluid rounded cursor-pointer thumbnail-image" 
                                                              style="height: 80px; object-fit: cover;"
-                                                             data-bs-target="#productCarousel" 
-                                                             data-bs-slide-to="{{ $index }}"
+                                                             data-target="#productCarousel"
+                                                             data-slide-to="{{ $index }}"
                                                              alt="Thumbnail {{ $index + 1 }}">
                                                     </div>
                                                 @endforeach

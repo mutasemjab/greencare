@@ -50,7 +50,7 @@ class LabController extends Controller
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         try {
@@ -114,7 +114,7 @@ class LabController extends Controller
             'address' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'activate' => 'required|in:1,2',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         try {

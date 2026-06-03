@@ -251,7 +251,7 @@ class UserController extends Controller
             'date_of_birth' => 'required|date|before:today',
             'gender' => 'required|in:1,2',
             'activate' => 'required|in:1,2',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'fcm_token' => 'nullable|string'
         ]);
 
@@ -343,7 +343,7 @@ class UserController extends Controller
             'date_of_birth' => 'required|date|before:today',
             'gender' => 'required|in:1,2',
             'activate' => 'required|in:1,2',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'fcm_token' => 'nullable|string'
         ]);
 

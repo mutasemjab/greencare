@@ -37,7 +37,7 @@ class NewsController extends Controller
             'title_ar' => 'required|string|max:255',
             'description_en' => 'required|string',
             'description_ar' => 'required|string',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         $photoPath = uploadImage('assets/admin/uploads', $request->photo);
@@ -73,7 +73,7 @@ class NewsController extends Controller
             'title_ar' => 'required|string|max:255',
             'description_en' => 'required|string',
             'description_ar' => 'required|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         $news = DB::table('news')->where('id', $id)->first();

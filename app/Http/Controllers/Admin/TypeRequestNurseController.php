@@ -78,6 +78,14 @@ class TypeRequestNurseController extends Controller
  
 
     /**
+     * Display the specified resource.
+     */
+    public function show(TypeRequestNurse $requestNurse)
+    {
+        return view('admin.request-nurses.show', compact('requestNurse'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(TypeRequestNurse $requestNurse)

@@ -56,7 +56,7 @@ class CardController extends Controller
             'number_of_use_for_one_card' => 'required|integer|min:1|max:2147483647',
             'selling_price' => 'required|numeric|min:0',
             'number_of_cards' => 'required|integer|min:1|max:10000',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         DB::beginTransaction();
@@ -114,7 +114,7 @@ class CardController extends Controller
             'number_of_use_for_one_card' => 'required|integer|min:1|max:2147483647',
             'selling_price' => 'required|numeric|min:0',
             'number_of_cards' => 'required|integer|min:1|max:10000',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         DB::beginTransaction();

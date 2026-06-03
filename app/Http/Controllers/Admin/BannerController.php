@@ -33,7 +33,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'for_shop' => 'nullable',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         $photoPath = uploadImage('assets/admin/uploads', $request->photo);
@@ -61,7 +61,7 @@ class BannerController extends Controller
     {
         $request->validate([
            'for_shop' => 'nullable',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         $banner = DB::table('banners')->where('id', $id)->first();

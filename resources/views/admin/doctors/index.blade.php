@@ -121,11 +121,11 @@
                                                     </form>
                                                 @endcan
                                                 @can('doctor-delete')
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-danger" 
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-danger"
                                                             title="{{ __('messages.delete') }}"
-                                                            data-bs-toggle="modal" 
-                                                            data-bs-target="#deleteModal{{ $doctor->id }}">
+                                                            data-toggle="modal"
+                                                            data-target="#deleteModal{{ $doctor->id }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 @endcan
@@ -138,13 +138,13 @@
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">{{ __('messages.confirm_delete') }}</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
                                                             </div>
                                                             <div class="modal-body">
                                                                 {{ __('messages.are_you_sure_delete_doctor') }} "<strong>{{ $doctor->name }}</strong>"?
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
                                                                     {{ __('messages.cancel') }}
                                                                 </button>
                                                                 <form action="{{ route('doctors.destroy', $doctor) }}" method="POST" class="d-inline">

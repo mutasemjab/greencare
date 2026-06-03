@@ -4,10 +4,15 @@ function uploadImage($folder, $image)
 {
     $extension = strtolower($image->getClientOriginalExtension());
 
-    // Generate a unique filename
     $filename = time() . '_' . uniqid() . '.' . $extension;
 
-    $image->move($folder, $filename);
+    $destinationPath = public_path($folder);
+
+    if (!file_exists($destinationPath)) {
+        mkdir($destinationPath, 0755, true);
+    }
+
+    $image->move($destinationPath, $filename);
 
     return $filename;
 }

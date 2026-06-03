@@ -401,13 +401,14 @@ class MedicationController extends Controller
             while ($currentDate <= $endDate) {
                 $scheduledTime = $currentDate->copy()->setTimeFromTimeString($schedule->time);
                 
-                // Only create future logs
                 if ($scheduledTime > now()) {
-                    MedicationLog::create([
-                        'medication_id' => $medication->id,
-                        'scheduled_time' => $scheduledTime,
-                        'taken' => false
-                    ]);
+                    MedicationLog::firstOrCreate(
+                        [
+                            'medication_id' => $medication->id,
+                            'scheduled_time' => $scheduledTime,
+                        ],
+                        ['taken' => false]
+                    );
                 }
 
                 // Increment based on frequency

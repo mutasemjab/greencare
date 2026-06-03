@@ -179,8 +179,8 @@
                                                                 @can('medication-edit')
                                                                     <button type="button"
                                                                             class="btn btn-sm btn-success"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#markTakenModal{{ $log->id }}">
+                                                                            data-toggle="modal"
+                                                                            data-target="#markTakenModal{{ $log->id }}">
                                                                         <i class="fas fa-check"></i>
                                                                     </button>
                                                                 @endcan
@@ -193,7 +193,7 @@
                                                                     <div class="modal-content">
                                                                         <div class="modal-header">
                                                                             <h5 class="modal-title">{{ __('messages.mark_as_taken') }}</h5>
-                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
                                                                         </div>
                                                                         <form action="{{ route('medication-logs.mark-taken', $log) }}" method="POST">
                                                                             @csrf
@@ -209,7 +209,7 @@
                                                                                 </div>
                                                                             </div>
                                                                             <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
                                                                                     {{ __('messages.cancel') }}
                                                                                 </button>
                                                                                 <button type="submit" class="btn btn-success">
@@ -258,14 +258,14 @@
                                                                 @can('medication-edit')
                                                                     <button type="button"
                                                                             class="btn btn-sm btn-success"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#markTakenModal{{ $log->id }}">
+                                                                            data-toggle="modal"
+                                                                            data-target="#markTakenModal{{ $log->id }}">
                                                                         <i class="fas fa-check"></i> {{ __('messages.taken') }}
                                                                     </button>
                                                                     <button type="button"
                                                                             class="btn btn-sm btn-warning ms-1"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#markMissedModal{{ $log->id }}">
+                                                                            data-toggle="modal"
+                                                                            data-target="#markMissedModal{{ $log->id }}">
                                                                         <i class="fas fa-times"></i> {{ __('messages.missed') }}
                                                                     </button>
                                                                 @endcan
@@ -279,7 +279,7 @@
                                                                     <div class="modal-content">
                                                                         <div class="modal-header">
                                                                             <h5 class="modal-title">{{ __('messages.mark_as_missed') }}</h5>
-                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
                                                                         </div>
                                                                         <form action="{{ route('medication-logs.mark-missed', $log) }}" method="POST">
                                                                             @csrf
@@ -295,7 +295,7 @@
                                                                                 </div>
                                                                             </div>
                                                                             <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
                                                                                     {{ __('messages.cancel') }}
                                                                                 </button>
                                                                                 <button type="submit" class="btn btn-warning">

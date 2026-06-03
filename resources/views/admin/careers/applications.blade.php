@@ -45,10 +45,10 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-secondary" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#coverLetterModal{{ $application->id }}">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary"
+                                                    data-toggle="modal"
+                                                    data-target="#coverLetterModal{{ $application->id }}">
                                                 <i class="fas fa-eye"></i> {{ __('messages.view') }}
                                             </button>
 
@@ -58,13 +58,13 @@
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title">{{ __('messages.cover_letter') }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
                                                         </div>
                                                         <div class="modal-body">
                                                             {{ $application->cover_letter }}
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
                                                                 {{ __('messages.close') }}
                                                             </button>
                                                         </div>
