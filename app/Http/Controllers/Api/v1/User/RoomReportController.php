@@ -114,12 +114,13 @@ class RoomReportController extends Controller
             // Create reports from selected templates AND track in history
             if ($request->has('report_templates')) {
                 foreach ($request->report_templates as $templateId) {
-                    // Create report
+                    // Create placeholder report with null datetime to avoid blocking
+                    // the first hourly submission for the room-creation hour
                     Report::create([
                         'room_id' => $room->id,
                         'report_template_id' => $templateId,
                         'created_by' => Auth::id(),
-                        'report_datetime' => now(),
+                        'report_datetime' => null,
                     ]);
 
                     // Track template assignment in history

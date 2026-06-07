@@ -168,12 +168,12 @@ class RoomController extends Controller
                     'is_active' => true,
                 ]);
 
-                // Create report
+                // Create placeholder report with null created_by (admin guard ≠ users table)
                 Report::create([
                     'room_id' => $room->id,
                     'report_template_id' => $templateId,
-                    'created_by' => auth()->id(),
-                    'report_datetime' => now(),
+                    'created_by' => null,
+                    'report_datetime' => null,
                 ]);
             }
         }

@@ -243,28 +243,51 @@ class ReportTemplateController extends Controller
                 'frequency' => $request->report_type === 'recurring' ? $request->frequency : 'one_time',
             ]);
 
-            // Delete existing sections (cascade will handle fields and options)
-            $reportTemplate->sections()->delete();
+            // Collect submitted section/field IDs to know which ones were removed
+            $submittedSectionIds = [];
+            $submittedFieldIds   = [];
 
-            // Create new sections and fields
             foreach ($request->sections as $sectionIndex => $sectionData) {
-                $section = ReportSection::create([
-                    'report_template_id' => $reportTemplate->id,
-                    'title_en' => $sectionData['title_en'],
-                    'title_ar' => $sectionData['title_ar'],
-                    'order' => $sectionIndex + 1,
-                ]);
+                // Update existing section or create new one
+                if (!empty($sectionData['id'])) {
+                    $section = ReportSection::find($sectionData['id']);
+                    $section->update([
+                        'title_en' => $sectionData['title_en'],
+                        'title_ar' => $sectionData['title_ar'],
+                        'order'    => $sectionIndex + 1,
+                    ]);
+                } else {
+                    $section = ReportSection::create([
+                        'report_template_id' => $reportTemplate->id,
+                        'title_en' => $sectionData['title_en'],
+                        'title_ar' => $sectionData['title_ar'],
+                        'order'    => $sectionIndex + 1,
+                    ]);
+                }
+                $submittedSectionIds[] = $section->id;
 
                 foreach ($sectionData['fields'] as $fieldData) {
-                    $field = ReportField::create([
-                        'report_section_id' => $section->id,
-                        'label_en' => $fieldData['label_en'],
-                        'label_ar' => $fieldData['label_ar'],
-                        'input_type' => $fieldData['input_type'],
-                        'required' => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
-                    ]);
+                    if (!empty($fieldData['id'])) {
+                        $field = ReportField::find($fieldData['id']);
+                        $field->update([
+                            'label_en'   => $fieldData['label_en'],
+                            'label_ar'   => $fieldData['label_ar'],
+                            'input_type' => $fieldData['input_type'],
+                            'required'   => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
+                        ]);
+                    } else {
+                        $field = ReportField::create([
+                            'report_section_id' => $section->id,
+                            'label_en'   => $fieldData['label_en'],
+                            'label_ar'   => $fieldData['label_ar'],
+                            'input_type' => $fieldData['input_type'],
+                            'required'   => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
+                        ]);
+                    }
+                    $submittedFieldIds[] = $field->id;
 
-                    // Create options if field type needs them
+                    // Sync options: delete old, insert new
+                    $field->options()->delete();
                     if (isset($fieldData['options']) && is_array($fieldData['options'])) {
                         foreach ($fieldData['options'] as $optionData) {
                             ReportFieldOption::create([
@@ -275,7 +298,16 @@ class ReportTemplateController extends Controller
                         }
                     }
                 }
+
+                // Remove fields that were deleted from this section (preserves report_answers via SET NULL cascade)
+                $section->fields()->whereNotIn('id', $submittedFieldIds)->delete();
             }
+
+            // Remove sections that were deleted from the template
+            $reportTemplate->sections()->whereNotIn('id', $submittedSectionIds)->each(function ($section) {
+                $section->fields()->delete(); // triggers SET NULL on report_answers.report_field_id
+                $section->delete();
+            });
 
             DB::commit();
             return redirect()->route('report-templates.index')
