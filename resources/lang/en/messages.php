@@ -2292,5 +2292,7 @@ return [
   'route_other'                      => 'Other',
   'day_of_week'                      => 'Day of Week',
   'day_of_month'                     => 'Day of Month',
+  'amount_of_transfer_patient_inside_amman' => 'Patient transfer amount inside Amman',
+    'amount_of_transfer_patient_outside_amman' => 'Patient transfer amount outside Amman',
 
 ];

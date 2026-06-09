@@ -2206,4 +2206,7 @@ return [
   'auth_patient_signature'                   => 'توقيع المريض إن أمكن',
   'auth_commissioner_signature'              => 'توقيع المفوض إليه',
 
+  'amount_of_transfer_patient_inside_amman' => 'مبلغ نقل المريض داخل عمّان',
+    'amount_of_transfer_patient_outside_amman' => 'مبلغ نقل المريض خارج عمّان',
+
 ];
