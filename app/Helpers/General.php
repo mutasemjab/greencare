@@ -6,7 +6,7 @@ function uploadImage($folder, $image)
 
     $filename = time() . '_' . uniqid() . '.' . $extension;
 
-    $destinationPath = public_path($folder);
+    $destinationPath = base_path($folder);
 
     if (!file_exists($destinationPath)) {
         mkdir($destinationPath, 0755, true);
