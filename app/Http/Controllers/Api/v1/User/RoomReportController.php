@@ -17,6 +17,7 @@ use App\Traits\Responses;
 use App\Traits\SendsRoomNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
@@ -297,11 +298,24 @@ class RoomReportController extends Controller
     /**
      * Submit a recurring report
      */
-
     public function submitRecurringReport(Request $request)
     {
-        // Resolve report_type before full validation so we know which date rules to apply
-        $reportType = $request->get('report_type'); // 'doctor' or 'nurse'
+        $reportType = $request->get('report_type');
+
+        $logContext = [
+            'user_id'     => Auth::id(),
+            'user_name'   => Auth::user()?->name,
+            'user_type'   => Auth::user()?->user_type,
+            'room_id'     => $request->room_id,
+            'template_id' => $request->template_id,
+            'report_type' => $reportType,
+            'date'        => $request->date,
+            'hour'        => $request->hour ?? null,
+            'answers_count' => is_array($request->answers) ? count($request->answers) : 0,
+            'ip'          => $request->ip(),
+        ];
+
+        Log::channel('report_submissions')->info('SUBMIT_ATTEMPT', $logContext);
 
         $rules = [
             'room_id'            => 'required|exists:rooms,id',
@@ -313,7 +327,6 @@ class RoomReportController extends Controller
             'answers.*.value'    => 'required',
         ];
 
-        // Nurse requires hour; doctor does not
         if ($reportType === 'nurse') {
             $rules['hour'] = 'required|date_format:H:i';
         }
@@ -321,21 +334,32 @@ class RoomReportController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
+            Log::channel('report_submissions')->warning('SUBMIT_FAILED_VALIDATION', array_merge($logContext, [
+                'stage'  => 'validation',
+                'errors' => $validator->errors()->toArray(),
+            ]));
             return $this->error_response('Validation failed', $validator->errors());
         }
 
-        // Verify template is recurring and belongs to the correct role
         $template = ReportTemplate::find($request->template_id);
         if ($template->report_type !== 'recurring') {
+            Log::channel('report_submissions')->warning('SUBMIT_FAILED_WRONG_TEMPLATE_TYPE', array_merge($logContext, [
+                'stage'         => 'template_check',
+                'template_type' => $template->report_type,
+            ]));
             return $this->error_response('Invalid template', 'Only recurring templates are allowed');
         }
         if ($template->created_for !== $reportType) {
+            Log::channel('report_submissions')->warning('SUBMIT_FAILED_TEMPLATE_MISMATCH', array_merge($logContext, [
+                'stage'         => 'template_check',
+                'template_for'  => $template->created_for,
+            ]));
             return $this->error_response('Template mismatch', "This template is for '{$template->created_for}', not '{$reportType}'");
         }
 
         DB::beginTransaction();
         try {
-            // Build datetime and run duplicate check based on report_type
+            // Build datetime and duplicate check
             if ($reportType === 'doctor') {
                 $reportDatetime = $request->date . ' ' . now()->format('H:i:s');
 
@@ -345,9 +369,14 @@ class RoomReportController extends Controller
                     ->exists();
 
                 if ($existingReport) {
+                    DB::rollBack();
+                    Log::channel('report_submissions')->warning('SUBMIT_FAILED_DUPLICATE', array_merge($logContext, [
+                        'stage' => 'duplicate_check',
+                        'reason' => 'report for this date already exists',
+                    ]));
                     return $this->error_response('A report for this date already exists', null);
                 }
-            } else { // nurse
+            } else {
                 $reportDatetime = $request->date . ' ' . $request->hour . ':00';
                 $reportHour     = (int) explode(':', $request->hour)[0];
 
@@ -358,64 +387,82 @@ class RoomReportController extends Controller
                     ->exists();
 
                 if ($existingReport) {
+                    DB::rollBack();
+                    Log::channel('report_submissions')->warning('SUBMIT_FAILED_DUPLICATE', array_merge($logContext, [
+                        'stage'  => 'duplicate_check',
+                        'reason' => 'report for this hour already exists',
+                    ]));
                     return $this->error_response('A report for this hour already exists', null);
                 }
             }
 
-            // ✅ Check if template is already tracked in history for this room
+            // Track template in history if not already
             $templateHistory = RoomReportTemplateHistory::where('room_id', $request->room_id)
                 ->where('report_template_id', $request->template_id)
                 ->where('is_active', true)
                 ->first();
 
-            // If not tracked yet, create history entry
             if (!$templateHistory) {
                 RoomReportTemplateHistory::create([
-                    'room_id' => $request->room_id,
+                    'room_id'            => $request->room_id,
                     'report_template_id' => $request->template_id,
-                    'assigned_at' => now(),
-                    'assigned_by' => Auth::id(),
-                    'is_active' => true,
+                    'assigned_at'        => now(),
+                    'assigned_by'        => Auth::id(),
+                    'is_active'          => true,
                 ]);
             }
 
-            // Create the report
+            // Create report row
             $report = Report::create([
-                'room_id' => $request->room_id,
+                'room_id'            => $request->room_id,
                 'report_template_id' => $request->template_id,
-                'created_by' => Auth::id(),
-                'report_datetime' => $reportDatetime,
+                'created_by'         => Auth::id(),
+                'report_datetime'    => $reportDatetime,
             ]);
 
-            // Save report answers with file upload handling
-            foreach ($request->answers as $index => $answer) {
-                // Get the field to check its input type
-                $field = \App\Models\ReportField::find($answer['field_id']);
+            Log::channel('report_submissions')->info('SUBMIT_REPORT_CREATED', array_merge($logContext, [
+                'stage'     => 'report_create',
+                'report_id' => $report->id,
+            ]));
 
+            // Save answers — any failure rolls back everything
+            $savedAnswers = 0;
+
+            foreach ($request->answers as $index => $answer) {
+                $field = \App\Models\ReportField::find($answer['field_id']);
                 $value = $answer['value'];
 
-                // ✅ FIX: Handle file uploads for photo, pdf, and signature fields
                 if ($field && in_array($field->input_type, ['photo', 'pdf', 'signuture'])) {
-                    // Check if file exists in the request
                     $fileKey = "answers.{$index}.value";
                     if ($request->hasFile($fileKey)) {
-                        $uploadedFile = $request->file($fileKey);
-                        $value = uploadImage('assets/admin/uploads', $uploadedFile);
+                        $value = uploadImage('assets/admin/uploads', $request->file($fileKey));
                     } elseif (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
-                        // If already a URL, keep it as is
-                        $value = $value;
+                        // keep URL as-is
                     }
                 }
 
                 ReportAnswer::create([
-                    'report_id' => $report->id,
+                    'report_id'       => $report->id,
                     'report_field_id' => $answer['field_id'],
-                    'value' => json_encode($value),
+                    'value'           => json_encode($value),
                 ]);
+
+                $savedAnswers++;
             }
-            // ============================================
+
+            // Verify every submitted answer was persisted
+            if ($savedAnswers !== count($request->answers)) {
+                DB::rollBack();
+                Log::channel('report_submissions')->error('SUBMIT_FAILED_ANSWERS_MISMATCH', array_merge($logContext, [
+                    'stage'          => 'answers_save',
+                    'report_id'      => $report->id,
+                    'answers_sent'   => count($request->answers),
+                    'answers_saved'  => $savedAnswers,
+                ]));
+                return $this->error_response('Report answers were not fully saved. No data was stored.', null);
+            }
+
             // Update schedule as completed
-            // ============================================
             $schedule = ReportSchedule::where('room_id', $request->room_id)
                 ->where('report_template_id', $request->template_id)
                 ->where('user_id', Auth::id())
@@ -426,22 +473,33 @@ class RoomReportController extends Controller
             if ($schedule) {
                 $schedule->update([
                     'completed' => true,
-                    'report_id' => $report->id
+                    'report_id' => $report->id,
                 ]);
             }
 
             DB::commit();
 
+            Log::channel('report_submissions')->info('SUBMIT_SUCCESS', array_merge($logContext, [
+                'stage'          => 'done',
+                'report_id'      => $report->id,
+                'answers_saved'  => $savedAnswers,
+                'answers_total'  => count($request->answers),
+                'schedule_found' => $schedule ? true : false,
+            ]));
 
-
-            // Load the complete report with relationships
             $report->load(['template.sections.fields.options', 'answers']);
 
             return $this->success_response('Report submitted successfully', [
-                'report' => $report
+                'report' => $report,
             ]);
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+            Log::channel('report_submissions')->error('SUBMIT_EXCEPTION', array_merge($logContext, [
+                'stage'   => 'exception',
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]));
             return $this->error_response('Failed to submit report', ['error' => $e->getMessage()]);
         }
     }

@@ -204,9 +204,9 @@
                 <!-- Medical Resources -->
                 @canany(['room-table', 'report-template-table'])
                     <li
-                        class="nav-item {{ request()->is('rooms*') || request()->is('medications*') || request()->is('report-templates*') ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->is('rooms*') || request()->is('medications*') || request()->is('report-templates*') || request()->is('report-submission-logs*') ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->is('rooms*') || request()->is('medications*') || request()->is('report-templates*') ? 'active' : '' }}">
+                            class="nav-link {{ request()->is('rooms*') || request()->is('medications*') || request()->is('report-templates*') || request()->is('report-submission-logs*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clinic-medical"></i>
                             <p>
                                 {{ __('messages.medical_resources') }}
@@ -239,6 +239,13 @@
                                     </a>
                                 </li>
                             @endcanany
+                            <li class="nav-item">
+                                <a href="{{ route('admin.report-submission-logs.index') }}"
+                                    class="nav-link {{ request()->routeIs('admin.report-submission-logs.*') ? 'active' : '' }}">
+                                    <i class="fas fa-clipboard-list nav-icon"></i>
+                                    <p>Report Submission Logs</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endcanany

@@ -43,6 +43,7 @@ use App\Http\Controllers\Admin\TypeRequestNurseController;
 use App\Http\Controllers\Admin\ShowerController;
 use App\Http\Controllers\Admin\SuperNurseController;
 use App\Http\Controllers\Admin\TransferPatientController;
+use App\Http\Controllers\Admin\ReportSubmissionLogController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -163,6 +164,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/medications/upcoming', [MedicationController::class, 'getUpcoming'])->name('api.medications.upcoming');
         Route::get('/medications/overdue', [MedicationController::class, 'getOverdue'])->name('api.medications.overdue');
 
+        // Report Submission Logs
+        Route::get('report-submission-logs', [ReportSubmissionLogController::class, 'index'])
+            ->name('admin.report-submission-logs.index');
 
         Route::resource('app-configs', AppConfigController::class);
         Route::resource('deliveries', DeliveryController::class);
