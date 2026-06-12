@@ -2,9 +2,7 @@
 
 @section('title', 'Report Submission Logs')
 
-@section('contentheader', 'Report Submission Logs')
-@section('contentheaderlink', '<a href="' . route('admin.dashboard') . '">Dashboard</a>')
-@section('contentheaderactive', 'Report Submission Logs')
+
 
 @section('content')
 <div class="row">
