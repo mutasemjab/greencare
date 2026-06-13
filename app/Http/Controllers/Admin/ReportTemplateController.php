@@ -267,14 +267,22 @@ class ReportTemplateController extends Controller
                 $submittedSectionIds[] = $section->id;
 
                 foreach ($sectionData['fields'] as $fieldData) {
+                    $fieldHasAnswers = false;
+
                     if (!empty($fieldData['id'])) {
                         $field = ReportField::find($fieldData['id']);
-                        $field->update([
-                            'label_en'   => $fieldData['label_en'],
-                            'label_ar'   => $fieldData['label_ar'],
-                            'input_type' => $fieldData['input_type'],
-                            'required'   => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
-                        ]);
+                        $fieldHasAnswers = $field->answers()->exists();
+
+                        if (!$fieldHasAnswers) {
+                            // No historical answers: safe to update label, type, required
+                            $field->update([
+                                'label_en'   => $fieldData['label_en'],
+                                'label_ar'   => $fieldData['label_ar'],
+                                'input_type' => $fieldData['input_type'],
+                                'required'   => isset($fieldData['required']) ? (bool)$fieldData['required'] : false,
+                            ]);
+                        }
+                        // Has answers: skip all updates — preserve historical data completely
                     } else {
                         $field = ReportField::create([
                             'report_section_id' => $section->id,
@@ -286,27 +294,37 @@ class ReportTemplateController extends Controller
                     }
                     $submittedFieldIds[] = $field->id;
 
-                    // Sync options: delete old, insert new
-                    $field->options()->delete();
-                    if (isset($fieldData['options']) && is_array($fieldData['options'])) {
-                        foreach ($fieldData['options'] as $optionData) {
-                            ReportFieldOption::create([
-                                'report_field_id' => $field->id,
-                                'value_en' => $optionData['value_en'],
-                                'value_ar' => $optionData['value_ar'],
-                            ]);
+                    // Sync options only for fields without historical answers
+                    if (!$fieldHasAnswers) {
+                        $field->options()->delete();
+                        if (isset($fieldData['options']) && is_array($fieldData['options'])) {
+                            foreach ($fieldData['options'] as $optionData) {
+                                ReportFieldOption::create([
+                                    'report_field_id' => $field->id,
+                                    'value_en' => $optionData['value_en'],
+                                    'value_ar' => $optionData['value_ar'],
+                                ]);
+                            }
                         }
                     }
                 }
 
-                // Remove fields that were deleted from this section (preserves report_answers via SET NULL cascade)
-                $section->fields()->whereNotIn('id', $submittedFieldIds)->delete();
+                // Only delete fields that have no submitted answers — fields with answers are kept
+                // to avoid orphaning historical report_answers (report_field_id → SET NULL).
+                $section->fields()
+                    ->whereNotIn('id', $submittedFieldIds)
+                    ->whereDoesntHave('answers')
+                    ->delete();
             }
 
             // Remove sections that were deleted from the template
             $reportTemplate->sections()->whereNotIn('id', $submittedSectionIds)->each(function ($section) {
-                $section->fields()->delete(); // triggers SET NULL on report_answers.report_field_id
-                $section->delete();
+                // Only delete fields with no answers; leave the rest intact.
+                $section->fields()->whereDoesntHave('answers')->delete();
+                // Delete the section only if no answer-linked fields remain.
+                if ($section->fields()->whereHas('answers')->doesntExist()) {
+                    $section->delete();
+                }
             });
 
             DB::commit();

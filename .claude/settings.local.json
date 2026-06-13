@@ -6,7 +6,8 @@
       "Bash(PowerShell -Command \"Select-String -Path 'c:\\\\xampp\\\\htdocs\\\\greencare\\\\app\\\\Models\\\\Order.php' -Pattern 'Attribute|Accessor|Appends|protected.*appends'\")",
       "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\greencare\\\\resources\\\\views\\\\admin\" -Recurse -Force)",
       "Bash(Select-Object FullName)",
-      "Bash(Format-List)"
+      "Bash(Format-List)",
+      "Bash(xargs cat)"
     ]
   }
 }
