@@ -2294,5 +2294,6 @@ return [
   'day_of_month'                     => 'Day of Month',
   'amount_of_transfer_patient_inside_amman' => 'Patient transfer amount inside Amman',
     'amount_of_transfer_patient_outside_amman' => 'Patient transfer amount outside Amman',
+    'appstore_flag' => 'Appstore flag',
 
 ];

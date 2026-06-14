@@ -2208,5 +2208,6 @@ return [
 
   'amount_of_transfer_patient_inside_amman' => 'مبلغ نقل المريض داخل عمّان',
     'amount_of_transfer_patient_outside_amman' => 'مبلغ نقل المريض خارج عمّان',
+    'appstore_flag' => 'رفع اب ستور',
 
 ];
